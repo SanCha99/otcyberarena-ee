@@ -1,0 +1,187 @@
+[
+  {
+    "date": "2026-06-26",
+    "game_type": "mcq_scenario_easy",
+    "challenge_id": "ec_s1e1_fa1",
+    "difficulty": "scenario_easy",
+    "day_label": "Scenario MCQ Friday"
+  },
+  {
+    "date": "2026-06-27",
+    "game_type": "mcq_scenario_hard",
+    "challenge_id": "ec_s1e1_fa2",
+    "difficulty": "scenario_hard",
+    "day_label": "Scenario MCQ Saturday"
+  },
+  {
+    "date": "2026-06-28",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_6L_PURDUE",
+    "word": "PURDUE",
+    "word_length": 6,
+    "day_label": "OT Cywordle Sunday"
+  },
+  {
+    "date": "2026-06-29",
+    "game_type": "mcq_easy",
+    "challenge_id": "ec_s1e1_fa3",
+    "difficulty": "easy",
+    "day_label": "Easy MCQ Monday"
+  },
+  {
+    "date": "2026-06-30",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_4L_VLAN",
+    "word": "VLAN",
+    "word_length": 4,
+    "day_label": "OT Cywordle Tuesday"
+  },
+  {
+    "date": "2026-07-01",
+    "game_type": "mcq_medium",
+    "challenge_id": "ec_s1e1_fa4",
+    "difficulty": "medium",
+    "day_label": "Medium MCQ Wednesday"
+  },
+  {
+    "date": "2026-07-02",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_5L_SCADA",
+    "word": "SCADA",
+    "word_length": 5,
+    "day_label": "OT Cywordle Thursday"
+  },
+  {
+    "date": "2026-07-03",
+    "game_type": "mcq_scenario_easy",
+    "challenge_id": "ec_s1e1_fa5",
+    "difficulty": "scenario_easy",
+    "day_label": "Scenario MCQ Friday"
+  },
+  {
+    "date": "2026-07-04",
+    "game_type": "mcq_scenario_hard",
+    "challenge_id": "ec_s1e1_fa6",
+    "difficulty": "scenario_hard",
+    "day_label": "Scenario MCQ Saturday"
+  },
+  {
+    "date": "2026-07-05",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_6L_MODBUS",
+    "word": "MODBUS",
+    "word_length": 6,
+    "day_label": "OT Cywordle Sunday"
+  },
+  {
+    "date": "2026-07-06",
+    "game_type": "mcq_easy",
+    "challenge_id": "ec_s1e1_fa7",
+    "difficulty": "easy",
+    "day_label": "Easy MCQ Monday"
+  },
+  {
+    "date": "2026-07-07",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_4L_ZONE",
+    "word": "ZONE",
+    "word_length": 4,
+    "day_label": "OT Cywordle Tuesday"
+  },
+  {
+    "date": "2026-07-08",
+    "game_type": "mcq_medium",
+    "challenge_id": "s1e2_fa01",
+    "difficulty": "medium",
+    "day_label": "Medium MCQ Wednesday",
+    "episode": 2
+  },
+  {
+    "date": "2026-07-09",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_5L_VLANS",
+    "word": "VLANS",
+    "word_length": 5,
+    "day_label": "OT Cywordle Thursday"
+  },
+  {
+    "date": "2026-07-10",
+    "game_type": "mcq_scenario_easy",
+    "challenge_id": "s1e2_fa02",
+    "difficulty": "scenario_easy",
+    "day_label": "Scenario MCQ Friday",
+    "episode": 2
+  },
+  {
+    "date": "2026-07-11",
+    "game_type": "mcq_scenario_hard",
+    "challenge_id": "s1e2_fa03",
+    "difficulty": "scenario_hard",
+    "day_label": "Scenario MCQ Saturday",
+    "episode": 2
+  },
+  {
+    "date": "2026-07-12",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_6L_TRITON",
+    "word": "TRITON",
+    "word_length": 6,
+    "day_label": "OT Cywordle Sunday"
+  },
+  {
+    "date": "2026-07-13",
+    "game_type": "mcq_easy",
+    "challenge_id": "s1e2_fa04",
+    "difficulty": "easy",
+    "day_label": "Easy MCQ Monday",
+    "episode": 2
+  },
+  {
+    "date": "2026-07-14",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_4L_WORM",
+    "word": "WORM",
+    "word_length": 4,
+    "day_label": "OT Cywordle Tuesday"
+  },
+  {
+    "date": "2026-07-15",
+    "game_type": "mcq_medium",
+    "challenge_id": "s1e2_fa05",
+    "difficulty": "medium",
+    "day_label": "Medium MCQ Wednesday",
+    "episode": 2
+  },
+  {
+    "date": "2026-07-16",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_5L_OSINT",
+    "word": "OSINT",
+    "word_length": 5,
+    "day_label": "OT Cywordle Thursday"
+  },
+  {
+    "date": "2026-07-17",
+    "game_type": "mcq_scenario_easy",
+    "challenge_id": "s1e2_fa06",
+    "difficulty": "scenario_easy",
+    "day_label": "Scenario MCQ Friday",
+    "episode": 2
+  },
+  {
+    "date": "2026-07-18",
+    "game_type": "mcq_scenario_hard",
+    "challenge_id": "s1e2_fa07",
+    "difficulty": "scenario_hard",
+    "day_label": "Scenario MCQ Saturday",
+    "episode": 2
+  },
+  {
+    "date": "2026-07-19",
+    "game_type": "cywordle",
+    "challenge_id": "cywordle_6L_DRAGOS",
+    "word": "DRAGOS",
+    "word_length": 6,
+    "day_label": "OT Cywordle Sunday"
+  }
+]

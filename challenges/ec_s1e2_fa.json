@@ -1,0 +1,172 @@
+[
+  {
+    "id": "s1e2_fa01",
+    "episode": "s1e2",
+    "day": 1,
+    "game_type": "mcq_daily",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "A new analyst at Cascade Steel monitors Modbus TCP traffic on the historian. She sees repeated function code 03 requests from an engineering workstation to a PLC.",
+    "question": "What does Modbus function code 03 do?",
+    "options": [
+      "It writes a single coil value to a specific PLC output register.",
+      "It reads the values of multiple holding registers from a PLC or RTU.",
+      "It forces a PLC into diagnostic mode to report internal memory errors.",
+      "It resets the PLC communication stack and re-establishes the Modbus session."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "This is a read operation — focus on what it retrieves, not what it changes.",
+    "debrief": "FC03 reads holding registers — the most common Modbus data source, used for process values, setpoints, and status. FC01 reads coils (discrete outputs). FC05 writes a single coil. FC06 writes a single holding register. There is no built-in diagnostic or session-reset function code in standard Modbus; Options C and D describe capabilities the protocol does not have.",
+    "sources": [
+      { "text": "Modbus Application Protocol Spec V1.1b3 §6.3", "url": "https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf" },
+      { "text": "NIST SP 800-82 Rev 3 Appendix C.3", "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-82r3.pdf" }
+    ]
+  },
+  {
+    "id": "s1e2_fa02",
+    "episode": "s1e2",
+    "day": 2,
+    "game_type": "mcq_daily",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "During a threat hunt at Redrock Oil & Gas, analysts find an attacker replaying captured DNP3 traffic to a substation RTU. The RTU accepts and executes the replayed commands without error.",
+    "question": "Why does the RTU accept replayed DNP3 commands without error?",
+    "options": [
+      "The RTU firmware has a bug that disables sequence number checking.",
+      "DNP3 uses TCP, which does not provide application-layer sequence protection.",
+      "The attacker used a zero-day in the DNP3 stack to bypass session validation.",
+      "Standard DNP3 has no native message authentication — any correctly formatted packet is accepted."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "Think about what DNP3 was designed for — reliable data transfer — not about who is authorised to send commands.",
+    "debrief": "DNP3 was designed in the early 1990s for reliable serial communication between trusted devices. It has no native message authentication in its base spec — any correctly formatted packet sent to the RTU will be executed. DNP3 Secure Authentication v5 (IEEE 1815-2012) was added later as an optional extension but is not widely deployed. Option A implies a firmware bug, but this is by design. Option B is wrong — TCP sequence numbers protect transport-layer ordering, not application-layer command authentication. Option C implies a zero-day; the scenario shows standard protocol behaviour.",
+    "sources": [
+      { "text": "IEEE 1815-2012 (DNP3) §7 — Secure Authentication", "url": "https://standards.ieee.org/ieee/1815/5414/" },
+      { "text": "CISA — Improving ICS Cybersecurity with Defence-in-Depth (PDF)", "url": "https://www.cisa.gov/sites/default/files/recommended_practices/NCCIC_ICS-CERT_Defense_in_Depth_2016_S508C.pdf" }
+    ]
+  },
+  {
+    "id": "s1e2_fa03",
+    "episode": "s1e2",
+    "day": 3,
+    "game_type": "mcq_daily",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "An attacker on a compromised engineering workstation at Apex Energy sends PROFINET DCP Identify All requests across the control network. Within seconds, they have a full list of all PROFINET devices — names, IPs, MACs, and vendor details — without sending a single exploit.",
+    "question": "Which MITRE ATT&CK for ICS technique does this PROFINET DCP scan represent?",
+    "options": [
+      "T0846.003 — Remote System Discovery: Multicast Discovery, using PROFINET DCP to enumerate OT assets.",
+      "T0888 — Remote System Information Discovery, extracting detailed firmware and OS info from hosts.",
+      "T0840 — Network Connection Enumeration, mapping communication patterns between PROFINET devices.",
+      "T0817 — Drive-by Compromise, exploiting a PROFINET stack vulnerability on the workstation."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "DCP Identify All sends to an Ethernet multicast address — every PROFINET device responds. This is passive enumeration, not exploitation.",
+    "debrief": "PROFINET DCP Identify All sends to an Ethernet multicast address (01:0E:CF:00:00:00); every PROFINET device on the segment responds with its name, IP, MAC, and vendor. No exploit is needed — the attacker used a built-in mechanism. This is T0846.003 Remote System Discovery: Multicast Discovery, the most specific sub-technique for multicast-based enumeration protocols like PROFINET DCP. T0888 (Option B) goes further — extracting detailed firmware and OS info from individual hosts; DCP only returns network presence data. T0840 (Option C) enumerates active connections using tools like Netstat, not device presence via multicast. Option D is an initial access technique, not a discovery technique.",
+    "sources": [
+      { "text": "MITRE ATT&CK for ICS — T0846 Remote System Discovery", "url": "https://attack.mitre.org/techniques/T0846/" },
+      { "text": "MITRE ATT&CK ICS — T0846.003 Multicast Discovery (PROFINET DCP)", "url": "https://attack.mitre.org/techniques/T0846/003/" }
+    ]
+  },
+  {
+    "id": "s1e2_fa04",
+    "episode": "s1e2",
+    "day": 4,
+    "game_type": "mcq_daily",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "Analysts at Northfield Power discover INCONTROLLER-style tooling sending unsolicited Codesys runtime commands to Schneider Electric Modicon PLCs on the OT network. The PLCs accept the commands and alter programme execution without any operator approval.",
+    "question": "What is the attacker most likely achieving by sending these unauthorised Codesys commands?",
+    "options": [
+      "Crashing the PLCs by flooding them with malformed Codesys connection requests.",
+      "Extracting PLC firmware images for offline vulnerability analysis.",
+      "Establishing direct programme control to modify PLC logic and process behaviour.",
+      "Pivoting through the PLCs to reach devices on isolated network segments."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "Codesys runtime commands execute directly on PLC logic — focus on what accepting unauthorised commands lets the attacker do.",
+    "debrief": "INCONTROLLER's EVILSCHOLAR module used Codesys runtime protocols to send unauthorised commands directly to Schneider Electric Modicon PLCs — bypassing all operator controls. This is T0855 Unauthorized Command Message: the attacker gains direct control over programme logic, setpoints, and process behaviour without needing to exploit a vulnerability. Option A (DoS flooding) uses blunt methods; INCONTROLLER was built for precise, targeted manipulation. Option B (firmware extraction) uses file-read or upload services, not runtime commands. Option D (pivoting) is a lateral movement goal — INCONTROLLER's purpose here was direct process control, not network traversal.",
+    "sources": [
+      { "text": "MITRE ATT&CK for ICS — T0855 Unauthorized Command Message", "url": "https://attack.mitre.org/techniques/T0855/" },
+      { "text": "CISA Advisory AA22-103A — APT Cyber Tools Targeting ICS/SCADA (INCONTROLLER/PIPEDREAM)", "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-103a" },
+      { "text": "MITRE ATT&CK — S1045 INCONTROLLER", "url": "https://attack.mitre.org/software/S1045/" }
+    ]
+  },
+  {
+    "id": "s1e2_fa05",
+    "episode": "s1e2",
+    "day": 5,
+    "game_type": "mcq_daily",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "During a security assessment at Stonebridge Manufacturing, the assessor sends a Modbus FC06 Write Single Register command from a laptop directly to a production PLC. The PLC accepts and executes the write with no authentication challenge.",
+    "question": "Why does the PLC accept the write command with no authentication?",
+    "options": [
+      "The PLC is in maintenance mode, which disables authentication for service access.",
+      "Modbus has no native authentication — any reachable host can send valid commands.",
+      "The assessor's laptop is on the engineering VLAN, which is trusted by the PLC.",
+      "The PLC's authentication module is disabled when no active session exists."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "Modbus was designed in 1979 for trusted serial links — authentication was never part of the specification.",
+    "debrief": "Modbus was developed for serial RS-232 communication between trusted devices in isolated environments. It has no authentication, no encryption, and no source verification — any host that reaches port 502 (Modbus TCP) can read or write registers. This is not a misconfiguration; it is how the protocol works. Option A implies maintenance mode disables authentication, but Modbus has no authentication to disable in any mode. Option C (VLAN trust) is a network segmentation concept, not a Modbus protocol feature. Option D invents an authentication module that standard Modbus does not have.",
+    "sources": [
+      { "text": "Modbus Application Protocol Spec V1.1b3", "url": "https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf" },
+      { "text": "NIST SP 800-82 Rev 3 §C.3 — Modbus", "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-82r3.pdf" }
+    ]
+  },
+  {
+    "id": "s1e2_fa06",
+    "episode": "s1e2",
+    "day": 6,
+    "game_type": "mcq_daily",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "A threat actor on a compromised Level 2 HMI at Vantage Water Authority uses standard Modbus polling tools to map all PLCs on the Level 1 segment, read live process values, and identify setpoint registers. No new tools are installed; no commands are written.",
+    "question": "Which MITRE ATT&CK for ICS tactic does reading PLC process data represent in this kill chain?",
+    "options": [
+      "TA0104 — Execution, as the attacker is running commands on the PLC.",
+      "TA0105 — Inhibit Response Function, as reading setpoints enables future alarm suppression.",
+      "TA0109 — Lateral Movement, moving from the compromised HMI to reach the PLCs.",
+      "TA0102 — Discovery, gathering intelligence about the process environment before acting."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "Reading data to understand the environment — before taking any action — maps to which phase of the kill chain?",
+    "debrief": "Reading register values and mapping PLCs is intelligence gathering — building a picture of the process before taking disruptive action. This is TA0102 Discovery. Option A (Execution) would apply if the attacker sent commands that change process state; reading registers does not execute anything on the PLC's logic. Option B (Inhibit Response Function) requires an action that suppresses alarms; passive reading does not. Option C (Lateral Movement) describes pivoting from one system to another — the attacker already has network reach to Level 1 from the HMI; what they are doing there is reconnaissance.",
+    "sources": [
+      { "text": "MITRE ATT&CK for ICS — TA0102 Discovery", "url": "https://attack.mitre.org/tactics/TA0102/" },
+      { "text": "MITRE ATT&CK for ICS — T0801 Monitor Process State", "url": "https://attack.mitre.org/techniques/T0801/" }
+    ]
+  },
+  {
+    "id": "s1e2_fa07",
+    "episode": "s1e2",
+    "day": 7,
+    "game_type": "mcq_daily",
+    "difficulty": "expert",
+    "points": 100,
+    "penalty": -20,
+    "scenario": "An attacker on a compromised workstation at Cascade Steel sends Modbus FC16 to overwrite the high-temperature alarm setpoint on a furnace PLC — raising it from 850°C to 1200°C. No operator alarms fire. The physical process begins running dangerously hot.",
+    "question": "Why does this attack succeed silently, and which MITRE technique does it represent?",
+    "options": [
+      "Modbus has no write protection; FC16 writes setpoints silently — this is T0836 Modify Parameter.",
+      "FC16 is a diagnostic command that bypasses PLC alarm logic when used in maintenance mode.",
+      "The attack succeeded because FC08 first reset the PLC's alarm history register.",
+      "FC16 only executes after a matching confirmation message from the HMI supervisor."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "Two things happening: why no alarm fired (threshold raised, not crossed), and what technique changed the setpoint.",
+    "debrief": "FC16 (Write Multiple Registers) can write to any holding register including setpoints — no authentication, no write protection. By raising the alarm threshold, the attacker ensures the process runs hot without crossing the (now falsified) alarm boundary. This is T0836 Modify Parameter — changing configuration values to enable a later physical impact. Option B is wrong: FC16 is a standard write operation, not a diagnostic command, and Modbus has no maintenance mode. Option C invents an alarm reset mechanism that does not exist in standard Modbus. Option D is wrong: Modbus has no confirmation handshake for write commands.",
+    "sources": [
+      { "text": "MITRE ATT&CK for ICS — T0836 Modify Parameter", "url": "https://attack.mitre.org/techniques/T0836/" },
+      { "text": "Modbus Application Protocol Spec V1.1b3 §6.12", "url": "https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf" },
+      { "text": "CISA Advisory AA22-103A — INCONTROLLER", "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa22-103a" }
+    ]
+  }
+]

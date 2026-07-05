@@ -1,0 +1,3560 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="ghost">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OT CyberArena — External Community</title>
+<meta name="description" content="The global community for OT cybersecurity. Free. Vendor-neutral. AI-native.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- ═══════════════════════════════════════════════
+     THEME SYSTEM — 5 skins via CSS custom properties
+     Ghost Protocol is launch skin.
+     ═══════════════════════════════════════════════ -->
+<style>
+/* GHOST PROTOCOL (launch) */
+[data-theme="ghost"] {
+  --bg:       #050a05;
+  --surface:  #0a120a;
+  --surface2: #0f1a0f;
+  --surface3: #152015;
+  --border:   #1a2e1a;
+  --accent:   #00ff41;
+  --accent-dim: rgba(0,255,65,0.12);
+  --accent-glow: rgba(0,255,65,0.4);
+  --text:     #e8f5e8;
+  --muted:    #5a7a5a;
+  --red:      #ff4444;
+  --green:    #00ff41;
+  --mono:     'Share Tech Mono', monospace;
+  --display:  'Barlow Condensed', sans-serif;
+  --body:     'Barlow', sans-serif;
+  --radius:   2px;
+}
+
+/* STEEL GREEN */
+[data-theme="steel"] {
+  --bg:       #0e1117;
+  --surface:  #13191f;
+  --surface2: #1a2129;
+  --surface3: #202830;
+  --border:   #2a3441;
+  --accent:   #22c55e;
+  --accent-dim: rgba(34,197,94,0.12);
+  --accent-glow: rgba(34,197,94,0.4);
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --red:      #ef4444;
+  --green:    #22c55e;
+  --mono:     'Inter', sans-serif;
+  --display:  'Inter', sans-serif;
+  --body:     'Inter', sans-serif;
+  --radius:   4px;
+}
+
+/* CYBER STORM */
+[data-theme="storm"] {
+  --bg:       #0a0a1a;
+  --surface:  #0f0f22;
+  --surface2: #14142c;
+  --surface3: #1a1a36;
+  --border:   #252540;
+  --accent:   #00d4ff;
+  --accent-dim: rgba(0,212,255,0.12);
+  --accent-glow: rgba(0,212,255,0.4);
+  --text:     #e0e8ff;
+  --muted:    #5a6080;
+  --red:      #ff4466;
+  --green:    #00ff88;
+  --mono:     'Share Tech Mono', monospace;
+  --display:  'Barlow Condensed', sans-serif;
+  --body:     'Barlow', sans-serif;
+  --radius:   2px;
+}
+
+/* EMBER */
+[data-theme="ember"] {
+  --bg:       #120a00;
+  --surface:  #1c1000;
+  --surface2: #261600;
+  --surface3: #301c00;
+  --border:   #3d2800;
+  --accent:   #ff8c00;
+  --accent-dim: rgba(255,140,0,0.12);
+  --accent-glow: rgba(255,140,0,0.4);
+  --text:     #fff0d0;
+  --muted:    #7a5a30;
+  --red:      #ff4444;
+  --green:    #88ff44;
+  --mono:     'Share Tech Mono', monospace;
+  --display:  'Barlow Condensed', sans-serif;
+  --body:     'Barlow', sans-serif;
+  --radius:   2px;
+}
+
+/* FROST (light) */
+[data-theme="frost"] {
+  --bg:       #f0f4f8;
+  --surface:  #ffffff;
+  --surface2: #e8eef4;
+  --surface3: #dde5ed;
+  --border:   #c8d4e0;
+  --accent:   #0066cc;
+  --accent-dim: rgba(0,102,204,0.1);
+  --accent-glow: rgba(0,102,204,0.3);
+  --text:     #1a2a3a;
+  --muted:    #6a7a8a;
+  --red:      #cc2222;
+  --green:    #006622;
+  --mono:     'Inter', sans-serif;
+  --display:  'Inter', sans-serif;
+  --body:     'Inter', sans-serif;
+  --radius:   6px;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET + BASE
+   ═══════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* System-font fallback while webfonts load */
+@supports not (font-family: 'Share Tech Mono') {
+  :root { --mono: 'Courier New', monospace; }
+}
+
+/* ═══════════════════════════════════════════════
+   ARIA NEURAL NETWORK BACKGROUND
+   SVG full-bleed, low opacity — text legibility preserved
+   ═══════════════════════════════════════════════ */
+/* ── HEX GRID CANVAS BACKGROUND ── */
+#hexBg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  #hexBg { opacity: 0.06; }
+}
+
+/* ═══════════════════════════════════════════════
+   TOPBAR
+   ═══════════════════════════════════════════════ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 52px;
+  padding: 0 clamp(12px, 3vw, 28px);
+  padding-left: max(clamp(12px,3vw,28px), env(safe-area-inset-left));
+  padding-right: max(clamp(12px,3vw,28px), env(safe-area-inset-right));
+  background: rgba(5,10,5,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logo-mark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 0.08; }
+}
+
+.logo-text {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.logo-text .cyber { color: var(--accent); }
+
+.topbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  opacity: 0.8;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--accent); }
+  50%       { opacity: 0.3; box-shadow: none; }
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Player chip (shown when logged in) */
+.player-chip {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: var(--surface);
+  min-height: 36px;
+}
+
+.player-chip.visible { display: flex; }
+.player-chip .rank-chip {
+  color: var(--accent);
+  font-size: 10px;
+}
+
+/* Theme picker toggle */
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.theme-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Join / Login buttons */
+.btn-nav {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  padding: 0 16px;
+  height: 34px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-nav:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.btn-nav-ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 14px;
+  height: 34px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: background 0.15s;
+  white-space: nowrap;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-nav-ghost:hover { background: var(--accent-dim); }
+
+/* ═══════════════════════════════════════════════
+   THEME PANEL (dropdown)
+   ═══════════════════════════════════════════════ */
+.theme-panel {
+  display: none;
+  position: fixed;
+  top: 56px;
+  right: clamp(12px, 3vw, 28px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  z-index: 300;
+  min-width: 200px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+.theme-panel.open { display: block; }
+
+.theme-panel-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  transition: background 0.1s;
+  min-height: 44px;
+}
+
+.theme-option:hover { background: var(--surface2); }
+.theme-option.active { color: var(--accent); }
+
+.theme-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ═══════════════════════════════════════════════
+   HERO — DIRECTION B "SPLIT OPS"
+   Desktop/tablet: two columns
+   Mobile (<600px): game card FIRST, brand below
+   ═══════════════════════════════════════════════ */
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: clamp(24px, 4vw, 56px) clamp(12px, 3vw, 28px) clamp(32px, 5vw, 72px);
+  padding-left: max(clamp(12px,3vw,28px), env(safe-area-inset-left));
+  padding-right: max(clamp(12px,3vw,28px), env(safe-area-inset-right));
+  max-width: 1200px;
+  margin: 0 auto;
+  /* No grid — brand sits left, right side breathes */
+}
+
+/* ─── LEFT: Brand + ARIA ─── */
+.hero-brand {
+  max-width: 480px;
+  padding-top: 4px;
+}
+
+.aria-system-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  background: var(--accent-dim);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+
+.aria-system-tag::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: livePulse 1.8s ease-in-out infinite;
+}
+
+.hero-headline {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(32px, 4.5vw, 58px);
+  line-height: 1.0;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.hero-headline .ot    { color: var(--text); }
+.hero-headline .cyber { color: var(--accent); }
+.hero-headline .arena { color: var(--text); }
+
+/* Version stamp — shown inline below headline */
+.hero-version {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+
+.hero-tagline {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(12px, 1.4vw, 15px);
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.aria-voice {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.65;
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+  margin-bottom: 16px;
+  max-width: 460px;
+}
+
+.aria-voice .aria-prefix { color: var(--accent); }
+
+/* Stats row */
+.stats-row {
+  display: flex;
+  gap: clamp(14px, 2.5vw, 28px);
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.stat { display: flex; flex-direction: column; gap: 1px; }
+
+.stat-val {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(18px, 2.5vw, 24px);
+  line-height: 1;
+  color: var(--text);
+}
+
+.stat-val em { color: var(--accent); font-style: normal; }
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Feature pills (launch phase — replaces stats row) */
+.feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.feature-pill {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(0,255,65,0.3);
+  border-radius: 3px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+/* CTA buttons (desktop — below brand copy) */
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  padding: 14px 28px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: opacity 0.15s, transform 0.1s;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 14px 28px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: border-color 0.15s, color 0.15s;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ─── RIGHT: Featured Game Card ─── */
+/* .hero-game removed — game card now lives in .main-row col 1 */
+
+.game-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.game-card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.game-type-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: var(--radius);
+}
+
+.game-day-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.game-no-login {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.game-card-body {
+  padding: 18px;
+}
+
+/* Placeholder content — game engine injected in Chunk 2 */
+.game-placeholder {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.game-placeholder-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.game-placeholder-text {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════
+   MAIN CONTENT — below hero
+   ═══════════════════════════════════════════════ */
+.main {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(10px, 1.5vw, 20px) clamp(12px, 3vw, 28px);
+  padding-left: max(clamp(12px,3vw,28px), env(safe-area-inset-left));
+  padding-right: max(clamp(12px,3vw,28px), env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.8vw, 20px);
+}
+
+/* Row: Game card | Leaderboard | Intel (3 equal columns) */
+.main-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: clamp(12px, 1.8vw, 20px);
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .main-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .main-row { grid-template-columns: 1fr; }
+}
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── EPISODE BANK ─── */
+.episodes-section { width: 100%; }
+
+.episode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.episode-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+
+.episode-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s;
+}
+
+.episode-card:hover { border-color: rgba(0,255,65,0.3); transform: translateY(-2px); }
+.episode-card:hover::before { transform: scaleX(1); }
+
+.episode-card.locked { opacity: 0.6; cursor: default; }
+.episode-card.locked:hover { transform: none; border-color: var(--border); }
+.episode-card.locked::before { display: none; }
+
+.episode-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.episode-lock {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.episode-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.episode-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.episode-track-fa { color: #44aaff; }
+.episode-track-cp { color: var(--accent); }
+
+
+/* ─── GAME MODE TABS ─── */
+.game-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.game-tab {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 10px 4px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.game-tab:hover { color: var(--text); }
+.game-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ─── INTEL FEED ─── */
+.intel-section { width: 100%; }
+
+/* Intel items stacked vertically */
+.intel-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.intel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.intel-item {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: background 0.1s, border-color 0.15s;
+}
+.intel-item:hover { background: var(--surface2); border-color: rgba(0,255,65,0.2); }
+
+.intel-source-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.intel-source-tag::before {
+  content: '▶';
+  font-size: 8px;
+}
+
+.intel-headline {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.intel-date {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ─── LEADERBOARD ─── */
+.leaderboard-section { width: 100%; }
+
+.leaderboard-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.leaderboard-filter {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all 0.12s;
+  min-height: 32px;
+}
+
+.filter-btn.active, .filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.lb-rows { padding: 0; }
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.lb-row:last-child { border-bottom: none; }
+.lb-row:hover { background: var(--surface2); }
+
+.lb-pos {
+  font-family: var(--mono);
+  font-size: 11px;
+  min-width: 20px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.lb-pos.p1 { color: #ffd700; font-weight: bold; }
+.lb-pos.p2 { color: #c0c0c0; }
+.lb-pos.p3 { color: #cd7f32; }
+
+.lb-flag { font-size: 15px; flex-shrink: 0; }
+
+.lb-info { flex: 1; min-width: 0; }
+
+.lb-callsign {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lb-track-rank {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.lb-credits {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.lb-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════
+   MODAL OVERLAY — auth, registration
+   (populated in Chunk 2)
+   ═══════════════════════════════════════════════ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 400;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.modal-overlay.open {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  animation: slideUp 0.25s ease;
+  position: relative;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.modal-subtitle {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.modal-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.12s;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.modal-close:hover { border-color: var(--accent); color: var(--accent); }
+
+.modal-body { padding: 20px; }
+
+/* Form elements */
+.form-group { margin-bottom: 18px; }
+
+.form-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s;
+  min-height: 48px;
+  -webkit-appearance: none;
+}
+
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--muted); }
+
+/* PIN dots */
+.pin-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+
+.pin-dot.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* OTP input */
+.otp-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.otp-digit {
+  width: 48px;
+  height: 56px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 22px;
+  text-align: center;
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+
+.otp-digit:focus { border-color: var(--accent); }
+
+/* Progress steps */
+.reg-steps {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.reg-step {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.reg-step.done { background: var(--accent); }
+.reg-step.active { background: var(--accent); opacity: 0.5; }
+
+/* Select */
+.form-select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  min-height: 48px;
+  -webkit-appearance: none;
+}
+
+.form-select:focus { border-color: var(--accent); }
+
+/* Track selector */
+.track-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.track-card {
+  padding: 16px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.track-card:hover { border-color: rgba(0,255,65,0.4); }
+.track-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+
+.track-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.track-fa .track-label { color: #44aaff; }
+.track-cp .track-label { color: var(--accent); }
+
+.track-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Consent checkboxes */
+.consent-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.consent-check {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  margin-top: 1px;
+}
+
+.consent-check.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.consent-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.consent-text a { color: var(--accent); text-decoration: none; }
+.consent-text a:hover { text-decoration: underline; }
+
+/* ARIA message in modal */
+.aria-modal-msg {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+  margin-bottom: 18px;
+}
+
+.aria-modal-msg .aria-prefix { color: var(--accent); }
+
+/* Error / success state */
+.form-error {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 6px;
+  display: none;
+}
+
+.form-error.visible { display: block; }
+
+.form-success {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--green);
+  margin-top: 6px;
+  display: none;
+}
+
+.form-success.visible { display: block; }
+
+/* ═══════════════════════════════════════════════
+   SCORE FLASH OVERLAY
+   ═══════════════════════════════════════════════ */
+.score-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(60px, 12vw, 100px);
+  pointer-events: none;
+  z-index: 999;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s;
+}
+
+.score-flash.positive { color: var(--accent); text-shadow: 0 0 40px var(--accent-glow); }
+.score-flash.negative { color: var(--red);   text-shadow: 0 0 40px rgba(255,68,68,0.6); }
+.score-flash.show     { transform: translate(-50%,-50%) scale(1); }
+.score-flash.hide     { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+
+/* ═══════════════════════════════════════════════
+   REGISTER NUDGE (post-game)
+   ═══════════════════════════════════════════════ */
+.reg-nudge {
+  display: none;
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid rgba(0,255,65,0.25);
+  background: linear-gradient(135deg, rgba(0,255,65,0.05), rgba(0,255,65,0.02));
+  border-radius: var(--radius);
+  animation: fadeIn 0.35s ease;
+}
+
+.reg-nudge.show { display: block; }
+
+.reg-nudge-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.reg-nudge-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.reg-nudge-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ═══════════════════════════════════════════════
+   STREAK / RANK BAR (logged-in user)
+   ═══════════════════════════════════════════════ */
+.player-bar {
+  display: none;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px clamp(12px,3vw,28px);
+  z-index: 100;
+  position: relative;
+}
+
+.player-bar.visible {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.player-bar-item {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-bar-item .val { color: var(--text); font-weight: bold; }
+.player-bar-item .accent { color: var(--accent); }
+
+/* Rank progress bar */
+.rank-progress-wrap {
+  flex: 1;
+  min-width: 120px;
+  max-width: 220px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.rank-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), rgba(0,255,65,0.4));
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════ */
+footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--border);
+  padding: 18px clamp(12px,3vw,28px);
+  padding-left:  max(clamp(12px,3vw,28px), env(safe-area-inset-left));
+  padding-right: max(clamp(12px,3vw,28px), env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.footer-left {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.footer-left strong { color: var(--accent); }
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+
+.footer-link:hover { color: var(--accent); }
+
+.version-stamp {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--border);
+}
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════ */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ─── ARIA NEURAL NETWORK — full-bleed background ─── -->
+<canvas id="hexBg" aria-hidden="true"></canvas>
+
+
+
+<!-- ─── TOPBAR ─── -->
+<header class="topbar" role="banner">
+  <a href="/" class="logo" aria-label="OT CyberArena Home">
+    <div class="logo-mark" aria-hidden="true">OT</div>
+    <div class="logo-text">OT <span class="cyber">Cyber</span>Arena</div>
+  </a>
+
+  <div class="topbar-center" aria-hidden="true">
+    <div class="live-badge" id="liveCount">
+      <div class="live-dot"></div>
+      <span>LOADING...</span>
+    </div>
+  </div>
+
+  <div class="topbar-right">
+    <!-- Shown when logged in -->
+    <div class="player-chip" id="playerChip" role="button" tabindex="0" aria-label="Player profile">
+      <span id="chipCallsign">—</span>
+      <span class="rank-chip" id="chipRank">—</span>
+    </div>
+    <!-- Shown when logged out -->
+    <button class="btn-nav-ghost" id="btnLogin"  onclick="openModal('login')"   aria-label="Log in">LOG IN</button>
+    <button class="btn-nav"       id="btnJoin"   onclick="openModal('register')" aria-label="Join the arena">JOIN ARENA</button>
+    <!-- Theme picker -->
+    <button class="theme-btn" id="themeToggle" onclick="toggleThemePanel()" aria-label="Change theme" title="Change theme">🎨</button>
+  </div>
+</header>
+
+<!-- Player status bar (visible when logged in) -->
+<div class="player-bar" id="playerBar" role="complementary" aria-label="Player status">
+  <div class="player-bar-item">ARIA//</div>
+  <div class="player-bar-item">Credits: <span class="val accent" id="barCredits">0</span></div>
+  <div class="player-bar-item">Streak: <span class="val" id="barStreak">0</span>🔥</div>
+  <div class="player-bar-item">Shields: <span class="val" id="barShields">0</span>🛡</div>
+  <div class="player-bar-item">Rank: <span class="val accent" id="barRank">Trainee</span></div>
+  <div class="rank-progress-wrap" title="Progress to next rank">
+    <div class="rank-progress-bar" id="rankProgressBar" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- Theme panel -->
+<div class="theme-panel" id="themePanel" role="dialog" aria-label="Theme selector">
+  <div class="theme-panel-title">Select Skin</div>
+  <div class="theme-option active" data-theme="ghost"  onclick="setTheme('ghost')">
+    <div class="theme-swatch" style="background:#00ff41"></div>Ghost Protocol
+  </div>
+  <div class="theme-option" data-theme="steel"  onclick="setTheme('steel')">
+    <div class="theme-swatch" style="background:#22c55e"></div>Steel Green
+    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
+  </div>
+  <div class="theme-option" data-theme="storm"  onclick="setTheme('storm')">
+    <div class="theme-swatch" style="background:#00d4ff"></div>Cyber Storm
+    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
+  </div>
+  <div class="theme-option" data-theme="ember"  onclick="setTheme('ember')">
+    <div class="theme-swatch" style="background:#ff8c00"></div>Ember
+    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
+  </div>
+  <div class="theme-option" data-theme="frost"  onclick="setTheme('frost')">
+    <div class="theme-swatch" style="background:#0066cc"></div>Frost
+    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
+  </div>
+</div>
+
+<!-- ─── HERO — DIRECTION B SPLIT OPS ─── -->
+<main id="mainContent">
+<section class="hero" aria-label="OT CyberArena — Hero">
+
+  <!-- LEFT: Brand + ARIA voice -->
+  <div class="hero-brand">
+    <div class="aria-system-tag">ARIA THREAT INTELLIGENCE — ACTIVE</div>
+
+    <h1 class="hero-headline">
+      <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
+    </h1>
+
+    <div class="hero-version" id="heroVersion">EC v1.0.4 · 2026-06-06 · Ghost Protocol</div>
+
+    <p class="hero-tagline">The global community for OT security</p>
+
+    <div class="aria-voice">
+      <span class="aria-prefix">ARIA //</span>
+      Real-world ICS threats. Simulated. Gamified. Scored.<br>
+      No vendor agenda. No fluff. Just the scenarios that define the discipline.<br><br>
+      One challenge. No login required. See if you belong here.
+    </div>
+
+    <!-- LAUNCH PHASE: feature highlights replace live stats (restore stats-row when user base grows)
+    <div class="stats-row" id="statsRow">
+      <div class="stat"><div class="stat-val" id="statPlayers">—</div><div class="stat-label">Operatives</div></div>
+      <div class="stat"><div class="stat-val" id="statCountries">38</div><div class="stat-label">Countries</div></div>
+      <div class="stat"><div class="stat-val" id="statSolves">—</div><div class="stat-label">Challenges Solved</div></div>
+      <div class="stat"><div class="stat-val">63<em>%</em></div><div class="stat-label">First-Attempt Rate</div></div>
+    </div>
+    -->
+
+    <div class="feature-pills">
+      <span class="feature-pill">Free — Always</span>
+      <span class="feature-pill">New Challenge Daily</span>
+      <span class="feature-pill">OT / ICS Focused</span>
+      <span class="feature-pill">No Vendor Agenda</span>
+    </div>
+
+    <div class="hero-cta">
+      <button class="btn-primary" id="heroCTABtn" onclick="openModal('register')">Join Free — 30 Seconds</button>
+    </div>
+  </div>
+
+
+</section>
+
+<!-- ─── MAIN CONTENT ─── -->
+<div class="main">
+
+  <!-- ROW 1: GAME | LEADERBOARD | INTEL -->
+  <div class="main-row">
+
+    <!-- GAME CARD (col 1) -->
+    <div class="game-panel">
+  <!-- RIGHT: Featured Game Card (populated by game engine in Chunk 2) -->
+  <div class="hero-game">
+    <div class="game-card" id="featuredGameCard">
+      <div class="game-tabs" role="tablist" aria-label="Game mode">
+        <button class="game-tab active" id="tabMCQ" role="tab" aria-selected="true"
+                onclick="switchGameMode('mcq')">Daily MCQ</button>
+        <button class="game-tab" id="tabWordle" role="tab" aria-selected="false"
+                onclick="switchGameMode('cywordle')">OT Cywordle</button>
+      </div>
+      <div class="game-card-header">
+        <span class="game-type-badge" id="gameTypeBadge">LOADING...</span>
+        <span class="game-day-label" id="gameDayLabel">—</span>
+        <span class="game-no-login">✓ NO LOGIN</span>
+      </div>
+      <div class="game-card-body" id="gameCardBody">
+        <!-- MCQ or Cywordle engine rendered here by Chunk 2 JS -->
+        <div class="game-placeholder" id="gamePlaceholder">
+          <div class="game-placeholder-icon">⚙</div>
+          <div class="game-placeholder-text">
+            ARIA // Loading today's challenge...<br>
+            <span style="opacity:.5">Fetching daily queue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register nudge (shown after game attempt) -->
+    <div class="reg-nudge" id="regNudge" aria-live="polite">
+      <div class="reg-nudge-title" id="nudgeTitle">You belong here.</div>
+      <div class="reg-nudge-sub">Join <span id="nudgeCount">—</span> operatives on the global leaderboard. Free. Vendor-neutral. Always.</div>
+      <div class="reg-nudge-btns">
+        <button class="btn-primary" onclick="openModal('register')">Create Operative Profile</button>
+        <button class="btn-secondary" onclick="closeNudge()">Maybe Later</button>
+      </div>
+    </div>
+  </div>
+
+    </div>
+
+    <!-- LEADERBOARD (col 2) -->
+    <section class="leaderboard-section" aria-label="Global Leaderboard">
+      <div class="section-label">Global Leaderboard</div>
+    <div class="leaderboard-card">
+      <div class="leaderboard-filter" role="group" aria-label="Filter leaderboard">
+        <button class="filter-btn active" data-filter="all" onclick="filterLB(this,'all')">ALL OPERATIVES</button>
+      </div>
+      <div class="lb-rows" id="lbRows" role="list">
+        <!-- Populated by leaderboard engine in Chunk 2 -->
+        <div class="lb-row">
+          <div class="lb-pos p1">#1</div>
+          <div class="lb-flag">🇦🇺</div>
+          <div class="lb-info">
+            <div class="lb-callsign">GridWatch_AUS</div>
+            <div class="lb-track-rank">CP · Ghost in the Machine</div>
+          </div>
+          <div class="lb-credits">1,920</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-pos p2">#2</div>
+          <div class="lb-flag">🇸🇬</div>
+          <div class="lb-info">
+            <div class="lb-callsign">NullVector_SGS</div>
+            <div class="lb-track-rank">CP · Ghost in the Machine</div>
+          </div>
+          <div class="lb-credits">1,640</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-pos p3">#3</div>
+          <div class="lb-flag">🇺🇸</div>
+          <div class="lb-info">
+            <div class="lb-callsign">ThreatHunt_USS</div>
+            <div class="lb-track-rank">CP · Ghost in the Machine</div>
+          </div>
+          <div class="lb-credits">1,340</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-pos">#4</div>
+          <div class="lb-flag">🇯🇵</div>
+          <div class="lb-info">
+            <div class="lb-callsign">CyberSamurai_JPS</div>
+            <div class="lb-track-rank">CP · Threat Hunter</div>
+          </div>
+          <div class="lb-credits">1,180</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-pos">#5</div>
+          <div class="lb-flag">🇩🇪</div>
+          <div class="lb-info">
+            <div class="lb-callsign">SOCGuard_DES</div>
+            <div class="lb-track-rank">CP · SOC Analyst</div>
+          </div>
+          <div class="lb-credits">890</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-pos">#6</div>
+          <div class="lb-flag">🇮🇳</div>
+          <div class="lb-info">
+            <div class="lb-callsign">FieldOps_INS</div>
+            <div class="lb-track-rank">FA · Field Tech</div>
+          </div>
+          <div class="lb-credits">720</div>
+        </div>
+        <div class="lb-row">
+          <div class="lb-pos">#7</div>
+          <div class="lb-flag">🇬🇧</div>
+          <div class="lb-info">
+            <div class="lb-callsign">IronGrid_UKS</div>
+            <div class="lb-track-rank">FA · Field Tech</div>
+          </div>
+          <div class="lb-credits">540</div>
+        </div>
+      </div>
+      <div class="lb-footer">
+        <button class="btn-secondary" style="font-size:11px;padding:8px 16px;width:100%;"
+                onclick="openModal('register')">See Your Rank — Join Free</button>
+      </div>
+    </div>
+    </section>
+
+    <!-- THREAT INTEL FEED -->
+    <section class="intel-section" aria-label="Threat Intelligence Feed">
+      <div class="section-label">This Week's Threat Intel</div>
+      <div class="intel-grid" id="intelFeed">
+        <div class="intel-item">
+          <div class="intel-source-tag">CISA ICS-CERT</div>
+          <div class="intel-headline">Loading latest threat intelligence...</div>
+          <div class="intel-date">—</div>
+        </div>
+        <div class="intel-item">
+          <div class="intel-source-tag">CISA ICS-CERT</div>
+          <div class="intel-headline">Loading latest threat intelligence...</div>
+          <div class="intel-date">—</div>
+        </div>
+        <div class="intel-item">
+          <div class="intel-source-tag">CISA ICS-CERT</div>
+          <div class="intel-headline">Loading latest threat intelligence...</div>
+          <div class="intel-date">—</div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /main-row -->
+
+  <!-- ROW 2: EPISODE BANK (full width, 3 columns) -->
+  <section class="episodes-section" id="episodesSection" aria-label="Episode Bank">
+    <div class="section-label">Episode Bank — Season 1</div>
+<div class="episode-grid" id="episodeGrid">
+
+      <div class="episode-card" onclick="openEpisode('s1e1')" tabindex="0" role="button" aria-label="Episode 1: Ransomware on OT">
+        <div class="episode-tag">
+          <span>S1 · E1</span>
+        </div>
+        <div class="episode-title">Ransomware on OT Networks</div>
+        <div class="episode-meta">
+          <span class="episode-track-fa">FA · 20 challenges</span>
+          <span class="episode-track-cp">CP · 20 challenges</span>
+        </div>
+      </div>
+
+      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 2: OT Network Segmentation — login required">
+        <div class="episode-tag">
+          <span>S1 · E2</span>
+          <span class="episode-lock">🔒</span>
+        </div>
+        <div class="episode-title">OT Network Segmentation</div>
+        <div class="episode-meta">
+          <span class="episode-track-fa">FA · 20 challenges</span>
+          <span class="episode-track-cp">CP · 20 challenges</span>
+        </div>
+      </div>
+
+      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 3: Supply Chain and Remote Access — login required">
+        <div class="episode-tag">
+          <span>S1 · E3</span>
+          <span class="episode-lock">🔒</span>
+        </div>
+        <div class="episode-title">Supply Chain &amp; Remote Access</div>
+        <div class="episode-meta">
+          <span class="episode-track-fa">FA · 20 challenges</span>
+          <span class="episode-track-cp">CP · 20 challenges</span>
+        </div>
+      </div>
+
+      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 4: ICS Incident Response — login required">
+        <div class="episode-tag">
+          <span>S1 · E4</span>
+          <span class="episode-lock">🔒</span>
+        </div>
+        <div class="episode-title">ICS Incident Response</div>
+        <div class="episode-meta">
+          <span class="episode-track-fa">FA · 20 challenges</span>
+          <span class="episode-track-cp">CP · 20 challenges</span>
+        </div>
+      </div>
+
+      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 5: IEC 62443 Fundamentals — login required">
+        <div class="episode-tag">
+          <span>S1 · E5</span>
+          <span class="episode-lock">🔒</span>
+        </div>
+        <div class="episode-title">IEC 62443 Fundamentals</div>
+        <div class="episode-meta">
+          <span class="episode-track-fa">FA · 20 challenges</span>
+          <span class="episode-track-cp">CP · 20 challenges</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- /main -->
+</main>
+
+<!-- ─── SCORE FLASH ─── -->
+<div class="score-flash" id="scoreFlash" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- ═══════════════════════════════════════════════
+     MODALS — Registration + Login
+     Steps populated / shown/hidden by Chunk 2 JS
+     ═══════════════════════════════════════════════ -->
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="modalRegister" role="dialog" aria-modal="true" aria-labelledby="regModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="regModalTitle">Join the Arena</div>
+        <div class="modal-subtitle" id="regModalSubtitle">ARIA // One email. Thirty seconds. Zero vendor pitch.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('register')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Progress steps -->
+      <div class="reg-steps" id="regSteps" aria-label="Registration progress">
+        <div class="reg-step active"  id="regStep0"></div>
+        <div class="reg-step"         id="regStep1"></div>
+        <div class="reg-step"         id="regStep2"></div>
+        <div class="reg-step"         id="regStep3"></div>
+        <div class="reg-step"         id="regStep4"></div>
+        <div class="reg-step"         id="regStep5"></div>
+      </div>
+
+      <!-- STEP 0: Email -->
+      <div id="regStepEmail">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span> Enter your email to begin.
+          We'll send a 6-digit verification code — no password required.
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inputEmail">Email Address</label>
+          <input class="form-input" type="email" id="inputEmail" placeholder="operative@example.com"
+                 autocomplete="email" autocapitalize="off" inputmode="email" spellcheck="false"/>
+          <div class="form-error" id="emailError"></div>
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="sendOTP()">Send Verification Code</button>
+      </div>
+
+      <!-- STEP 1: OTP -->
+      <div id="regStepOTP" class="hidden">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span> Enter the 6-digit code sent to <strong id="otpEmailDisplay"></strong>.
+          Code expires in 10 minutes.
+        </div>
+        <div class="otp-row" role="group" aria-label="One-time password input">
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp0" aria-label="Digit 1"/>
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp1" aria-label="Digit 2"/>
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp2" aria-label="Digit 3"/>
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp3" aria-label="Digit 4"/>
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp4" aria-label="Digit 5"/>
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp5" aria-label="Digit 6"/>
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp6" aria-label="Digit 7"/>
+          <input class="otp-digit" type="tel" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp7" aria-label="Digit 8"/>
+        </div>
+        <div class="form-error" id="otpError"></div>
+        <div class="form-success" id="otpSuccess"></div>
+        <button class="btn-primary" style="width:100%;margin-top:12px" onclick="verifyOTP()">Verify Code</button>
+        <button class="btn-secondary" style="width:100%;margin-top:8px" onclick="sendOTP()">Resend Code</button>
+      </div>
+
+      <!-- STEP 2: Callsign -->
+      <div id="regStepCallsign" class="hidden">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span> Choose your operative callsign.
+          Visible on the global leaderboard. Suggested format: CountryCode_Word (e.g. SG_FieldOps).
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inputCallsign">Callsign</label>
+          <input class="form-input" type="text" id="inputCallsign" placeholder="SG_FieldOps"
+                 maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false"/>
+          <div class="form-error" id="callsignError"></div>
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="regNextCallsign()">Set Callsign</button>
+      </div>
+
+      <!-- STEP 3: Country -->
+      <div id="regStepCountry" class="hidden">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span> Select your country for the country leaderboard.
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inputCountry">Country</label>
+          <select class="form-select" id="inputCountry">
+            <option value="">— Select country —</option>
+            <option value="AU">Australia</option>
+            <option value="BR">Brazil</option>
+            <option value="CA">Canada</option>
+            <option value="CN">China</option>
+            <option value="DE">Germany</option>
+            <option value="IN">India</option>
+            <option value="ID">Indonesia</option>
+            <option value="JP">Japan</option>
+            <option value="MY">Malaysia</option>
+            <option value="NL">Netherlands</option>
+            <option value="NZ">New Zealand</option>
+            <option value="NG">Nigeria</option>
+            <option value="PH">Philippines</option>
+            <option value="SA">Saudi Arabia</option>
+            <option value="SG">Singapore</option>
+            <option value="ZA">South Africa</option>
+            <option value="KR">South Korea</option>
+            <option value="ES">Spain</option>
+            <option value="SE">Sweden</option>
+            <option value="TH">Thailand</option>
+            <option value="AE">United Arab Emirates</option>
+            <option value="GB">United Kingdom</option>
+            <option value="US">United States</option>
+            <option value="VN">Vietnam</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="regNextCountry()">Continue</button>
+      </div>
+
+      <!-- STEP 4: PIN -->
+      <div id="regStepPIN" class="hidden">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span> Set a 4-digit PIN for quick login.
+          You won't need to verify email again after this.
+        </div>
+        <div class="pin-row" id="pinDots" aria-label="PIN entry">
+          <div class="pin-dot" id="pd0"></div>
+          <div class="pin-dot" id="pd1"></div>
+          <div class="pin-dot" id="pd2"></div>
+          <div class="pin-dot" id="pd3"></div>
+        </div>
+        <div style="display:flex;gap:8px;max-width:280px;margin:0 auto;flex-wrap:wrap;justify-content:center;">
+          <input class="form-input" type="tel" id="inputPIN" maxlength="4"
+                 inputmode="numeric" pattern="[0-9]*" placeholder="Enter 4-digit PIN"
+                 style="text-align:center;letter-spacing:0.3em;font-size:18px;"
+                 oninput="updatePINDots()"/>
+        </div>
+        <div class="form-error" id="pinError"></div>
+        <button class="btn-primary" style="width:100%;margin-top:16px" onclick="regNextPIN()">Set PIN</button>
+      </div>
+
+      <!-- STEP 5: Consents + Track -->
+      <div id="regStepConsent" class="hidden">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span> Almost there — confirm two things before you enter the arena.
+        </div>
+
+        <div style="margin:16px 0;">
+          <div class="consent-item" onclick="toggleConsent('consentPrivacy')">
+            <div class="consent-check" id="consentPrivacy" role="checkbox" aria-checked="false" tabindex="0">✓</div>
+            <div class="consent-text">I agree to the <a href="#" onclick="return false">Privacy Policy</a>. Data used only for platform operation.</div>
+          </div>
+          <div class="consent-item" onclick="toggleConsent('consentAge')">
+            <div class="consent-check" id="consentAge" role="checkbox" aria-checked="false" tabindex="0">✓</div>
+            <div class="consent-text">I confirm I am 16 years of age or older.</div>
+          </div>
+        </div>
+
+        <div class="form-error" id="consentError"></div>
+        <button class="btn-primary" style="width:100%" onclick="completeRegistration()">Enter the Arena →</button>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="modalLogin" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="loginModalTitle">Welcome Back</div>
+        <div class="modal-subtitle">ARIA // Identity verification required.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('login')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Step A: Email recognition -->
+      <div id="loginStepEmail">
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <input class="form-input" type="email" id="loginEmail" placeholder="operative@example.com"
+                 autocomplete="email" autocapitalize="off" inputmode="email" spellcheck="false"/>
+          <div class="form-error" id="loginEmailError"></div>
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="loginLookup()">Continue</button>
+      </div>
+      <!-- Step B: PIN entry -->
+      <div id="loginStepPIN" class="hidden">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span>
+          Welcome back, <strong id="loginCallsignDisplay"></strong>. Enter your PIN.
+        </div>
+        <div class="pin-row" id="loginPinDots">
+          <div class="pin-dot" id="lpd0"></div>
+          <div class="pin-dot" id="lpd1"></div>
+          <div class="pin-dot" id="lpd2"></div>
+          <div class="pin-dot" id="lpd3"></div>
+        </div>
+        <input class="form-input" type="tel" id="loginPIN" maxlength="4"
+               inputmode="numeric" pattern="[0-9]*" placeholder="4-digit PIN"
+               style="text-align:center;letter-spacing:0.3em;font-size:18px;"
+               oninput="updateLoginPINDots()"/>
+        <div class="form-error" id="loginPINError"></div>
+        <button class="btn-primary" style="width:100%;margin-top:16px" onclick="loginWithPIN()">Enter Arena</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer role="contentinfo">
+  <div class="footer-left">
+    <strong>OT CyberArena</strong> · External Community · Free · Vendor-Neutral<br>
+    Sources: CISA · NIST SP 800-82 · IEC 62443 · Dragos · SANS ICS
+  </div>
+  <div class="footer-right">
+    <span class="footer-link" onclick="openModal('register')">Join Arena</span>
+    <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
+    <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
+    <span class="version-stamp" id="versionStamp">EC v1.0.0</span>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT — Theme, init, UI helpers
+     (Game engine + Auth + Supabase in Chunks 2 & 3)
+     ═══════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+'use strict';
+
+// ── VERSION ──────────────────────────────────────
+const EC_VERSION = '1.0.0';
+document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
+
+// ── THEME SYSTEM ─────────────────────────────────
+const THEMES = ['ghost','steel','storm','ember','frost'];
+
+function setTheme(name) {
+  if (!THEMES.includes(name)) name = 'ghost';
+  document.documentElement.setAttribute('data-theme', name);
+  localStorage.setItem('ec_theme', name);
+  // Update panel active state
+  document.querySelectorAll('.theme-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === name);
+  });
+  closeThemePanel();
+}
+
+function toggleThemePanel() {
+  document.getElementById('themePanel').classList.toggle('open');
+}
+
+function closeThemePanel() {
+  document.getElementById('themePanel').classList.remove('open');
+}
+
+// Close theme panel on outside click
+document.addEventListener('click', e => {
+  const panel  = document.getElementById('themePanel');
+  const toggle = document.getElementById('themeToggle');
+  if (!panel.contains(e.target) && e.target !== toggle) closeThemePanel();
+});
+
+// Load saved theme
+(function() {
+  const saved = localStorage.getItem('ec_theme') || 'ghost';
+  setTheme(saved);
+})();
+
+// ── MODAL SYSTEM ─────────────────────────────────
+function openModal(which) {
+  closeThemePanel();
+  document.getElementById('modal' + which.charAt(0).toUpperCase() + which.slice(1))
+          .classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Trap focus on first input
+  const modal = document.getElementById('modal' + which.charAt(0).toUpperCase() + which.slice(1));
+  const first = modal.querySelector('input, button');
+  if (first) setTimeout(() => first.focus(), 80);
+}
+
+function closeModal(which) {
+  document.getElementById('modal' + which.charAt(0).toUpperCase() + which.slice(1))
+          .classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+});
+
+// ESC closes modals
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => {
+      m.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  }
+});
+
+// ── REGISTRATION STEP HELPERS ─────────────────────
+// (Logic wired by Chunk 2 — stubs here to avoid JS errors)
+let regData = { email:'', callsign:'', country:'', pin:'', track:'', consents:{} };
+let regCurrentStep = 0;
+const REG_STEPS = ['regStepEmail','regStepOTP','regStepCallsign','regStepCountry','regStepPIN','regStepConsent'];
+
+function showRegStep(idx) {
+  REG_STEPS.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden', i !== idx);
+    const step = document.getElementById('regStep' + i);
+    if (step) {
+      step.classList.remove('done','active');
+      if (i < idx) step.classList.add('done');
+      if (i === idx) step.classList.add('active');
+    }
+  });
+  regCurrentStep = idx;
+}
+
+function openEpisode(id) {
+  if (!currentPlayer) { openModal('register'); return; }
+  // Episode player wired in future session
+  alert('ARIA // Episode ' + id + ' — coming in next build.');
+}
+
+function updatePINDots() {
+  const val = document.getElementById('inputPIN').value;
+  for (let i=0;i<4;i++) {
+    document.getElementById('pd'+i).classList.toggle('filled', i < val.length);
+  }
+}
+
+function updateLoginPINDots() {
+  const val = document.getElementById('loginPIN').value;
+  for (let i=0;i<4;i++) {
+    document.getElementById('lpd'+i).classList.toggle('filled', i < val.length);
+  }
+}
+
+let selectedTrack = '';
+function selectTrack(track) {
+  selectedTrack = track;
+  document.getElementById('trackFA').classList.toggle('selected', track==='FA');
+  document.getElementById('trackCP').classList.toggle('selected', track==='CP');
+  document.getElementById('trackFA').setAttribute('aria-checked', track==='FA');
+  document.getElementById('trackCP').setAttribute('aria-checked', track==='CP');
+  if (track === 'CP') {
+    // Show calibration gate in Chunk 2
+  }
+}
+
+const consentState = { consentPrivacy: false, consentAge: false };
+function toggleConsent(id) {
+  consentState[id] = !consentState[id];
+  const el = document.getElementById(id);
+  el.classList.toggle('checked', consentState[id]);
+  el.setAttribute('aria-checked', consentState[id]);
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('visible', !!msg);
+}
+
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('visible', !!msg);
+}
+
+// ── LEADERBOARD FILTER ────────────────────────────
+function filterLB(btn, filter) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Full filter logic in Chunk 2
+}
+
+// ── NUDGE ─────────────────────────────────────────
+function showNudge(correct) {
+  const nudge = document.getElementById('regNudge');
+  const title = document.getElementById('nudgeTitle');
+  title.textContent = correct
+    ? 'ARIA // Correct — threat neutralised. You belong here.'
+    : 'ARIA // Not quite. Join to track your progress and improve.';
+  nudge.classList.add('show');
+}
+
+function closeNudge() {
+  document.getElementById('regNudge').classList.remove('show');
+}
+
+// ── SCORE FLASH ───────────────────────────────────
+function scoreFlash(value, positive) {
+  const el = document.getElementById('scoreFlash');
+  el.textContent = (positive ? '+' : '') + value;
+  el.className = 'score-flash ' + (positive ? 'positive' : 'negative') + ' show';
+  setTimeout(() => { el.classList.add('hide'); }, 1100);
+  setTimeout(() => { el.className = 'score-flash'; }, 1400);
+}
+
+// ── SCROLL HELPER ─────────────────────────────────
+function scrollToEpisodes() {
+  document.getElementById('episodesSection').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ── LIVE COUNT (launch phase — real count wired from Supabase when ready) ───
+function initLiveCount() {
+  // LAUNCH: no fake numbers — show season status only
+  // Restore real Supabase count here once user base grows
+  document.getElementById('liveCount').innerHTML =
+    '<div class="live-dot"></div><span>SEASON 1 — NOW LIVE</span>';
+  // nudgeCount used in reg-nudge; leave as empty dash until real data
+  const nudge = document.getElementById('nudgeCount');
+  if (nudge) nudge.textContent = 'a growing community of';
+}
+
+// ── EASTER EGG ────────────────────────────────────
+let easterEggActive = false;
+function toggleEasterEgg() {
+  easterEggActive = !easterEggActive;
+  document.getElementById('easterEgg').textContent = easterEggActive
+    ? 'Imagined by Sandip · Built by ARIA'
+    : 'Powered by AI';
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHUNK 2 — GAME ENGINE + AUTH FLOW + SCORING
+// ═══════════════════════════════════════════════════════════
+
+// ── CONSTANTS ─────────────────────────────────────
+const RANKS = [
+  { name:'Trainee',           min:0,    max:499  },
+  { name:'Field Tech',        min:500,  max:749  },
+  { name:'SOC Analyst',       min:750,  max:999  },
+  { name:'Threat Hunter',     min:1000, max:1499 },
+  { name:'Ghost in the Machine', min:1500, max:Infinity }
+];
+
+const STREAK_BONUS = { 3: 15, 7: 50 };
+const CREDITS_MCQ  = { first:40, second:32, hint:20, wrong:-8 };
+const CREDITS_WORDLE = { solve:40, fail:-8 };
+
+function getRank(credits) {
+  return RANKS.find(r => credits >= r.min && credits <= r.max) || RANKS[0];
+}
+
+function getRankProgress(credits) {
+  const rank = getRank(credits);
+  if (rank.max === Infinity) return 100;
+  return Math.round(((credits - rank.min) / (rank.max - rank.min)) * 100);
+}
+
+// ── PLAYER STATE ──────────────────────────────────
+// Persisted in localStorage; overwritten on Supabase login in Chunk 3
+const STORAGE_KEY = 'ec_player';
+
+function loadPlayer() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; }
+  catch { return null; }
+}
+
+function savePlayer(p) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+}
+
+function clearPlayer() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+let currentPlayer = loadPlayer();
+
+function updatePlayerUI() {
+  const loggedIn = !!currentPlayer;
+  document.getElementById('btnLogin').classList.toggle('hidden', loggedIn);
+  document.getElementById('btnJoin').classList.toggle('hidden', loggedIn);
+  document.getElementById('playerChip').classList.toggle('visible', loggedIn);
+  document.getElementById('playerBar').classList.toggle('visible', loggedIn);
+  if (loggedIn) {
+    const p = currentPlayer;
+    const rank = getRank(p.credits || 0);
+    document.getElementById('chipCallsign').textContent = p.callsign || '—';
+    document.getElementById('chipRank').textContent     = rank.name;
+    document.getElementById('barCredits').textContent   = (p.credits||0).toLocaleString();
+    document.getElementById('barStreak').textContent    = p.current_streak || 0;
+    document.getElementById('barShields').textContent   = p.shields || 0;
+    document.getElementById('barRank').textContent      = rank.name;
+    document.getElementById('rankProgressBar').style.width = getRankProgress(p.credits||0) + '%';
+    const cta = document.getElementById('heroCTABtn');
+    if (cta) { cta.textContent = "\u25b6 Play Today's Challenge"; cta.onclick = () => document.getElementById("featuredGameCard")?.scrollIntoView({behavior:"smooth"}); }
+  } else {
+    const cta = document.getElementById('heroCTABtn');
+    if (cta) { cta.textContent = "Join Free — 30 Seconds"; cta.onclick = () => openModal("register"); }
+  }
+}
+
+// ── LOCAL FILE DETECTION ──────────────────────────
+const IS_LOCAL = location.protocol === 'file:';
+
+// ── SUPABASE CONFIG ──────────────────────────────────────────────
+const SUPABASE_URL  = 'https://obqqbfvrnkwkgucqdqad.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icXFiZnZybmt3a2d1Y3FkcWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MjU2NDUsImV4cCI6MjA5NjMwMTY0NX0.I5KjNSrEgF4fZ3jlYqgGj-TVIeQo5XKCQAcK8RHPnzs';
+const sb = IS_LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── DAILY QUEUE ───────────────────────────────────
+let todayQueue = null;
+
+async function loadDailyQueue() {
+  if (!IS_LOCAL) {
+    try {
+      const res  = await fetch('daily_queue.json?v=' + Date.now());
+      const data = await res.json();
+      const today = new Date().toISOString().slice(0,10);
+      todayQueue = data.find(d => d.date === today) || data[0];
+    } catch { todayQueue = STUB_DAILY_QUEUE; }
+  } else {
+    todayQueue = STUB_DAILY_QUEUE;
+  }
+  renderGame();
+}
+
+// ── STUB DAILY QUEUE (fallback if no file) ────────
+const STUB_DAILY_QUEUE = {
+  date: new Date().toISOString().slice(0,10),
+  game_type: 'mcq_daily',
+  challenge_id: 'ec_s1e1_fa1',
+  day_label: getDayLabel()
+};
+
+function getDayLabel() {
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const types = {
+    0:'Cywordle Sunday', 1:'MCQ Monday', 2:'True/False Tuesday',
+    3:'MCQ Wednesday', 4:'Drag-Match Thursday', 5:'MCQ Friday', 6:'Word Search Saturday'
+  };
+  return types[new Date().getDay()] || 'Daily Challenge';
+}
+
+// ── STUB MCQ CHALLENGE ────────────────────────────
+// Real challenges loaded from challenges/ JSON in Chunk 3 session
+const STUB_MCQ = {
+  id: "ec_s1e1_fa1",
+  game_type: "mcq_daily",
+  season: 1, episode: 1,
+  credits: 40,
+  lang: "en",
+  concept_brief: "Active network scanning injects packets to enumerate devices. In OT environments, PLCs and RTUs were never designed to handle unsolicited traffic — the result can be unexpected state changes or reboots. CISA recommends passive-only discovery on live OT networks.",
+  question: "A water treatment facility’s OT network has experienced intermittent PLC faults since a contractor performed a “network discovery scan” last Tuesday. The contractor insists their tool is industry standard. Which statement best explains the likely root cause?",
+  options: [
+    "The PLC firmware is outdated and incompatible with modern scanning protocols — version compatibility should have been checked beforehand.",
+    "Active network scanning sends unsolicited packets that OT devices like PLCs were not designed to handle, which can cause unexpected state changes or reboots — passive monitoring should have been used instead.",
+    "The contractor’s scanning tool was misconfigured and sent malformed packets.",
+    "The PLC faults are coincidental and unrelated to the scan timing."
+  ],
+  correctIdx: 1,
+  debrief: "Active scanners send ARP requests, SYN packets, and ICMP probes to enumerate devices. OT devices — especially older PLCs — were never designed to handle unsolicited network traffic at scale. Results range from missed scan cycles to full device restart. CISA recommends passive-only network discovery for all live OT environments.",
+  source: "CISA — ICS Security Fundamentals | NIST SP 800-82 Rev 3 §5.3"
+};
+
+// Hint for FA track (concept brief revealed)
+const STUB_MCQ_HINT = 'Consider what active scanning actually does to the network versus passive listening.';
+
+// ── STUB CYWORDLE DATA ────────────────────────────
+const STUB_WORDLE = {
+  word: 'SCADA',
+  clue: 'Supervisory Control and Data Acquisition — the software layer that monitors and controls industrial processes.'
+};
+
+const OT_WORDS_BANK = [
+  // 6-letter
+  { word:'PURDUE', clue:'Reference model for ICS network segmentation' },
+  { word:'MODBUS', clue:'Serial communication protocol standard in OT' },
+  { word:'TRITON', clue:'Malware targeting Safety Instrumented Systems (2017)' },
+  { word:'DRAGOS', clue:'OT-focused threat intelligence company' },
+  { word:'LADDER', clue:'PLC programming language using relay ladder logic' },
+  { word:'LEGACY', clue:'Older OT system no longer receiving security patches' },
+  { word:'BOTNET', clue:'Network of compromised devices under attacker control' },
+  { word:'SENSOR', clue:'Device measuring physical process variables in OT' },
+  { word:'VECTOR', clue:'Path or method used to gain unauthorized system access' },
+  { word:'BREACH', clue:'Unauthorized access to or exfiltration from a system' },
+  { word:'TUNNEL', clue:'Encrypted channel for secure remote communications' },
+  { word:'HARDEN', clue:'Reduce attack surface by removing unnecessary exposure' },
+  { word:'CANARY', clue:'Decoy or honeypot used to detect attacker activity' },
+  // 5-letter
+  { word:'SCADA', clue:'Supervisory Control and Data Acquisition system' },
+  { word:'VLANS', clue:'Multiple virtual networks for OT/IT segmentation' },
+  { word:'OSINT', clue:'Open-source intelligence gathering technique' },
+  { word:'PATCH', clue:'Software fix applied to address a known vulnerability' },
+  { word:'WIPER', clue:'Malware designed to permanently destroy target data' },
+  // 4-letter
+  { word:'VLAN', clue:'Virtual Local Area Network for segment isolation' },
+  { word:'ZONE', clue:'Security zone as defined by IEC 62443' },
+  { word:'WORM', clue:'Self-propagating malicious code requiring no user action' },
+];
+
+// ── MCQ ENGINE ────────────────────────────────────
+let mcqState = {
+  challenge: null,
+  attempt: 0,       // 0=first, 1=second
+  hintUsed: false,
+  answered: false,
+  correct: false
+};
+
+function renderMCQ(challenge) {
+  mcqState = { challenge, attempt:0, hintUsed:false, answered:false, correct:false };
+
+  const body = document.getElementById('gameCardBody');
+  body.innerHTML = `
+    <div id="mcqWrap">
+      <div class="mcq-meta" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <span class="game-type-badge" style="font-size:9px">+${challenge.credits} CREDITS</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">ATTEMPT 1 OF 2</span>
+        <span id="mcqAttemptLabel" style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto"></span>
+      </div>
+
+      <div class="mcq-concept" id="mcqConcept" style="display:none;
+           background:var(--accent-dim);border-left:2px solid var(--accent);
+           padding:10px 14px;margin-bottom:14px;
+           font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6;border-radius:var(--radius)">
+        <span style="color:var(--accent)">ARIA // BRIEF —</span>
+        ${challenge.concept_brief || ''}
+      </div>
+
+      <div class="mcq-question" style="font-size:15px;line-height:1.55;margin-bottom:18px;color:var(--text)">
+        ${challenge.question}
+      </div>
+
+      <div class="mcq-options" id="mcqOptions" style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px">
+        ${challenge.options.map((opt,i) => `
+          <button class="mcq-opt" data-idx="${i}" onclick="selectMCQ(this,${i})"
+            style="background:var(--surface2);border:1px solid var(--border);
+                   padding:13px 16px;text-align:left;cursor:pointer;
+                   font-family:var(--body);font-size:13px;color:var(--text);
+                   display:flex;align-items:flex-start;gap:12px;
+                   transition:all 0.15s;border-radius:var(--radius);
+                   min-height:48px;width:100%"
+            onmouseover="if(!this.classList.contains('mcq-locked'))this.style.borderColor='rgba(0,255,65,0.4)'"
+            onmouseout="if(!this.classList.contains('mcq-locked')&&!this.classList.contains('mcq-correct')&&!this.classList.contains('mcq-wrong'))this.style.borderColor='var(--border)'">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--muted);
+                         min-width:18px;padding-top:1px;text-transform:uppercase">${'ABCD'[i]}</span>
+            <span>${opt}</span>
+          </button>`).join('')}
+      </div>
+
+      <div id="mcqFeedback" style="display:none;padding:14px;margin-bottom:14px;border-radius:var(--radius);animation:fadeIn .3s ease"></div>
+
+      <div id="mcqActions" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="mcqHint" onclick="useMCQHint()"
+          style="background:transparent;border:1px solid var(--border);color:var(--muted);
+                 padding:10px 16px;font-family:var(--display);font-weight:600;font-size:12px;
+                 letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+                 border-radius:var(--radius);min-height:44px;transition:all .15s"
+          onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          💡 Hint (−50%)
+        </button>
+        <button id="mcqGiveUp" onclick="giveUpMCQ()"
+          style="background:transparent;border:1px solid var(--border);color:var(--muted);
+                 padding:10px 16px;font-family:var(--display);font-weight:600;font-size:12px;
+                 letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+                 border-radius:var(--radius);min-height:44px;transition:all .15s"
+          onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          Give Up (−8)
+        </button>
+      </div>
+
+      <div id="mcqPostActions" style="display:none;margin-top:12px;display:none;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="openModal('register')" style="flex:1;min-width:160px">
+            Join Free — Save Score
+          </button>
+          <button onclick="shareMCQ()"
+            style="background:#0a66c2;color:#fff;border:none;padding:12px 16px;
+                   font-family:var(--display);font-weight:700;font-size:12px;
+                   text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
+                   display:flex;align-items:center;gap:6px;min-height:48px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            Share
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  // Show concept brief on FA track (always show for guests/FA)
+  if (!challenge.track || challenge.track === 'FA') {
+    // Show brief by default for FA; hidden for CP
+  }
+}
+
+function selectMCQ(btn, idx) {
+  if (mcqState.answered) return;
+  const ch = mcqState.challenge;
+  const opts = document.querySelectorAll('.mcq-opt');
+  opts.forEach(o => {
+    o.classList.add('mcq-locked');
+    o.style.cursor = 'default';
+    o.style.pointerEvents = 'none';
+  });
+
+  const isCorrect = idx === ch.correctIdx;
+
+  if (isCorrect) {
+    mcqState.answered = true;
+    mcqState.correct  = true;
+    btn.style.borderColor = 'var(--green)';
+    btn.style.background  = 'rgba(0,255,65,0.06)';
+    btn.querySelector('span').style.color = 'var(--green)';
+
+    const earned = mcqState.hintUsed ? CREDITS_MCQ.hint : CREDITS_MCQ.first;
+    showMCQFeedback(true, earned,
+      'ARIA // Correct — threat neutralised.',
+      ch.debrief, ch.source);
+    scoreFlash(earned, true);
+    applyCredits(earned);
+    setTimeout(() => showNudge(true), 1800);
+  } else {
+    // Mark wrong
+    btn.style.borderColor = 'var(--red)';
+    btn.style.background  = 'rgba(255,68,68,0.06)';
+    btn.querySelectorAll('span')[0].style.color = 'var(--red)';
+
+    if (mcqState.attempt === 0 && !mcqState.hintUsed) {
+      // Second chance
+      mcqState.attempt = 1;
+      document.getElementById('mcqAttemptLabel').textContent = 'ATTEMPT 2 OF 2';
+      // Re-enable remaining options
+      opts.forEach(o => {
+        if (o !== btn) {
+          o.classList.remove('mcq-locked');
+          o.style.cursor = 'pointer';
+          o.style.pointerEvents = '';
+        }
+      });
+      showMCQFeedback(false, 0,
+        'ARIA // Not quite. One more attempt.',
+        'Think carefully — one option is clearly wrong. Consider the operational impact.', '');
+    } else {
+      // Final wrong
+      mcqState.answered = true;
+      mcqState.correct  = false;
+      // Reveal correct
+      opts[ch.correctIdx].style.borderColor = 'var(--green)';
+      opts[ch.correctIdx].style.background  = 'rgba(0,255,65,0.06)';
+      const earned = CREDITS_MCQ.wrong;
+      showMCQFeedback(false, earned,
+        'ARIA // Breach uncontained.',
+        ch.debrief, ch.source);
+      scoreFlash(earned, false);
+      applyCredits(earned);
+      setTimeout(() => showNudge(false), 1600);
+    }
+  }
+
+  if (mcqState.answered) {
+    document.getElementById('mcqActions').style.display    = 'none';
+    document.getElementById('mcqPostActions').style.display = 'flex';
+    recordSolve('mcq_daily', ch.id, mcqState.correct ? 'correct' : 'wrong',
+                mcqState.correct ? (mcqState.hintUsed ? CREDITS_MCQ.hint : CREDITS_MCQ.first) : CREDITS_MCQ.wrong);
+  }
+}
+
+function showMCQFeedback(correct, credits, ariaMsg, debrief, source) {
+  const el = document.getElementById('mcqFeedback');
+  const color = correct ? 'var(--green)' : 'var(--red)';
+  const border = correct ? 'rgba(0,255,65,0.25)' : 'rgba(255,68,68,0.25)';
+  el.style.display     = 'block';
+  el.style.border      = `1px solid ${border}`;
+  el.style.borderLeft  = `3px solid ${color}`;
+  el.style.background  = correct ? 'rgba(0,255,65,0.04)' : 'rgba(255,68,68,0.04)';
+  el.innerHTML = `
+    <div style="font-family:var(--display);font-weight:700;font-size:16px;
+                letter-spacing:.05em;text-transform:uppercase;color:${color};margin-bottom:5px">
+      ${correct ? '✓ THREAT NEUTRALISED' : '✗ BREACH UNCONTAINED'}
+      ${credits !== 0 ? `<span style="font-size:13px"> ${credits > 0 ? '+' : ''}${credits} CR</span>` : ''}
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">${ariaMsg}</div>
+    ${debrief ? `<div style="font-size:13px;color:var(--text);line-height:1.55;margin-bottom:8px">${debrief}</div>` : ''}
+    ${source  ? `<div style="font-family:var(--mono);font-size:10px;color:var(--muted);
+                              border-top:1px solid var(--border);padding-top:8px">${source}</div>` : ''}`;
+}
+
+function useMCQHint() {
+  if (mcqState.answered || mcqState.hintUsed) return;
+  mcqState.hintUsed = true;
+  document.getElementById('mcqHint').style.opacity = '0.4';
+  document.getElementById('mcqHint').disabled = true;
+  // Reveal concept brief
+  const brief = document.getElementById('mcqConcept');
+  if (brief) { brief.style.display = 'block'; brief.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+  // Second attempt message
+  document.getElementById('mcqAttemptLabel').textContent = 'HINT USED — MAX +20 CR';
+}
+
+function giveUpMCQ() {
+  if (mcqState.answered) return;
+  mcqState.answered = true;
+  mcqState.correct  = false;
+  const ch = mcqState.challenge;
+  // Lock all options, reveal correct
+  document.querySelectorAll('.mcq-opt').forEach((o,i) => {
+    o.classList.add('mcq-locked');
+    o.style.cursor = 'default';
+    o.style.pointerEvents = 'none';
+    if (i === ch.correctIdx) {
+      o.style.borderColor = 'var(--green)';
+      o.style.background  = 'rgba(0,255,65,0.06)';
+    }
+  });
+  showMCQFeedback(false, CREDITS_MCQ.wrong,
+    'ARIA // Conceded. Here\'s the debrief —',
+    ch.debrief, ch.source);
+  scoreFlash(CREDITS_MCQ.wrong, false);
+  applyCredits(CREDITS_MCQ.wrong);
+  document.getElementById('mcqActions').style.display     = 'none';
+  document.getElementById('mcqPostActions').style.display = 'flex';
+  recordSolve('mcq_daily', ch.id, 'giveup', CREDITS_MCQ.wrong);
+  setTimeout(() => showNudge(false), 1600);
+}
+
+function shareMCQ() {
+  const correct = mcqState.correct;
+  const text = encodeURIComponent(
+    `I just tested my OT cybersecurity knowledge on OT CyberArena — the free, vendor-neutral ICS security challenge platform.\n\n` +
+    (correct ? '✅ Correct on the first attempt!' : '📚 Learned something new today.') +
+    `\n\nhttps://otcyberarena.com\n\n#OTSecurity #ICSCybersecurity #OTCyberArena`
+  );
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://otcyberarena.com&summary=${text}`, '_blank');
+  logEvent('share_click', { game_type: 'mcq_daily' });
+}
+
+// ── CYWORDLE ENGINE ───────────────────────────────
+let wordleState = {
+  word: '',
+  clue: '',
+  guesses: [],
+  currentGuess: '',
+  maxGuesses: 6,
+  solved: false,
+  failed: false
+};
+
+function renderCywordle(wordData) {
+  const word = wordData.word.toUpperCase();
+  wordleState = { word, clue:wordData.clue, guesses:[], currentGuess:'', maxGuesses:6, solved:false, failed:false };
+  const wordLen = word.length;
+
+  const body = document.getElementById('gameCardBody');
+  body.innerHTML = `
+    <div id="wordleWrap">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.5">
+        ARIA // Guess the OT security term in 6 attempts.<br>
+        <span style="color:var(--accent)">■</span> Correct position &nbsp;
+        <span style="color:#ffaa00">■</span> Wrong position &nbsp;
+        <span style="color:var(--muted)">■</span> Not in word
+      </div>
+
+      <div id="wordleGrid" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px">
+        ${Array.from({length:6}, (_,r) => `
+          <div class="wordle-row" id="wrow${r}" style="display:flex;gap:4px">
+            ${Array.from({length:wordLen}, (_,c) => `
+              <div class="wordle-cell" id="wc${r}_${c}"
+                style="width:clamp(32px,calc(100%/${wordLen} - 4px),48px);height:clamp(32px,7vw,48px);
+                       border:2px solid var(--border);background:var(--surface2);
+                       display:flex;align-items:center;justify-content:center;
+                       font-family:var(--mono);font-size:clamp(14px,4vw,20px);font-weight:bold;
+                       color:var(--text);border-radius:var(--radius);transition:all .15s;
+                       text-transform:uppercase"></div>`).join('')}
+          </div>`).join('')}
+      </div>
+
+      <div id="wordleMessage" style="font-family:var(--mono);font-size:11px;
+           color:var(--muted);min-height:18px;margin-bottom:10px;text-align:center"></div>
+
+      <div id="wordleInput" style="display:flex;gap:8px;margin-bottom:14px">
+        <input id="wordleGuessInput" type="text"
+          maxlength="${wordLen}" autocomplete="off" autocorrect="off" autocapitalize="characters"
+          spellcheck="false" placeholder="${wordLen}-letter OT term"
+          style="flex:1;background:var(--surface2);border:1px solid var(--border);
+                 color:var(--text);font-family:var(--mono);font-size:16px;
+                 padding:12px 14px;border-radius:var(--radius);outline:none;
+                 text-transform:uppercase;letter-spacing:.12em;min-height:48px;
+                 transition:border-color .15s"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')submitWordleGuess()"/>
+        <button onclick="submitWordleGuess()"
+          style="background:var(--accent);color:var(--bg);border:none;
+                 padding:0 18px;font-family:var(--display);font-weight:700;font-size:13px;
+                 letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+                 border-radius:var(--radius);min-height:48px;transition:opacity .15s"
+          onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">GUESS</button>
+      </div>
+
+      <div id="wordleKeyboard" style="display:flex;flex-direction:column;gap:4px;user-select:none">
+        ${['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].map(row => `
+          <div style="display:flex;gap:3px;justify-content:center;flex-wrap:nowrap">
+            ${row.split('').map(l => `
+              <button class="wk-key" data-letter="${l}" onclick="wordleKeyPress('${l}')"
+                style="background:var(--surface3);border:1px solid var(--border);color:var(--text);
+                       min-width:clamp(26px,7vw,36px);height:36px;font-family:var(--mono);
+                       font-size:clamp(10px,2.5vw,13px);font-weight:bold;cursor:pointer;
+                       border-radius:var(--radius);transition:all .15s;flex-shrink:0;
+                       min-height:36px">${l}</button>`).join('')}
+            ${row === 'ZXCVBNM' ? `
+              <button onclick="wordleBackspace()"
+                style="background:var(--surface3);border:1px solid var(--border);color:var(--text);
+                       padding:0 10px;height:36px;font-family:var(--mono);font-size:11px;
+                       cursor:pointer;border-radius:var(--radius);transition:all .15s;min-height:36px">⌫</button>` : ''}
+          </div>`).join('')}
+      </div>
+
+      <div id="wordlePost" style="display:none;margin-top:14px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="openModal('register')" style="flex:1;min-width:160px">
+            Join Free — Save Score
+          </button>
+          <button onclick="shareWordle()"
+            style="background:#0a66c2;color:#fff;border:none;padding:12px 16px;
+                   font-family:var(--display);font-weight:700;font-size:12px;
+                   text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
+                   display:flex;align-items:center;gap:6px;min-height:48px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            Share
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('wordleGuessInput').focus();
+}
+
+function wordleKeyPress(letter) {
+  if (wordleState.solved || wordleState.failed) return;
+  const wl = wordleState.word.length;
+  if (wordleState.currentGuess.length < wl) {
+    wordleState.currentGuess += letter;
+    document.getElementById('wordleGuessInput').value = wordleState.currentGuess;
+    updateWordleCurrentRow();
+  }
+}
+
+function wordleBackspace() {
+  if (wordleState.solved || wordleState.failed) return;
+  wordleState.currentGuess = wordleState.currentGuess.slice(0,-1);
+  document.getElementById('wordleGuessInput').value = wordleState.currentGuess;
+  updateWordleCurrentRow();
+}
+
+function updateWordleCurrentRow() {
+  const row = wordleState.guesses.length;
+  const wl  = wordleState.word.length;
+  const g   = wordleState.currentGuess.padEnd(wl,' ');
+  for (let c=0;c<wl;c++) {
+    const cell = document.getElementById(`wc${row}_${c}`);
+    if (cell) cell.textContent = g[c].trim();
+  }
+}
+
+function submitWordleGuess() {
+  if (wordleState.solved || wordleState.failed) return;
+  const input = document.getElementById('wordleGuessInput');
+  const raw   = (input.value || wordleState.currentGuess).toUpperCase().trim();
+  const wl    = wordleState.word.length;
+
+  if (raw.length !== wl) {
+    setWordleMessage(`ARIA // Enter a ${wl}-letter OT term.`, 'var(--muted)');
+    input.style.borderColor = 'var(--red)';
+    setTimeout(()=>input.style.borderColor='var(--border)',800);
+    return;
+  }
+
+  const guess = raw.slice(0, wl);
+  const rowIdx = wordleState.guesses.length;
+  const target = wordleState.word;
+
+  // Score guess
+  const result = scoreWordleGuess(guess, target);
+  wordleState.guesses.push({ guess, result });
+  wordleState.currentGuess = '';
+  input.value = '';
+
+  // Render row
+  renderWordleRow(rowIdx, guess, result);
+
+  // Update keyboard colours
+  updateWordleKeyboard(guess, result);
+
+  const solved = result.every(r => r === 'correct');
+  const failed = !solved && wordleState.guesses.length >= wordleState.maxGuesses;
+
+  if (solved) {
+    wordleState.solved = true;
+    const earned = CREDITS_WORDLE.solve;
+    setWordleMessage(`ARIA // Correct — ${target}. Threat neutralised. +${earned} CR`, 'var(--green)');
+    scoreFlash(earned, true);
+    applyCredits(earned);
+    document.getElementById('wordleInput').style.display = 'none';
+    setTimeout(()=>{ document.getElementById('wordlePost').style.display='block'; showNudge(true); }, 1000);
+    recordSolve('cywordle', `cyw_${target.toLowerCase()}`, 'correct', earned);
+  } else if (failed) {
+    wordleState.failed = true;
+    const earned = CREDITS_WORDLE.fail;
+    setWordleMessage(`ARIA // The word was: ${target}. ${wordleState.clue}`, 'var(--red)');
+    scoreFlash(earned, false);
+    applyCredits(earned);
+    document.getElementById('wordleInput').style.display = 'none';
+    setTimeout(()=>{ document.getElementById('wordlePost').style.display='block'; showNudge(false); }, 1000);
+    recordSolve('cywordle', `cyw_${target.toLowerCase()}`, 'wrong', earned);
+  } else {
+    const remaining = wordleState.maxGuesses - wordleState.guesses.length;
+    setWordleMessage(`ARIA // ${remaining} attempt${remaining!==1?'s':''} remaining.`, 'var(--muted)');
+  }
+}
+
+function scoreWordleGuess(guess, target) {
+  const result  = Array(target.length).fill('absent');
+  const tArr    = target.split('');
+  const used    = Array(target.length).fill(false);
+  // Pass 1: correct positions
+  for (let i=0;i<target.length;i++) {
+    if (guess[i] === tArr[i]) { result[i]='correct'; used[i]=true; }
+  }
+  // Pass 2: present but wrong position
+  for (let i=0;i<target.length;i++) {
+    if (result[i]==='correct') continue;
+    const j = tArr.findIndex((l,k)=>l===guess[i]&&!used[k]);
+    if (j!==-1) { result[i]='present'; used[j]=true; }
+  }
+  return result;
+}
+
+function renderWordleRow(rowIdx, guess, result) {
+  const wl = wordleState.word.length;
+  for (let c=0;c<wl;c++) {
+    const cell = document.getElementById(`wc${rowIdx}_${c}`);
+    if (!cell) continue;
+    cell.textContent = guess[c];
+    const colors = {
+      correct: { bg:'rgba(0,255,65,0.25)', border:'var(--green)', color:'var(--text)' },
+      present: { bg:'rgba(255,170,0,0.25)', border:'#ffaa00',      color:'var(--text)' },
+      absent:  { bg:'var(--surface3)',      border:'var(--muted)',  color:'var(--muted)' }
+    };
+    const s = colors[result[c]] || colors.absent;
+    cell.style.background   = s.bg;
+    cell.style.borderColor  = s.border;
+    cell.style.color        = s.color;
+    // Flip animation
+    cell.style.transform = 'rotateX(90deg)';
+    setTimeout(()=>{ cell.style.transform='rotateX(0deg)'; }, c * 80);
+  }
+}
+
+function updateWordleKeyboard(guess, result) {
+  const wl    = wordleState.word.length;
+  // priority: correct > present > absent (lower index = higher priority)
+  const RANK = { correct:0, present:1, absent:2 };
+  for (let i = 0; i < wl; i++) {
+    const btn = document.querySelector(`.wk-key[data-letter="${guess[i]}"]`);
+    if (!btn) continue;
+    const current = btn.dataset.status || '';
+    const newRank = RANK[result[i]] ?? 99;
+    const curRank = RANK[current]  ?? 99;
+    // Only upgrade (correct > present > absent); never downgrade
+    if (newRank < curRank) {
+      btn.dataset.status = result[i];
+      const kColors = {
+        correct: { bg:'rgba(0,255,65,0.35)',  border:'var(--accent)', color:'var(--text)'  },
+        present: { bg:'rgba(255,170,0,0.30)', border:'#ffaa00',       color:'var(--text)'  },
+        absent:  { bg:'rgba(255,255,255,0.06)', border:'var(--muted)', color:'var(--muted)' }
+      };
+      const ks = kColors[result[i]];
+      btn.style.background  = ks.bg;
+      btn.style.borderColor = ks.border;
+      btn.style.color       = ks.color;
+      btn.style.transition  = 'background 0.3s, border-color 0.3s, color 0.3s';
+    }
+  }
+}
+
+function setWordleMessage(msg, color) {
+  const el = document.getElementById('wordleMessage');
+  if (!el) return;
+  el.textContent  = msg;
+  el.style.color  = color || 'var(--muted)';
+}
+
+function shareWordle() {
+  const emojiMap = { correct:'🟩', present:'🟨', absent:'⬛' };
+  const rows = wordleState.guesses.map(g =>
+    g.result.map(r => emojiMap[r]||'⬛').join('')
+  ).join('\n');
+  const status = wordleState.solved
+    ? `Solved in ${wordleState.guesses.length}/${wordleState.maxGuesses}`
+    : 'Did not solve today';
+  const text = encodeURIComponent(
+    `OT Cywordle — ${status}\n${rows}\n\nhttps://otcyberarena.com #OTSecurity #OTCyberArena`
+  );
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://otcyberarena.com&summary=${text}`, '_blank');
+  logEvent('share_click', { game_type: 'cywordle' });
+}
+
+// ── RENDER GAME (dispatcher) ──────────────────────
+function renderGame() {
+  const q = todayQueue || STUB_DAILY_QUEUE;
+  const badge = document.getElementById('gameTypeBadge');
+  const dayLbl = document.getElementById('gameDayLabel');
+  if (badge)  badge.textContent  = q.game_type === 'cywordle' ? 'OT CYWORDLE' : 'DAILY MCQ';
+  if (dayLbl) dayLbl.textContent = q.day_label || getDayLabel();
+
+  // Remove placeholder
+  const ph = document.getElementById('gamePlaceholder');
+  if (ph) ph.remove();
+
+  const tabM = document.getElementById('tabMCQ');
+  const tabW = document.getElementById('tabWordle');
+  if (q.game_type === 'cywordle') {
+    if (tabM) { tabM.classList.remove('active'); tabM.setAttribute('aria-selected','false'); }
+    if (tabW) { tabW.classList.add('active');    tabW.setAttribute('aria-selected','true'); }
+    // Pick today's word from bank by day-of-year index
+    const doy = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+    const wordData = OT_WORDS_BANK[doy % OT_WORDS_BANK.length];
+    currentWordData = wordData;
+    renderCywordle(wordData);
+  } else {
+    if (tabM) { tabM.classList.add('active');    tabM.setAttribute('aria-selected','true'); }
+    if (tabW) { tabW.classList.remove('active'); tabW.setAttribute('aria-selected','false'); }
+    // Default: MCQ — load challenge JSON or fall back to stub
+    currentMCQId = q.challenge_id || 'ec_s1e1_fa1';
+    loadChallengeAndRender(currentMCQId);
+  }
+}
+
+async function loadChallengeAndRender(id) {
+  if (IS_LOCAL) { renderMCQ(STUB_MCQ); return; }
+  try {
+    const [season, ep, track] = parseChallId(id);
+    const res = await fetch(`challenges/ec_s${season}e${ep}_${track}.json`);
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    const ch = data.find(c => c.id === id) || data[0];
+    renderMCQ(ch);
+  } catch {
+    renderMCQ(STUB_MCQ);
+  }
+}
+
+function parseChallId(id) {
+  // ec_s1e1_fa1 → [1,1,'fa']
+  const m = id.match(/ec_s(\d+)e(\d+)_(fa|cp)/i);
+  return m ? [m[1], m[2], m[3].toLowerCase()] : ['1','1','fa'];
+}
+
+// ── INTEL FEED ────────────────────────────────────
+async function loadIntelFeed() {
+  if (IS_LOCAL) { renderIntelFeed(STUB_INTEL); return; }
+  try {
+    const res   = await fetch('intel_feed.json?v=' + Date.now());
+    const items = await res.json();
+    renderIntelFeed(items);
+  } catch {
+    renderIntelFeed(STUB_INTEL);
+  }
+}
+
+const STUB_INTEL = [
+  { source:'CISA ICS-CERT', headline:'Rockwell Automation RSLinx Classic — stack-based buffer overflow allows remote code execution (ICSA-26-167-02)', date:'2026-06-16', url:'https://www.cisa.gov/news-events/ics-advisories/icsa-26-167-02' },
+  { source:'Dragos Intelligence', headline:'2026 OT threat landscape: ransomware groups doubled, adversaries now actively mapping industrial control loops', date:'2026-03-24', url:'https://www.dragos.com/blog/ot-threat-landscape-2026' },
+  { source:'ENISA', headline:'NIS2 implementation: EU member states expanding obligations to OT operators in critical infrastructure sectors', date:'2026-01-16', url:'https://www.enisa.europa.eu/topics/cybersecurity-policy/nis-directive-new' }
+];
+
+function renderIntelFeed(items) {
+  const feed = document.getElementById('intelFeed');
+  if (!feed || !items?.length) return;
+  feed.innerHTML = items.map(item => `
+    <div class="intel-item" onclick="window.open('${item.url||'#'}','_blank')"
+         style="cursor:${item.url?'pointer':'default'}">
+      <div class="intel-source-tag">${item.source}</div>
+      <div class="intel-headline">${item.headline}</div>
+      <div class="intel-date">${item.date || ''}</div>
+    </div>`).join('');
+}
+
+// ── LEADERBOARD ───────────────────────────────────
+// Seed data — real data from Supabase in Chunk 3
+const SEED_PLAYERS = [
+  { callsign:'GridWatch_AUS',    track:'CP', credits:1920, country:'AU', rank:'Ghost in the Machine' },
+  { callsign:'NullVector_SGS',   track:'CP', credits:1640, country:'SG', rank:'Ghost in the Machine' },
+  { callsign:'ThreatHunt_USS',   track:'CP', credits:1340, country:'US', rank:'Ghost in the Machine' },
+  { callsign:'CyberSamurai_JPS', track:'CP', credits:1180, country:'JP', rank:'Threat Hunter' },
+  { callsign:'SOCGuard_DES',     track:'CP', credits:890,  country:'DE', rank:'SOC Analyst' },
+  { callsign:'FieldOps_INS',     track:'FA', credits:720,  country:'IN', rank:'Field Tech' },
+  { callsign:'IronGrid_UKS',     track:'FA', credits:540,  country:'GB', rank:'Field Tech' }
+];
+
+const FLAG_MAP = {
+  AU:'🇦🇺',SG:'🇸🇬',US:'🇺🇸',JP:'🇯🇵',DE:'🇩🇪',IN:'🇮🇳',GB:'🇬🇧',
+  CA:'🇨🇦',FR:'🇫🇷',NL:'🇳🇱',MY:'🇲🇾',NZ:'🇳🇿',KR:'🇰🇷',TH:'🇹🇭',CN:'🇨🇳'
+};
+
+let lbData = [...SEED_PLAYERS];  // fallback until Supabase loads
+let lbFilter = 'all';
+
+async function loadLeaderboard() {
+  if (IS_LOCAL) { lbData = [...SEED_PLAYERS]; renderLeaderboard(); return; }
+  try {
+    const { data, error } = await sb.from('leaderboard')
+      .select('callsign,country,track,credits,current_streak')
+      .order('credits', { ascending: false })
+      .limit(20);
+    if (error || !data?.length) { lbData = [...SEED_PLAYERS]; }
+    else {
+      lbData = data.map(p => ({
+        callsign: p.callsign,
+        track:    p.track?.toUpperCase() || 'FA',
+        credits:  p.credits || 0,
+        country:  p.country || 'XX',
+        rank:     getRank(p.credits || 0),
+        streak:   p.current_streak || 0
+      }));
+    }
+  } catch (e) {
+    lbData = [...SEED_PLAYERS];
+  }
+  renderLeaderboard();
+}
+
+function filterLB(btn, filter) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  lbFilter = filter;
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const rows = lbData
+    .filter(p => lbFilter === 'all' || p.track.toLowerCase() === lbFilter)
+    .sort((a,b) => b.credits - a.credits)
+    .slice(0,10);
+
+  const container = document.getElementById('lbRows');
+  if (!container) return;
+  container.innerHTML = rows.map((p,i) => {
+    const rank = getRank(p.credits);
+    const pos  = i+1;
+    const posClass = pos===1?'p1':pos===2?'p2':pos===3?'p3':'';
+    return `
+      <div class="lb-row" role="listitem">
+        <div class="lb-pos ${posClass}">#${pos}</div>
+        <div class="lb-flag">${FLAG_MAP[p.country]||'🌍'}</div>
+        <div class="lb-info">
+          <div class="lb-callsign">${p.callsign}</div>
+          <div class="lb-track-rank">${p.track} · ${rank.name}</div>
+        </div>
+        <div class="lb-credits">${p.credits.toLocaleString()}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── SCORING + PLAYER CREDITS ──────────────────────
+async function applyCredits(delta) {
+  if (!currentPlayer) return;
+  const newAmount = Math.max(0, (currentPlayer.credits || 0) + delta);
+  currentPlayer.credits = newAmount;
+  savePlayer(currentPlayer);
+  updatePlayerUI();
+  if (!IS_LOCAL && currentPlayer.id && !currentPlayer.id.startsWith('local_')) {
+    await sb.from('credits').upsert(
+      { player_id: currentPlayer.id, amount: newAmount, reason: 'game_score' },
+      { onConflict: 'player_id' }
+    );
+  }
+}
+
+// ── SOLVE RECORD (stub — Supabase insert in Chunk 3) ─
+async function recordSolve(gameType, challengeId, outcome, creditsEarned) {
+  if (!currentPlayer?.id) return;
+  if (!IS_LOCAL && !currentPlayer.id.startsWith('local_')) {
+    await sb.from('solves').insert({
+      player_id:        currentPlayer.id,
+      challenge_id:     challengeId,
+      challenge_id_text: challengeId,
+      outcome:          outcome,
+      credits_earned:   creditsEarned,
+      game_type:        gameType
+    });
+  }
+}
+
+async function logEvent(eventType, metadata) {
+  if (!IS_LOCAL) {
+    await sb.from('events').insert({
+      event_type: eventType,
+      player_id:  currentPlayer?.id || null,
+      metadata:   metadata || {}
+    });
+  }
+}
+
+// ── AUTH FLOW — EMAIL OTP + PIN ───────────────────
+// Stubs replaced with real Supabase calls in Chunk 3
+
+async function sendOTP() {
+  const email = document.getElementById('inputEmail').value.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showError('emailError', 'ARIA // Enter a valid email address.');
+    return;
+  }
+  regData.email = email;
+  showError('emailError', '');
+  if (!IS_LOCAL) {
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+    if (error) { showError('emailError', 'ARIA // ' + error.message); return; }
+  }
+  document.getElementById('otpEmailDisplay').textContent = email;
+  showRegStep(1);
+  setTimeout(()=>document.getElementById('otp0')?.focus(), 100);
+}
+
+async function verifyOTP() {
+  const code = ['otp0','otp1','otp2','otp3','otp4','otp5','otp6','otp7'].map(id=>document.getElementById(id)?.value||'').join('');
+  if (code.length !== 8 || !/^\d{8}$/.test(code)) {
+    showError('otpError', 'ARIA // Enter all 6 digits.');
+    return;
+  }
+  regData.otp = code;
+  showError('otpError','');
+  if (!IS_LOCAL) {
+    const { error } = await sb.auth.verifyOtp({ email: regData.email, token: code, type: 'email' });
+    if (error) { showError('otpError', 'ARIA // ' + error.message); return; }
+  }
+  showSuccess('otpSuccess','ARIA // Email verified. Setting up your profile —');
+  setTimeout(()=>showRegStep(2), 600);
+}
+
+function regNextCallsign() {
+  const cs = document.getElementById('inputCallsign').value.trim();
+  if (cs.length < 3) { showError('callsignError','ARIA // Callsign must be at least 3 characters.'); return; }
+  if (cs.length > 24) { showError('callsignError','ARIA // Callsign too long — max 24 characters.'); return; }
+  if (!/^[A-Za-z0-9_]+$/.test(cs)) { showError('callsignError','ARIA // Letters, numbers, and underscores only.'); return; }
+  regData.callsign = cs;
+  showError('callsignError','');
+  showRegStep(3);
+}
+
+function regNextCountry() {
+  const country = document.getElementById('inputCountry').value;
+  if (!country) { showError('countryError','ARIA // Select your country.'); return; }
+  regData.country = country;
+  showRegStep(4);
+  setTimeout(()=>document.getElementById('inputPIN')?.focus(), 100);
+}
+
+function regNextPIN() {
+  const pin = document.getElementById('inputPIN').value;
+  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    showError('pinError','ARIA // Enter exactly 4 digits.');
+    return;
+  }
+  regData.pin = pin;
+  showError('pinError','');
+  showRegStep(5);
+}
+
+async function completeRegistration() {
+  if (!consentState.consentPrivacy) { showError('consentError','ARIA // Accept the Privacy Policy to continue.'); return; }
+  if (!consentState.consentAge)     { showError('consentError','ARIA // Confirm you are 16 or older.'); return; }
+  regData.track = 'fa';
+  await finaliseRegistration();
+}
+
+function renderGate() {
+  const questions = [
+    { q:'In OT security, what does "passive scanning" mean?',
+      opts:['Scanning all ports in sequence','Listening to network traffic without sending any packets','Scanning only after hours','Using a VPN to scan'],
+      correct:1 },
+    { q:'Which standard defines zone-and-conduit security architecture for ICS?',
+      opts:['ISO 27001','NIST CSF','IEC 62443','NERC CIP'],
+      correct:2 },
+    { q:'What is the PRIMARY operational risk of patching firmware on a live OT device?',
+      opts:['License invalidation','Increased power consumption','Unexpected device behaviour or downtime in a live process','Network bandwidth increase'],
+      correct:2 }
+  ];
+  const container = document.getElementById('gateQuestions');
+  container.innerHTML = questions.map((q,qi) => `
+    <div style="margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text);margin-bottom:8px;line-height:1.5">${qi+1}. ${q.q}</div>
+      ${q.opts.map((opt,oi) => `
+        <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;cursor:pointer;min-height:36px">
+          <input type="radio" name="gate${qi}" value="${oi}"
+                 style="margin-top:3px;accent-color:var(--accent)"/>
+          <span style="font-size:12px;color:var(--muted);font-family:var(--mono)">${opt}</span>
+        </label>`).join('')}
+    </div>`).join('');
+  container._answers = questions.map(q => q.correct);
+}
+
+async function checkGate() {
+  const container = document.getElementById('gateQuestions');
+  const correct   = container._answers;
+  let pass = true;
+  for (let i=0;i<3;i++) {
+    const sel = document.querySelector(`input[name="gate${i}"]:checked`);
+    if (!sel || parseInt(sel.value) !== correct[i]) { pass=false; break; }
+  }
+  if (!pass) {
+    showError('gateError','ARIA // Not all correct. Review and retry — unlimited attempts.');
+    return;
+  }
+  regData.track = 'CP';
+  regData.cp_qualified = true;
+  await finaliseRegistration();
+}
+
+async function finaliseRegistration() {
+  const newPlayer = {
+    id:           'local_' + Date.now(),
+    email:        regData.email,
+    callsign:     regData.callsign,
+    country:      regData.country,
+    track:        regData.track,
+    pin:          regData.pin,
+    credits:      0,
+    current_streak: 0,
+    longest_streak: 0,
+    shields:      0,
+    cp_qualified: regData.cp_qualified || false
+  };
+
+  if (!IS_LOCAL) {
+    // Get the authenticated user from Supabase (set after verifyOTP)
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) newPlayer.id = user.id;
+
+    // Insert player row
+    const { error: pErr } = await sb.from('players').insert({
+      id:          newPlayer.id,
+      email:       newPlayer.email,
+      callsign:    newPlayer.callsign,
+      track:       newPlayer.track,
+      country:     newPlayer.country,
+      pin:         newPlayer.pin,
+      cp_qualified: newPlayer.cp_qualified,
+      type:        'real'
+    });
+    if (pErr && pErr.code !== '23505') { // 23505 = unique violation (already exists)
+      console.warn('Player insert error:', pErr.message);
+    }
+
+    // Insert credits row (0 starting balance)
+    const { error: cErr } = await sb.from('credits').upsert({
+      player_id: newPlayer.id,
+      amount:    0,
+      reason:    'registration'
+    }, { onConflict: 'player_id' });
+    if (cErr) console.warn('Credits insert error:', cErr.message);
+  }
+
+  savePlayer(newPlayer);
+  currentPlayer = newPlayer;
+  updatePlayerUI();
+  closeModal('register');
+  logEvent('registration_complete', { track: newPlayer.track, country: newPlayer.country });
+}
+
+
+async function loginLookup() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showError('loginEmailError','ARIA // Enter a valid email address.');
+    return;
+  }
+  let callsign = null;
+  let playerId = null;
+
+  if (!IS_LOCAL) {
+    const { data, error } = await sb.from('players')
+      .select('id, callsign, pin, track, country, cp_qualified, current_streak')
+      .eq('email', email)
+      .eq('type', 'real')
+      .maybeSingle();
+    if (error || !data) {
+      showError('loginEmailError','ARIA // No account found for that email. Register first.');
+      return;
+    }
+    callsign = data.callsign;
+    playerId = data.id;
+    // Stash for PIN step
+    window._loginData = data;
+  } else {
+    const saved = loadPlayer();
+    if (!saved || saved.email !== email) {
+      showError('loginEmailError','ARIA // No account found. Register first.');
+      return;
+    }
+    callsign = saved.callsign;
+    window._loginData = saved;
+  }
+
+  document.getElementById('loginCallsignDisplay').textContent = callsign;
+  document.getElementById('loginStepEmail').classList.add('hidden');
+  document.getElementById('loginStepPIN').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('loginPIN')?.focus(), 100);
+}
+
+
+async function loginWithPIN() {
+  const pin = document.getElementById('loginPIN').value;
+  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    showError('loginPINError','ARIA // Enter your 4-digit PIN.'); return;
+  }
+  const data = window._loginData;
+  if (!data) { showError('loginPINError','ARIA // Session expired. Try again.'); return; }
+
+  if (pin !== data.pin) {
+    showError('loginPINError','ARIA // Incorrect PIN.'); return;
+  }
+
+  let credits = 0;
+  if (!IS_LOCAL && data.id) {
+    const { data: cRow } = await sb.from('credits')
+      .select('amount').eq('player_id', data.id).maybeSingle();
+    credits = cRow?.amount || 0;
+    // Update last_seen_at
+    await sb.from('players').update({ last_seen_at: new Date().toISOString() }).eq('id', data.id);
+  } else {
+    credits = loadPlayer()?.credits || 0;
+  }
+
+  const p = {
+    id:             data.id || 'local_' + Date.now(),
+    email:          data.email || '',
+    callsign:       data.callsign,
+    track:          data.track,
+    country:        data.country,
+    cp_qualified:   data.cp_qualified,
+    pin:            data.pin,
+    credits,
+    current_streak: data.current_streak || 0,
+    longest_streak: data.longest_streak || 0,
+    shields:        data.shields || 0
+  };
+  savePlayer(p);
+  currentPlayer = p;
+  updatePlayerUI();
+  closeModal('login');
+  logEvent('login', { callsign: p.callsign });
+}
+
+// ── HEX GRID THREAT BACKGROUND ────────────────────────────────
+function initHexBg() {
+  const canvas = document.getElementById('hexBg');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, hexes = [];
+  const SIZE = 24;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildGrid();
+  }
+
+  function buildGrid() {
+    hexes = [];
+    const cols = Math.ceil(W / (SIZE * 1.75)) + 2;
+    const rows = Math.ceil(H / (SIZE * 1.5))  + 2;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = col * SIZE * 1.75 - SIZE;
+        const y = row * SIZE * 1.5 + (col % 2 ? SIZE * 0.75 : 0) - SIZE;
+        hexes.push({
+          x, y,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.004 + Math.random() * 0.012,
+          amp:   0.3   + Math.random() * 0.7,
+          threat: false, threatLife: 0, threatPhase: 'idle', threatTick: 0
+        });
+      }
+    }
+  }
+
+  function hexPath(x, y, s) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a  = Math.PI / 3 * i - Math.PI / 6;
+      const px = x + (s - 1.5) * Math.cos(a);
+      const py = y + (s - 1.5) * Math.sin(a);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  }
+
+  // Threat spawner: 1-3 dots every ~10 s, never overlapping
+  let t = 0;
+  let spawnCountdown = 90; // ~1.5 s at 60 fps (fast first appearance)
+  const FADE_IN = 50, HOLD = 80, FADE_OUT = 80; // frames
+
+  function spawnThreats() {
+    const count = 1 + Math.floor(Math.random() * 3);
+    const idle  = hexes.map((h, i) => i).filter(i => !hexes[i].threat && !hexes[i].covered);
+    if (!idle.length) return;
+    for (let n = 0; n < count && idle.length; n++) {
+      const pick = idle.splice(Math.floor(Math.random() * idle.length), 1)[0];
+      hexes[pick].threat = true;
+      hexes[pick].threatPhase = 'in';
+      hexes[pick].threatTick  = 0;
+      hexes[pick].threatLife  = 0;
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    t++;
+
+    // Threat spawn timer
+    spawnCountdown--;
+    if (spawnCountdown <= 0) {
+      spawnThreats();
+      spawnCountdown = 100 + Math.floor(Math.random() * 80); // ~1.5-3 s jitter
+    }
+
+    hexes.forEach(h => {
+      // Green wave hex (always drawn)
+      const wave = (Math.sin(h.phase + t * h.speed) * h.amp * 0.5) + 0.5;
+      hexPath(h.x, h.y, SIZE);
+      ctx.strokeStyle = `rgba(0,255,65,${(wave * 0.22 + 0.04).toFixed(3)})`;
+      ctx.fillStyle   = `rgba(0,255,65,${(wave * 0.05).toFixed(3)})`;
+      ctx.lineWidth   = 0.5;
+      ctx.fill();
+      ctx.stroke();
+
+      // Threat dot overlay
+      if (h.threat) {
+        h.threatTick++;
+        if      (h.threatPhase === 'in'   && h.threatTick >= FADE_IN)   { h.threatPhase = 'hold'; h.threatTick = 0; }
+        else if (h.threatPhase === 'hold' && h.threatTick >= HOLD)      { h.threatPhase = 'out';  h.threatTick = 0; }
+        else if (h.threatPhase === 'out'  && h.threatTick >= FADE_OUT)  { h.threat = false; h.threatPhase = 'idle'; h.threatTick = 0; }
+
+        if (h.threatPhase === 'in')   h.threatLife = h.threatTick / FADE_IN;
+        if (h.threatPhase === 'hold') h.threatLife = 1;
+        if (h.threatPhase === 'out')  h.threatLife = 1 - h.threatTick / FADE_OUT;
+
+        if (h.threat) {
+          const a = h.threatLife;
+          // Tiny dot — 3 px radius
+          ctx.beginPath();
+          ctx.arc(h.x, h.y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(210,35,35,${a.toFixed(3)})`;
+          ctx.fill();
+          // Faint glow ring
+          ctx.beginPath();
+          ctx.arc(h.x, h.y, 6, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(210,35,35,${(a * 0.15).toFixed(3)})`;
+          ctx.fill();
+        }
+      }
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  // Mark hexes that sit under UI panels — threat dots only appear in margins
+  function markCoveredHexes() {
+    const uiTargets = ['.navbar', '.hero-brand', '.game-panel', '.hero-rank-bar',
+                       '.leaderboard-card', '.intel-item', '.episode-card',
+                       '.score-module', '.hero-cta'];
+    const rects = uiTargets
+      .flatMap(s => [...document.querySelectorAll(s)])
+      .filter(Boolean)
+      .map(el => el.getBoundingClientRect());
+    hexes.forEach(h => {
+      h.covered = rects.some(r =>
+        h.x > r.left - 10 && h.x < r.right + 10 &&
+        h.y > r.top  - 10 && h.y < r.bottom + 10
+      );
+    });
+  }
+
+  resize();
+  window.addEventListener('resize', () => { resize(); setTimeout(markCoveredHexes, 60); });
+  draw();
+  setTimeout(markCoveredHexes, 250); // after first paint
+}
+
+
+// ── GAME MODE SWITCHER ────────────────────────────────
+let currentMCQId   = null;  // remembered for tab switching
+let currentWordData = null; // remembered for Cywordle tab
+
+function switchGameMode(mode) {
+  const tabMCQ    = document.getElementById('tabMCQ');
+  const tabWordle = document.getElementById('tabWordle');
+  if (tabMCQ)    { tabMCQ.classList.toggle('active', mode === 'mcq');      tabMCQ.setAttribute('aria-selected', mode==='mcq'); }
+  if (tabWordle) { tabWordle.classList.toggle('active', mode === 'cywordle'); tabWordle.setAttribute('aria-selected', mode==='cywordle'); }
+
+  if (mode === 'mcq') {
+    const id = currentMCQId || 'ec_s1e1_fa1';
+    if (IS_LOCAL) { renderMCQ(STUB_MCQ); }
+    else          { loadChallengeAndRender(id); }
+  } else {
+    const doy = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+    const wd  = currentWordData || OT_WORDS_BANK[doy % OT_WORDS_BANK.length];
+    renderCywordle(wd);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initHexBg();
+  updatePlayerUI();
+  loadDailyQueue();
+  loadIntelFeed();
+  loadLeaderboard();
+  initLiveCount();
+
+  // OTP digit auto-advance
+  document.querySelectorAll('.otp-digit').forEach((input, idx, all) => {
+    input.addEventListener('input', e => {
+      const val = e.target.value.replace(/\D/g,'');
+      e.target.value = val.slice(-1);
+      if (val && idx < all.length - 1) all[idx + 1].focus();
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !e.target.value && idx > 0) all[idx - 1].focus();
+    });
+  });
+
+  // Keyboard: Enter triggers submit on focused modal button
+  document.querySelectorAll('.form-input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const btn = input.closest('.modal-body, form')?.querySelector('.btn-primary');
+        if (btn) btn.click();
+      }
+    });
+  });
+
+});
+</script>
+
+</body>
+</html>             

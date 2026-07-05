@@ -1,0 +1,149 @@
+[
+  {
+    "id": "ec_s1e1_fa1",
+    "game_type": "mcq_daily",
+    "season": 1,
+    "episode": 1,
+    "credits": 20,
+    "wrong_penalty": 4,
+    "lang": "en",
+    "concept_brief": "The Purdue Model (also called PERA) divides industrial control system networks into five levels. Each level hosts a specific category of assets. Understanding which assets belong where is foundational for OT network design and defence.",
+    "question": "At which Purdue Model level do SCADA servers, HMIs, and historians reside?",
+    "options": [
+      "Level 0 — where sensors and actuators connect directly to the physical process.",
+      "Level 1 — where PLCs and RTUs issue direct control commands to field devices.",
+      "Level 2 — the supervisory control tier hosting SCADA servers, HMIs, and historians.",
+      "Level 3 — where manufacturing execution and production scheduling systems operate."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "Think about the level where operators can watch and supervise the process — not command field devices directly.",
+    "debrief": "Level 2 is the supervisory control tier — SCADA servers aggregate data from controllers, HMIs provide operator views, and historians log process data over time. Level 0 is the physical/field device layer. Level 1 is the basic control layer (PLCs, RTUs). Level 3 is the site operations layer — MES and production scheduling — one tier above supervisory control.",
+    "source": "NIST SP 800-82 Rev 3 §2.2 | Purdue Enterprise Reference Architecture (PERA)"
+  },
+  {
+    "id": "ec_s1e1_fa2",
+    "game_type": "mcq_daily",
+    "season": 1,
+    "episode": 1,
+    "credits": 20,
+    "wrong_penalty": 4,
+    "lang": "en",
+    "concept_brief": "The CIA triad — Confidentiality, Integrity, Availability — is the cornerstone of cybersecurity. But the priority order differs fundamentally between IT and OT environments, driven by the consequences of failure in each domain.",
+    "question": "How does CIA triad priority differ between OT and IT environments?",
+    "options": [
+      "OT prioritises Availability first, then Integrity, then Confidentiality — the reverse of typical IT.",
+      "OT and IT share the same CIA priority order; only the security tools differ.",
+      "OT deprioritises Integrity because process sensor values are continuously updated and self-correcting.",
+      "OT prioritises Confidentiality first to protect proprietary control logic from competitors."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "In OT, a process that stops is more dangerous than a process whose data is read by an outsider.",
+    "debrief": "In OT, availability is paramount — a stopped or disrupted process can cause physical harm, environmental damage, or lost production. Integrity matters too (a tampered setpoint can be dangerous), but confidentiality ranks lowest because control logic visibility is less immediately dangerous than downtime. IT reverses this: confidentiality of data is typically the primary concern. Option B is wrong — the priority order is a core difference. Option C is wrong — integrity failures (e.g. TRITON) can cause serious harm. Option D is wrong — confidentiality ranks lowest in OT.",
+    "source": "NIST SP 800-82 Rev 3 §2.1 | IEC 62443-1-1 §7"
+  },
+  {
+    "id": "ec_s1e1_fa3",
+    "game_type": "mcq_daily",
+    "season": 1,
+    "episode": 1,
+    "credits": 60,
+    "wrong_penalty": 12,
+    "lang": "en",
+    "concept_brief": "Sharing data between OT and enterprise IT networks is a common requirement, but every connection is a potential attack path. The architecture must allow data to flow out of the OT zone while ensuring nothing can flow back in. Data diodes and DMZ patterns are the accepted solution.",
+    "question": "Which architecture allows OT-to-enterprise data flow while blocking all inbound connections to the OT zone?",
+    "options": [
+      "A site-to-site VPN between historian and data warehouse using AES-256 encryption.",
+      "Bidirectional firewall rules on TCP 1433 between Level 3 and Level 4.",
+      "Remote desktop access from the enterprise network to the historian workstation.",
+      "A DMZ with a data diode — pushes OT data out; no inbound connection ever reaches OT."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "The goal is one-way flow: data leaves the OT zone but nothing can enter through the same path.",
+    "debrief": "A data diode enforces hardware-level unidirectional flow — it is physically impossible for a signal to travel backwards. VPNs (Option A) are bidirectional by design; encrypting the tunnel does not prevent a compromised enterprise host from traversing it into OT. Option B opens a two-way SQL path — a classic lateral movement route. Option C establishes inbound remote desktop sessions, creating exactly the inbound attack path the architect is trying to eliminate.",
+    "source": "NIST SP 800-82 Rev 3 §5.7 | IEC 62443-3-3 SR 5.2 | CISA — Network Architecture and Segmentation"
+  },
+  {
+    "id": "ec_s1e1_fa4",
+    "game_type": "mcq_daily",
+    "season": 1,
+    "episode": 1,
+    "credits": 40,
+    "wrong_penalty": 8,
+    "lang": "en",
+    "concept_brief": "MITRE ATT&CK for ICS maps adversary tactics and techniques specific to industrial control system environments. Initial access techniques describe how attackers first gain a foothold in OT networks. Identifying the correct technique from observable evidence is a core threat analysis skill.",
+    "question": "Which MITRE ATT&CK for ICS initial access technique best fits this scenario?",
+    "options": [
+      "T0817 — Drive-by Compromise via a malicious website visited during the contractor session.",
+      "T0862 — Supply Chain Compromise via malicious code in the vendor-supplied update package.",
+      "T0847 — Replication Through Removable Media via the contractor's infected USB drive.",
+      "T0819 — Exploit Public-Facing Application via an exposed HMI web interface."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "The infection timing matches exactly when external software was loaded — focus on what was introduced, not who introduced it.",
+    "debrief": "T0862 Supply Chain Compromise fits best: malicious code embedded in a legitimate vendor package, two-week staged delay before calling home — a pattern common in ICS-targeting campaigns. Option A requires the contractor to have browsed a malicious site; this is not stated. Option C requires a USB drive; the scenario states 'vendor programming software upload' not removable media. Option D requires an internet-exposed service, which is not described here.",
+    "source": "MITRE ATT&CK for ICS — T0862 Supply Chain Compromise | CISA Advisory AA22-103A"
+  },
+  {
+    "id": "ec_s1e1_fa5",
+    "game_type": "mcq_daily",
+    "season": 1,
+    "episode": 1,
+    "credits": 40,
+    "wrong_penalty": 8,
+    "lang": "en",
+    "concept_brief": "Building an OT asset inventory is often the first step in a security programme. The choice between active scanning and passive monitoring has direct implications for both safety and the quality of information gathered. These two approaches reveal fundamentally different things about a network.",
+    "question": "What does passive OT monitoring reveal that active scanning fundamentally cannot?",
+    "options": [
+      "Unpatched firmware versions and open ports on every connected OT device.",
+      "The exact count of active IP addresses on each OT network segment.",
+      "Live OT protocol conversations showing real communication patterns between assets.",
+      "CVE mappings and vulnerability scores for every device on the network."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "An active scanner only sees what responds to its probes — think about what only appears when devices are naturally communicating.",
+    "debrief": "Passive monitoring captures Modbus, DNP3, and EtherNet/IP traffic already flowing on the network — revealing which PLCs poll which HMIs, which register addresses are written, and what function codes are in use. An active scanner cannot observe these natural conversations; it only enumerates devices that respond to its probes. Options A and D describe outputs of active scanning and vulnerability assessment tools, not passive monitoring. Option B (IP counts) is a basic output of either approach.",
+    "source": "NIST SP 800-82 Rev 3 §6.2.1 | CISA — Recommended Practices for Securing ICS Networks"
+  },
+  {
+    "id": "ec_s1e1_fa6",
+    "game_type": "mcq_daily",
+    "season": 1,
+    "episode": 1,
+    "credits": 60,
+    "wrong_penalty": 12,
+    "lang": "en",
+    "concept_brief": "MITRE ATT&CK for ICS Execution techniques describe how adversaries run their attack code or commands within an ICS environment. Modifying PLC control logic is one of the most impactful techniques — used by TRITON/TRISIS and INCONTROLLER/PIPEDREAM. Correctly identifying the technique from log evidence is a key incident response skill.",
+    "question": "Which MITRE ATT&CK for ICS technique describes modifying PLC ladder logic to alter process behaviour?",
+    "options": [
+      "T0833 — Modify Control Logic — changing the program that governs physical process behaviour.",
+      "T0856 — Spoof Reporting Message — injecting false sensor values to hide process changes.",
+      "T0843 — Program Download — exfiltrating the PLC program for offline reverse engineering.",
+      "T0858 — Change Operating Mode — switching the PLC from Run to Program mode."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "The key event is what changed inside the PLC project — not the connection method or the preparatory steps.",
+    "debrief": "T0833 Modify Control Logic is the direct match: the attacker changed the program controlling physical process behaviour — ladder logic, in this case. Both TRITON/TRISIS and INCONTROLLER/PIPEDREAM used this technique. Option B (Spoof Reporting Message) is a concealment layer that may accompany T0833 but was not observed here. Option C misstates the objective — the program was modified and returned, not exfiltrated. Option D (Change Operating Mode) is typically a prerequisite step taken before logic modification, not the modification itself.",
+    "source": "MITRE ATT&CK for ICS — T0833 Modify Control Logic | CISA Advisory AA22-103A (INCONTROLLER/PIPEDREAM)"
+  },
+  {
+    "id": "ec_s1e1_fa7",
+    "game_type": "mcq_daily",
+    "season": 1,
+    "episode": 1,
+    "credits": 100,
+    "wrong_penalty": 20,
+    "lang": "en",
+    "concept_brief": "Network segmentation and firewalls are standard IT security controls, but they have architectural blind spots in OT environments. Understanding why perimeter controls fail against an already-internal attacker requires knowledge of how legacy OT protocols were designed — and what they deliberately left out.",
+    "question": "Why can't perimeter firewalls alone stop lateral movement to PLCs once an attacker is inside the OT network?",
+    "options": [
+      "PLCs use proprietary protocols that IT firewalls cannot decode or inspect at all.",
+      "OT firewall rules are too complex for small teams to maintain correctly.",
+      "Air-gapped networks have no firewalls — physical isolation is the only real control.",
+      "Modbus and DNP3 lack authentication — any internal host can issue valid PLC commands."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "Once inside the OT zone, ask what technically stops a host from sending a command to a PLC — and whether that mechanism exists.",
+    "debrief": "Modbus, DNP3, and most legacy OT protocols have no native authentication mechanism. Any device that can reach a PLC on the network segment can send it a structurally valid command — the PLC has no way to verify whether the sender is authorised. Firewalls control which hosts can reach the PLC's IP and port, but once inside the same segment, protocol-level authentication is the only remaining control — and it does not exist. Option A is partially true but the critical gap is authorisation, not visibility. Option B is a staffing issue, not a protocol architecture failure. Option C is a misconception; most modern OT environments have IT/OT connectivity.",
+    "source": "NIST SP 800-82 Rev 3 §3.2 | IEC 62443-3-3 SR 1.2 | MITRE ATT&CK for ICS — TA0109 Lateral Movement"
+  }
+]

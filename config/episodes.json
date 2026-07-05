@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "season": 1,
+  "episodes": [
+    {
+      "id": "s1e1",
+      "season": 1,
+      "episode": 1,
+      "title": "Ransomware on OT Networks",
+      "description": "How modern ransomware moves from IT to OT, what it targets, and how to stop it at the boundary.",
+      "status": "active",
+      "tracks": ["fa", "ip"],
+      "challenge_files": {
+        "fa": "ec_s1e1_fa.json",
+        "cp": "ec_s1e1_cp.json"
+      },
+      "tags": ["ransomware", "lateral-movement", "network-segmentation"],
+      "unlock_requirement": null,
+      "linkedin_badge": "I solved OT CyberArena S1E1 — Ransomware on OT Networks 🛡️ #OTSecurity #ICS",
+      "released_date": "2026-06-06"
+    },
+    {
+      "id": "s1e2",
+      "season": 1,
+      "episode": 2,
+      "title": "OT Network Segmentation",
+      "description": "Purdue model, ISA/IEC 62443 zones and conduits, DMZ design — and why flat networks get you killed.",
+      "status": "active",
+      "tracks": ["fa", "ip"],
+      "challenge_files": {
+        "fa": "ec_s1e2_fa.json",
+        "cp": "ec_s1e2_cp.json"
+      },
+      "tags": ["segmentation", "purdue-model", "zones-conduits", "dmz"],
+      "unlock_requirement": null,
+      "linkedin_badge": "I solved OT CyberArena S1E2 — OT Network Segmentation 🛡️ #OTSecurity #ICS",
+      "released_date": "2026-06-13"
+    },
+    {
+      "id": "s1t1",
+      "season": 1,
+      "episode": 3,
+      "title": "Supply Chain & Remote Access",
+      "description": "Third-party access risks, vendor remote sessions, jump servers — the most exploited attack surface in OT.",
+      "status": "locked",
+      "tracks": ["fa", "ip"],
+      "challenge_files": {
+        "fa": "ec_s1t1_fa.json",
+        "cp": "ec_s1t1_cp.json"
+      },
+      "tags": ["supply-chain", "remote-access", "third-party", "vpn"],
+      "unlock_requirement": { "type": "episode_complete", "episode_id": "s1e2" },
+      "linkedin_badge": "I solved OT CyberArena S1T1 — Supply Chain & Remote Access 🛡️ #OTSecurity #ICS",
+      "released_date": "2026-06-20"
+    },
+    {
+      "id": "s1t2",
+      "season": 1,
+      "episode": 4,
+      "title": "ICS Incident Response",
+      "description": "What to do in the first 60 minutes of an OT incident. Playbooks, decision trees, communication protocols.",
+      "status": "locked",
+      "tracks": ["fa", "ip"],
+      "challenge_files": {
+        "fa": "ec_s1t2_fa.json",
+        "cp": "ec_s1t2_cp.json"
+      },
+      "tags": ["incident-response", "playbook", "forensics", "recovery"],
+      "unlock_requirement": { "type": "episode_complete", "episode_id": "s1e2" },
+      "linkedin_badge": "I solved OT CyberArena S1T2 — ICS Incident Response 🛡️ #OTSecurity #ICS",
+      "released_date": "2026-06-27"
+    },
+    {
+      "id": "s1t3",
+      "season": 1,
+      "episode": 5,
+      "title": "IEC 62443 Fundamentals",
+      "description": "The standard OT security professionals actually get asked about. SL levels, zones, foundational requirements — demystified.",
+      "status": "locked",
+      "tracks": ["fa", "ip"],
+      "challenge_files": {
+        "fa": "ec_s1t3_fa.json",
+        "cp": "ec_s1t3_cp.json"
+      },
+      "tags": ["iec62443", "standards", "compliance", "security-levels"],
+      "unlock_requirement": { "type": "episode_complete", "episode_id": "s1t1" },
+      "linkedin_badge": "I solved OT CyberArena S1T3 — IEC 62443 Fundamentals 🛡️ #OTSecurity #ICS",
+      "released_date": "2026-07-04"
+    }
+  ]
+}

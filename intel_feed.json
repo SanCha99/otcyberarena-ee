@@ -1,0 +1,38 @@
+[
+  {
+    "source": "WaterISAC / CISA",
+    "headline": "CISA releases six ICS advisories July 2 covering ST Engineering iDirect terminals, Mitsubishi CNC and more",
+    "date": "2026-07-02",
+    "url": "https://www.waterisac.org/tlpclear-cisa-ics-advisories-additional-alerts-updates-and-bulletins-july-2-2026"
+  },
+  {
+    "source": "Industrial Cyber / NCSC",
+    "headline": "UK NCSC CEO warns 75% of critical infrastructure cyberattacks are state-linked; Russia, China and Iran intensifying OT targeting",
+    "date": "2026-06-19",
+    "url": "https://industrialcyber.co/critical-infrastructure/ncscs-horne-warns-uk-infrastructure-under-sustained-cyber-pressure-from-russia-china-and-iran-urges-resilience/"
+  },
+  {
+    "source": "Industrial Cyber / NIST",
+    "headline": "NIST SP-1339 OT Backup Quick Start Guide released, covering PLCs, DCS, SCADA and HMI backup and recovery strategies",
+    "date": "2026-06-19",
+    "url": "https://industrialcyber.co/nist/nist-sp-1339-releases-ot-backup-quick-start-guide-to-boost-industrial-cyber-resilience-accelerate-incident-recovery/"
+  },
+  {
+    "source": "Industrial Cyber",
+    "headline": "Accenture acquires majority stake in Dragos at $3.25B valuation, plus runZero and NetRise, in $4.175B OT security deal",
+    "date": "2026-06-19",
+    "url": "https://industrialcyber.co/critical-infrastructure/accentures-dragos-investment-marks-new-phase-for-ot-cybersecurity-in-critical-infrastructure/"
+  },
+  {
+    "source": "Industrial Cyber / Resecurity",
+    "headline": "Anubis ransomware hit Italian Adriatic Port Authority, encrypting cargo and customs systems and demanding $10M ransom",
+    "date": "2026-06-17",
+    "url": "https://industrialcyber.co/transport/resecurity-details-anubis-ransomware-attack-on-adriatic-port-authority-exposing-maritime-infrastructure-risks/"
+  },
+  {
+    "source": "Industrial Cyber / MITRE",
+    "headline": "MITRE releases Grid Watch, a software-only DNP3 power grid simulator for hands-on OT security training via Caldera",
+    "date": "2026-06-17",
+    "url": "https://industrialcyber.co/training-development/mitre-expands-caldera-for-ot-with-grid-watch-dnp3-simulator-for-hands-on-power-grid-cybersecurity-training/"
+  }
+]

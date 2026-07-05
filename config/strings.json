@@ -1,0 +1,148 @@
+{
+  "schema_version": "1.0",
+  "default_lang": "en",
+  "languages_available": ["en"],
+  "languages_planned": ["ja", "zh", "de", "es"],
+  "strings": {
+    "en": {
+
+      "brand": {
+        "name": "OT CyberArena",
+        "tagline": "THE GLOBAL COMMUNITY FOR OT SECURITY",
+        "sub": "Real-world ICS threats. Simulated. Gamified. Scored.",
+        "sub2": "No vendor agenda. No fluff. Just the scenarios that define the discipline.",
+        "cta_join": "JOIN FREE — 30 SECONDS",
+        "cta_browse": "BROWSE EPISODES",
+        "aria_label": "▸ ARIA THREAT INTELLIGENCE — ACTIVE",
+        "aria_voice_1": "ARIA // One challenge. No login required. See if you belong here.",
+        "aria_voice_2": "ARIA // Real-world OT threats. Simulated. Scored. Free.",
+        "aria_voice_3": "ARIA // Global leaderboard. 38 countries. Where do you rank?"
+      },
+
+      "nav": {
+        "login": "LOG IN",
+        "join": "JOIN ARENA",
+        "live_count": "▲ {n} OPERATIVES WORLDWIDE",
+        "theme": "SKIN"
+      },
+
+      "game": {
+        "loading": "ARIA // Loading today's challenge...",
+        "attempt_label": "ATTEMPT {n} OF 2",
+        "credits_label": "+{n} CREDITS",
+        "hint_btn": "💡 HINT (−50%)",
+        "giveup_btn": "GIVE UP (−8)",
+        "submit_btn": "SUBMIT",
+        "next_btn": "NEXT CHALLENGE",
+        "share_btn": "SHARE ON LINKEDIN",
+        "correct_1st": "✓ CORRECT — FIRST ATTEMPT",
+        "correct_2nd": "✓ CORRECT — SECOND ATTEMPT",
+        "wrong": "✗ INCORRECT",
+        "gave_up": "// MISSION ABANDONED",
+        "debrief_title": "DEBRIEF",
+        "badge_mcq": "DAILY MCQ",
+        "badge_cywordle": "WORD SEARCH",
+        "badge_nologin": "✓ NO LOGIN",
+        "cywordle_title": "OT CYWORDLE",
+        "cywordle_subtitle": "Guess the 5-letter OT security term",
+        "cywordle_guess_btn": "GUESS",
+        "cywordle_share": "Share result",
+        "cywordle_correct": "// TARGET ACQUIRED",
+        "cywordle_failed": "// TARGET LOST — WORD WAS: {word}"
+      },
+
+      "auth": {
+        "register_title": "JOIN OT CYBERARENA",
+        "login_title": "OPERATIVE LOGIN",
+        "step_email": "Enter your email to receive a one-time access code",
+        "step_otp": "Enter the 6-digit code sent to {email}",
+        "step_callsign": "Choose your callsign (3-16 chars, letters/numbers/underscores)",
+        "step_country": "Select your country",
+        "step_pin": "Set a 4-digit PIN for future logins",
+        "step_consents": "One last step",
+        "step_track": "Choose your track",
+        "btn_next": "CONTINUE",
+        "btn_verify": "VERIFY CODE",
+        "btn_resend": "RESEND CODE",
+        "btn_complete": "ENTER THE ARENA",
+        "btn_login": "AUTHENTICATE",
+        "otp_sent": "Code sent to {email}",
+        "callsign_taken": "That callsign is taken. Try another.",
+        "callsign_ok": "✓ Available",
+        "pin_confirm": "Confirm PIN",
+        "pin_mismatch": "PINs do not match",
+        "consent_age": "I confirm I am 13 years of age or older",
+        "consent_terms": "I agree to the Terms of Use and Privacy Policy",
+        "consent_comms": "I'd like to receive weekly challenge digests (optional)",
+        "track_fa_title": "FIELD ANALYST",
+        "track_fa_desc": "Threat identification, network anomalies, incident triage. For OT engineers, operators, analysts.",
+        "track_ip_title": "INCIDENT PROFESSIONAL",
+        "track_ip_desc": "Deep forensics, response playbooks, standards compliance. For security practitioners and consultants.",
+        "track_both": "Both tracks — I want it all",
+        "login_callsign": "Callsign",
+        "login_pin": "4-digit PIN",
+        "login_not_found": "Callsign not found",
+        "login_wrong_pin": "Incorrect PIN"
+      },
+
+      "leaderboard": {
+        "title": "GLOBAL LEADERBOARD",
+        "tab_all": "ALL",
+        "tab_fa": "F/A",
+        "tab_ip": "IP",
+        "cta": "SEE YOUR RANK — JOIN FREE",
+        "rank_trainee": "Trainee",
+        "rank_fieldtech": "Field Tech",
+        "rank_socanalyst": "SOC Analyst",
+        "rank_threathunter": "Threat Hunter",
+        "rank_ghost": "Ghost in the Machine"
+      },
+
+      "episodes": {
+        "section_title": "EPISODE BANK — SEASON {n}",
+        "locked_msg": "Complete earlier episodes to unlock",
+        "fa_challenges": "FA · {n}R challenges",
+        "ip_challenges": "IP · {n}R challenges"
+      },
+
+      "intel": {
+        "section_title": "THIS WEEK'S THREAT INTEL",
+        "sources_label": "Sources: CISA · NIST SP 800-82 · IEC 62443 · Dragos · SANS ICS"
+      },
+
+      "footer": {
+        "brand": "OT CyberArena · External Community · Free · Vendor-Neutral",
+        "sources": "Sources: CISA · NIST SP 800-82 · IEC 62443 · Dragos · SANS ICS",
+        "links_join": "Join Arena",
+        "links_contact": "Contact",
+        "links_powered": "Powered by AI"
+      },
+
+      "scoring": {
+        "correct_1st_label": "+40 CR",
+        "correct_2nd_label": "+32 CR",
+        "hint_label": "+20 CR",
+        "wrong_label": "−8 CR",
+        "giveup_label": "−8 CR",
+        "streak_3_label": "+15 CR STREAK BONUS",
+        "streak_7_label": "+50 CR STREAK BONUS"
+      },
+
+      "cp_gate": {
+        "title": "CP CALIBRATION GATE",
+        "intro": "The Incident Professional track requires you to pass 3 calibration questions. All 3 must be correct. Unlimited retries.",
+        "pass": "// GATE CLEARED — INCIDENT PROFESSIONAL TRACK UNLOCKED",
+        "fail": "// {n} OF 3 CORRECT — RETRY WHEN READY",
+        "retry_btn": "RETRY CALIBRATION"
+      },
+
+      "errors": {
+        "network": "Network error — check your connection",
+        "otp_expired": "Code expired — request a new one",
+        "otp_invalid": "Invalid code",
+        "generic": "Something went wrong — try again"
+      }
+
+    }
+  }
+}
