@@ -368,6 +368,24 @@ body {
 
 .theme-panel.open { display: block; }
 
+/* Mobile topbar fix (v1.3.0): topbar contents were wider than small screens,
+   forcing horizontal page scroll. Hide live badge, tighten buttons, clip root. */
+html { overflow-x: clip; }
+@media (max-width: 480px) {
+  .topbar { flex-wrap: wrap; height: auto; min-height: 52px;
+            padding-top: 6px; padding-bottom: 6px; row-gap: 4px; }
+  .logo { font-size: 13px; }
+  .btn-nav, .btn-nav-ghost { padding: 0 8px; font-size: 10px; min-height: 36px; }
+  .theme-btn { min-width: 36px; min-height: 36px; }
+}
+@media (max-width: 680px) {
+  .topbar-center { display: none; }
+  .topbar { gap: 8px; }
+  .logo { font-size: 14px; gap: 6px; }
+  .btn-nav, .btn-nav-ghost { padding: 0 10px; font-size: 11px; min-height: 40px; }
+  .theme-btn { min-width: 40px; min-height: 40px; }
+}
+
 .theme-panel-title {
   font-family: var(--mono);
   font-size: 10px;
@@ -590,9 +608,7 @@ body {
 
 .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ─── RIGHT: Featured Game Card ─── */
-/* .hero-game removed — game card now lives in .main-row col 1 */
-
+/* ─── GAME CARD (v2.0.0: two instances, MCQ + Cywordle, both always visible) ─── */
 .game-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -680,19 +696,59 @@ body {
   gap: clamp(12px, 1.8vw, 20px);
 }
 
-/* Row: Game card | Leaderboard | Intel (3 equal columns) */
-.main-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: clamp(12px, 1.8vw, 20px);
-  align-items: start;
+/* v2.0.0: single stacked column, page order matches Sandip's section list
+   (title -> MCQ -> Cywordle -> intel -> leaderboard -> join -> archive).
+   Each section gets a consistent centered reading width instead of the old
+   cramped 3-column grid (root cause of the "messy" layout complaint). */
+.main > .game-section,
+.main > .intel-section,
+.main > .leaderboard-section,
+.main > .join-cta-section,
+.main > .archive-cta-section {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
 }
 
-@media (max-width: 960px) {
-  .main-row { grid-template-columns: 1fr 1fr; }
+/* v1.3.1: grid/flex children default to min-width:auto — wide nowrap content
+   stretched cards past the viewport and clipped their right edge. Clamp them. */
+.main > * { min-width: 0; max-width: 100%; }
+.game-card, .game-card * { max-width: 100%; }
+
+/* ─── JOIN / SIGN-IN CTA BAND ─── */
+.join-cta-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  text-align: center;
 }
-@media (max-width: 640px) {
-  .main-row { grid-template-columns: 1fr; }
+.join-cta-text {
+  font-family: var(--body);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.join-cta-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ─── ARCHIVE ACCESS BUTTONS ─── */
+.archive-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.archive-btn {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+  text-decoration: none;
+  justify-content: center;
 }
 
 /* ─── SECTION LABEL ─── */
@@ -791,32 +847,6 @@ body {
 .episode-track-fa { color: #44aaff; }
 .episode-track-cp { color: var(--accent); }
 
-
-/* ─── GAME MODE TABS ─── */
-.game-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-.game-tab {
-  flex: 1;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 10px 4px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-.game-tab:hover { color: var(--text); }
-.game-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
 
 /* ─── INTEL FEED ─── */
 .intel-section { width: 100%; }
@@ -1544,7 +1574,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v1.0.4 · 2026-06-06 · Ghost Protocol</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.0 · 2026-07-05 · Ghost Protocol</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1566,7 +1596,7 @@ footer {
 
     <div class="feature-pills">
       <span class="feature-pill">Free — Always</span>
-      <span class="feature-pill">New Challenge Daily</span>
+      <span class="feature-pill">New Challenges Weekly</span>
       <span class="feature-pill">OT / ICS Focused</span>
       <span class="feature-pill">No Vendor Agenda</span>
     </div>
@@ -1579,158 +1609,125 @@ footer {
 
 </section>
 
-<!-- ─── MAIN CONTENT ─── -->
+<!-- ─── MAIN CONTENT — stacked sections, page order: MCQ, Cywordle,
+     Intel, Leaderboard, Join CTA, Archive access, Episode Bank ─── -->
 <div class="main">
 
-  <!-- ROW 1: GAME | LEADERBOARD | INTEL -->
-  <div class="main-row">
-
-    <!-- GAME CARD (col 1) -->
-    <div class="game-panel">
-  <!-- RIGHT: Featured Game Card (populated by game engine in Chunk 2) -->
-  <div class="hero-game">
-    <div class="game-card" id="featuredGameCard">
-      <div class="game-tabs" role="tablist" aria-label="Game mode">
-        <button class="game-tab active" id="tabMCQ" role="tab" aria-selected="true"
-                onclick="switchGameMode('mcq')">Daily MCQ</button>
-        <button class="game-tab" id="tabWordle" role="tab" aria-selected="false"
-                onclick="switchGameMode('cywordle')">OT Cywordle</button>
-      </div>
+  <!-- SECTION 2: THIS WEEK'S MCQ -->
+  <section class="game-section" id="mcqSection" aria-label="This Week's MCQ Challenge">
+    <div class="section-label">This Week's MCQ</div>
+    <div class="game-card" id="featuredGameCardMCQ">
       <div class="game-card-header">
-        <span class="game-type-badge" id="gameTypeBadge">LOADING...</span>
-        <span class="game-day-label" id="gameDayLabel">—</span>
+        <span class="game-type-badge" id="mcqBadgeLabel">THIS WEEK'S MCQ</span>
+        <span class="game-day-label" id="mcqDayLabel">Live all week</span>
         <span class="game-no-login">✓ NO LOGIN</span>
       </div>
-      <div class="game-card-body" id="gameCardBody">
-        <!-- MCQ or Cywordle engine rendered here by Chunk 2 JS -->
-        <div class="game-placeholder" id="gamePlaceholder">
+      <div class="game-card-body" id="gameCardBodyMCQ">
+        <!-- MCQ engine rendered here -->
+        <div class="game-placeholder" id="gamePlaceholderMCQ">
           <div class="game-placeholder-icon">⚙</div>
           <div class="game-placeholder-text">
-            ARIA // Loading today's challenge...<br>
-            <span style="opacity:.5">Fetching daily queue</span>
+            ARIA // Loading this week's MCQ...<br>
+            <span style="opacity:.5">Fetching weekly queue</span>
           </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Register nudge (shown after game attempt) -->
-    <div class="reg-nudge" id="regNudge" aria-live="polite">
-      <div class="reg-nudge-title" id="nudgeTitle">You belong here.</div>
-      <div class="reg-nudge-sub">Join <span id="nudgeCount">—</span> operatives on the global leaderboard. Free. Vendor-neutral. Always.</div>
-      <div class="reg-nudge-btns">
-        <button class="btn-primary" onclick="openModal('register')">Create Operative Profile</button>
-        <button class="btn-secondary" onclick="closeNudge()">Maybe Later</button>
+  <!-- SECTION 3: THIS WEEK'S CYWORDLE -->
+  <section class="game-section" id="cywordleSection" aria-label="This Week's OT Cywordle">
+    <div class="section-label">This Week's OT Cywordle</div>
+    <div class="game-card" id="featuredGameCardWordle">
+      <div class="game-card-header">
+        <span class="game-type-badge" id="cywordleBadgeLabel">THIS WEEK'S CYWORDLE</span>
+        <span class="game-day-label" id="cywordleDayLabel">Live all week</span>
+        <span class="game-no-login">✓ NO LOGIN</span>
       </div>
+      <div class="game-card-body" id="gameCardBodyWordle">
+        <!-- Cywordle engine rendered here -->
+        <div class="game-placeholder" id="gamePlaceholderWordle">
+          <div class="game-placeholder-icon">⚙</div>
+          <div class="game-placeholder-text">
+            ARIA // Loading this week's Cywordle...<br>
+            <span style="opacity:.5">Fetching weekly queue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Register nudge (shown after either game attempt) -->
+  <div class="reg-nudge" id="regNudge" aria-live="polite" style="max-width:640px;margin:0 auto;">
+    <div class="reg-nudge-title" id="nudgeTitle">You belong here.</div>
+    <div class="reg-nudge-sub">Join <span id="nudgeCount">—</span> operatives on the global leaderboard. Free. Vendor-neutral. Always.</div>
+    <div class="reg-nudge-btns">
+      <button class="btn-primary" onclick="openModal('register')">Create Operative Profile</button>
+      <button class="btn-secondary" onclick="closeNudge()">Maybe Later</button>
     </div>
   </div>
 
+  <!-- SECTION 4: THREAT INTEL FEED -->
+  <section class="intel-section" aria-label="Threat Intelligence Feed">
+    <div class="section-label">This Week's Threat Intel</div>
+    <div class="intel-grid" id="intelFeed">
+      <div class="intel-item">
+        <div class="intel-source-tag">CISA ICS-CERT</div>
+        <div class="intel-headline">Loading latest threat intelligence...</div>
+        <div class="intel-date">—</div>
+      </div>
+      <div class="intel-item">
+        <div class="intel-source-tag">CISA ICS-CERT</div>
+        <div class="intel-headline">Loading latest threat intelligence...</div>
+        <div class="intel-date">—</div>
+      </div>
+      <div class="intel-item">
+        <div class="intel-source-tag">CISA ICS-CERT</div>
+        <div class="intel-headline">Loading latest threat intelligence...</div>
+        <div class="intel-date">—</div>
+      </div>
     </div>
+  </section>
 
-    <!-- LEADERBOARD (col 2) -->
-    <section class="leaderboard-section" aria-label="Global Leaderboard">
-      <div class="section-label">Global Leaderboard</div>
+  <!-- SECTION 5: LEADERBOARD -->
+  <section class="leaderboard-section" aria-label="Global Leaderboard">
+    <div class="section-label">Global Leaderboard</div>
     <div class="leaderboard-card">
       <div class="leaderboard-filter" role="group" aria-label="Filter leaderboard">
         <button class="filter-btn active" data-filter="all" onclick="filterLB(this,'all')">ALL OPERATIVES</button>
       </div>
       <div class="lb-rows" id="lbRows" role="list">
-        <!-- Populated by leaderboard engine in Chunk 2 -->
-        <div class="lb-row">
-          <div class="lb-pos p1">#1</div>
-          <div class="lb-flag">🇦🇺</div>
-          <div class="lb-info">
-            <div class="lb-callsign">GridWatch_AUS</div>
-            <div class="lb-track-rank">CP · Ghost in the Machine</div>
-          </div>
-          <div class="lb-credits">1,920</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-pos p2">#2</div>
-          <div class="lb-flag">🇸🇬</div>
-          <div class="lb-info">
-            <div class="lb-callsign">NullVector_SGS</div>
-            <div class="lb-track-rank">CP · Ghost in the Machine</div>
-          </div>
-          <div class="lb-credits">1,640</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-pos p3">#3</div>
-          <div class="lb-flag">🇺🇸</div>
-          <div class="lb-info">
-            <div class="lb-callsign">ThreatHunt_USS</div>
-            <div class="lb-track-rank">CP · Ghost in the Machine</div>
-          </div>
-          <div class="lb-credits">1,340</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-pos">#4</div>
-          <div class="lb-flag">🇯🇵</div>
-          <div class="lb-info">
-            <div class="lb-callsign">CyberSamurai_JPS</div>
-            <div class="lb-track-rank">CP · Threat Hunter</div>
-          </div>
-          <div class="lb-credits">1,180</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-pos">#5</div>
-          <div class="lb-flag">🇩🇪</div>
-          <div class="lb-info">
-            <div class="lb-callsign">SOCGuard_DES</div>
-            <div class="lb-track-rank">CP · SOC Analyst</div>
-          </div>
-          <div class="lb-credits">890</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-pos">#6</div>
-          <div class="lb-flag">🇮🇳</div>
-          <div class="lb-info">
-            <div class="lb-callsign">FieldOps_INS</div>
-            <div class="lb-track-rank">FA · Field Tech</div>
-          </div>
-          <div class="lb-credits">720</div>
-        </div>
-        <div class="lb-row">
-          <div class="lb-pos">#7</div>
-          <div class="lb-flag">🇬🇧</div>
-          <div class="lb-info">
-            <div class="lb-callsign">IronGrid_UKS</div>
-            <div class="lb-track-rank">FA · Field Tech</div>
-          </div>
-          <div class="lb-credits">540</div>
-        </div>
+        <!-- Populated by leaderboard engine -->
       </div>
       <div class="lb-footer">
         <button class="btn-secondary" style="font-size:11px;padding:8px 16px;width:100%;"
                 onclick="openModal('register')">See Your Rank — Join Free</button>
       </div>
     </div>
-    </section>
+  </section>
 
-    <!-- THREAT INTEL FEED -->
-    <section class="intel-section" aria-label="Threat Intelligence Feed">
-      <div class="section-label">This Week's Threat Intel</div>
-      <div class="intel-grid" id="intelFeed">
-        <div class="intel-item">
-          <div class="intel-source-tag">CISA ICS-CERT</div>
-          <div class="intel-headline">Loading latest threat intelligence...</div>
-          <div class="intel-date">—</div>
-        </div>
-        <div class="intel-item">
-          <div class="intel-source-tag">CISA ICS-CERT</div>
-          <div class="intel-headline">Loading latest threat intelligence...</div>
-          <div class="intel-date">—</div>
-        </div>
-        <div class="intel-item">
-          <div class="intel-source-tag">CISA ICS-CERT</div>
-          <div class="intel-headline">Loading latest threat intelligence...</div>
-          <div class="intel-date">—</div>
-        </div>
+  <!-- SECTION 6: SIGN IN / SIGN UP -->
+  <section class="join-cta-section" aria-label="Join or sign in">
+    <div class="section-label">Join The Arena</div>
+    <div class="join-cta-card">
+      <p class="join-cta-text">Free. Vendor-neutral. Always. Track your score, save your streak, and climb the global leaderboard.</p>
+      <div class="join-cta-btns">
+        <button class="btn-primary" onclick="openModal('register')">Sign Up — 30 Seconds</button>
+        <button class="btn-secondary" onclick="openModal('login')">Sign In</button>
       </div>
-    </section>
+    </div>
+  </section>
 
-  </div><!-- /main-row -->
+  <!-- SECTIONS 7 & 8: PAST MCQs / PAST CYWORDLES -->
+  <section class="archive-cta-section" aria-label="Past challenges">
+    <div class="section-label">Past Challenges</div>
+    <div class="archive-cta-row">
+      <a class="btn-secondary archive-btn" href="archive-mcq.html">Past MCQs →</a>
+      <a class="btn-secondary archive-btn" href="archive-cywordle.html">Past Cywordles →</a>
+    </div>
+  </section>
 
-  <!-- ROW 2: EPISODE BANK (full width, 3 columns) -->
+  <!-- EPISODE BANK — deeper structured learning tracks (kept, secondary to the 8 core sections) -->
   <section class="episodes-section" id="episodesSection" aria-label="Episode Bank">
     <div class="section-label">Episode Bank — Season 1</div>
 <div class="episode-grid" id="episodeGrid">
@@ -1741,56 +1738,50 @@ footer {
         </div>
         <div class="episode-title">Ransomware on OT Networks</div>
         <div class="episode-meta">
-          <span class="episode-track-fa">FA · 20 challenges</span>
-          <span class="episode-track-cp">CP · 20 challenges</span>
+          <span class="episode-track-fa">FA · 7 challenges</span>
         </div>
       </div>
 
-      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 2: OT Network Segmentation — login required">
+      <div class="episode-card" onclick="openEpisode('s1e2')" tabindex="0" role="button" aria-label="Episode 2: OT Network Segmentation">
         <div class="episode-tag">
           <span>S1 · E2</span>
-          <span class="episode-lock">🔒</span>
         </div>
         <div class="episode-title">OT Network Segmentation</div>
         <div class="episode-meta">
-          <span class="episode-track-fa">FA · 20 challenges</span>
-          <span class="episode-track-cp">CP · 20 challenges</span>
+          <span class="episode-track-fa">FA · 7 challenges</span>
         </div>
       </div>
 
-      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 3: Supply Chain and Remote Access — login required">
+      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 3: Supply Chain and Remote Access — coming soon">
         <div class="episode-tag">
           <span>S1 · E3</span>
           <span class="episode-lock">🔒</span>
         </div>
         <div class="episode-title">Supply Chain &amp; Remote Access</div>
         <div class="episode-meta">
-          <span class="episode-track-fa">FA · 20 challenges</span>
-          <span class="episode-track-cp">CP · 20 challenges</span>
+          <span class="episode-track-fa">Coming soon</span>
         </div>
       </div>
 
-      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 4: ICS Incident Response — login required">
+      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 4: ICS Incident Response — coming soon">
         <div class="episode-tag">
           <span>S1 · E4</span>
           <span class="episode-lock">🔒</span>
         </div>
         <div class="episode-title">ICS Incident Response</div>
         <div class="episode-meta">
-          <span class="episode-track-fa">FA · 20 challenges</span>
-          <span class="episode-track-cp">CP · 20 challenges</span>
+          <span class="episode-track-fa">Coming soon</span>
         </div>
       </div>
 
-      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 5: IEC 62443 Fundamentals — login required">
+      <div class="episode-card locked" tabindex="0" role="button" aria-label="Episode 5: IEC 62443 Fundamentals — coming soon">
         <div class="episode-tag">
           <span>S1 · E5</span>
           <span class="episode-lock">🔒</span>
         </div>
         <div class="episode-title">IEC 62443 Fundamentals</div>
         <div class="episode-meta">
-          <span class="episode-track-fa">FA · 20 challenges</span>
-          <span class="episode-track-cp">CP · 20 challenges</span>
+          <span class="episode-track-fa">Coming soon</span>
         </div>
       </div>
 
@@ -2022,7 +2013,7 @@ footer {
     <span class="footer-link" onclick="openModal('register')">Join Arena</span>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v1.0.0</span>
+    <span class="version-stamp" id="versionStamp">EC v1.3.2</span>
   </div>
 </footer>
 
@@ -2035,7 +2026,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '1.0.0';
+const EC_VERSION = '2.0.0';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── THEME SYSTEM ─────────────────────────────────
@@ -2303,7 +2294,7 @@ function updatePlayerUI() {
     document.getElementById('barRank').textContent      = rank.name;
     document.getElementById('rankProgressBar').style.width = getRankProgress(p.credits||0) + '%';
     const cta = document.getElementById('heroCTABtn');
-    if (cta) { cta.textContent = "\u25b6 Play Today's Challenge"; cta.onclick = () => document.getElementById("featuredGameCard")?.scrollIntoView({behavior:"smooth"}); }
+    if (cta) { cta.textContent = "▶ Play This Week's Challenge"; cta.onclick = () => document.getElementById("mcqSection")?.scrollIntoView({behavior:"smooth"}); }
   } else {
     const cta = document.getElementById('heroCTABtn');
     if (cta) { cta.textContent = "Join Free — 30 Seconds"; cta.onclick = () => openModal("register"); }
@@ -2318,45 +2309,36 @@ const SUPABASE_URL  = 'https://obqqbfvrnkwkgucqdqad.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icXFiZnZybmt3a2d1Y3FkcWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MjU2NDUsImV4cCI6MjA5NjMwMTY0NX0.I5KjNSrEgF4fZ3jlYqgGj-TVIeQo5XKCQAcK8RHPnzs';
 const sb = IS_LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ── DAILY QUEUE ───────────────────────────────────
-let todayQueue = null;
+// ── WEEKLY QUEUE (v2.0.0: 1 MCQ + 1 Cywordle live all week) ──
+let weeklyQueue = null;
 
-async function loadDailyQueue() {
+async function loadWeeklyQueue() {
   if (!IS_LOCAL) {
     try {
-      const res  = await fetch('daily_queue.json?v=' + Date.now());
+      const res  = await fetch('weekly_queue.json?v=' + Date.now());
       const data = await res.json();
       const today = new Date().toISOString().slice(0,10);
-      todayQueue = data.find(d => d.date === today) || data[0];
-    } catch { todayQueue = STUB_DAILY_QUEUE; }
+      const sorted = [...data].sort((a,b) => a.week_start.localeCompare(b.week_start));
+      weeklyQueue = [...sorted].reverse().find(w => w.week_start <= today) || sorted[sorted.length-1];
+    } catch { weeklyQueue = STUB_WEEKLY_QUEUE; }
   } else {
-    todayQueue = STUB_DAILY_QUEUE;
+    weeklyQueue = STUB_WEEKLY_QUEUE;
   }
-  renderGame();
+  renderBothGames();
 }
 
-// ── STUB DAILY QUEUE (fallback if no file) ────────
-const STUB_DAILY_QUEUE = {
-  date: new Date().toISOString().slice(0,10),
-  game_type: 'mcq_daily',
-  challenge_id: 'ec_s1e1_fa1',
-  day_label: getDayLabel()
+// ── STUB WEEKLY QUEUE (fallback if no file) ───────
+const STUB_WEEKLY_QUEUE = {
+  week_start: new Date().toISOString().slice(0,10),
+  mcq_ids: ['ec_s1e1_fa1'],
+  cywordle: { word: 'SCADA', clue: 'Supervisory Control and Data Acquisition — the software layer that monitors and controls industrial processes.' }
 };
-
-function getDayLabel() {
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const types = {
-    0:'Cywordle Sunday', 1:'MCQ Monday', 2:'True/False Tuesday',
-    3:'MCQ Wednesday', 4:'Drag-Match Thursday', 5:'MCQ Friday', 6:'Word Search Saturday'
-  };
-  return types[new Date().getDay()] || 'Daily Challenge';
-}
 
 // ── STUB MCQ CHALLENGE ────────────────────────────
 // Real challenges loaded from challenges/ JSON in Chunk 3 session
 const STUB_MCQ = {
   id: "ec_s1e1_fa1",
-  game_type: "mcq_daily",
+  game_type: "mcq_weekly",
   season: 1, episode: 1,
   credits: 40,
   lang: "en",
@@ -2415,13 +2397,45 @@ let mcqState = {
   attempt: 0,       // 0=first, 1=second
   hintUsed: false,
   answered: false,
-  correct: false
+  correct: false,
+  selectedIdx: null,
+  outcome: null      // 'correct' | 'wrong' | 'giveup'
 };
 
-function renderMCQ(challenge) {
-  mcqState = { challenge, attempt:0, hintUsed:false, answered:false, correct:false };
+// ── PERSISTENCE (v2.0.0): survive reload / tab switch ──
+function mcqProgressKey(id) { return `ec_mcq_progress_${id}`; }
+function saveMCQProgress() {
+  const ch = mcqState.challenge;
+  if (!ch) return;
+  localStorage.setItem(mcqProgressKey(ch.id), JSON.stringify({
+    attempt: mcqState.attempt, hintUsed: mcqState.hintUsed,
+    answered: mcqState.answered, outcome: mcqState.outcome,
+    selectedIdx: mcqState.selectedIdx
+  }));
+}
+function loadMCQProgress(id) {
+  try { return JSON.parse(localStorage.getItem(mcqProgressKey(id))); } catch { return null; }
+}
 
-  const body = document.getElementById('gameCardBody');
+// Content schema has drifted between episodes (s1e1: credits/concept_brief/source
+// vs s1e2: points/scenario/sources[]). Normalize here so the render/scoring code
+// has one shape to read, instead of two content files disagreeing silently.
+function normalizeMCQChallenge(challenge) {
+  return {
+    ...challenge,
+    credits:       challenge.credits ?? challenge.points ?? 20,
+    concept_brief: challenge.concept_brief ?? challenge.scenario ?? '',
+    source: challenge.source ?? (Array.isArray(challenge.sources)
+              ? challenge.sources.map(s => s.url ? `${s.text} — ${s.url}` : s.text).join(' | ')
+              : '')
+  };
+}
+
+function renderMCQ(rawChallenge) {
+  const challenge = normalizeMCQChallenge(rawChallenge);
+  mcqState = { challenge, attempt:0, hintUsed:false, answered:false, correct:false, selectedIdx:null, outcome:null };
+
+  const body = document.getElementById('gameCardBodyMCQ');
   body.innerHTML = `
     <div id="mcqWrap">
       <div class="mcq-meta" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
@@ -2503,11 +2517,47 @@ function renderMCQ(challenge) {
   if (!challenge.track || challenge.track === 'FA') {
     // Show brief by default for FA; hidden for CP
   }
+
+  // Resume in-progress/finished state (persistence, v2.0.0) — visual replay
+  // only, never re-award credits or re-insert a solve record.
+  const saved = loadMCQProgress(challenge.id);
+  if (saved && saved.answered) {
+    mcqState.attempt     = saved.attempt;
+    mcqState.hintUsed    = saved.hintUsed;
+    mcqState.answered    = true;
+    mcqState.outcome     = saved.outcome;
+    mcqState.selectedIdx = saved.selectedIdx;
+    mcqState.correct     = saved.outcome === 'correct';
+    replayMCQAnswered(saved, challenge);
+  }
+}
+
+function replayMCQAnswered(saved, ch) {
+  const opts = document.querySelectorAll('.mcq-opt');
+  opts.forEach((o,i) => {
+    o.classList.add('mcq-locked');
+    o.style.cursor = 'default';
+    o.style.pointerEvents = 'none';
+    if (i === ch.correctIdx) {
+      o.style.borderColor = 'var(--green)';
+      o.style.background  = 'rgba(0,255,65,0.06)';
+    } else if (saved.outcome === 'wrong' && i === saved.selectedIdx) {
+      o.style.borderColor = 'var(--red)';
+      o.style.background  = 'rgba(255,68,68,0.06)';
+    }
+  });
+  const msg = saved.outcome === 'correct' ? 'ARIA // Correct — threat neutralised. (resumed)'
+            : saved.outcome === 'giveup'  ? "ARIA // Conceded. Here's the debrief — (resumed)"
+            : 'ARIA // Breach uncontained. (resumed)';
+  showMCQFeedback(saved.outcome === 'correct', 0, msg, ch.debrief, ch.source);
+  document.getElementById('mcqActions').style.display     = 'none';
+  document.getElementById('mcqPostActions').style.display = 'flex';
 }
 
 function selectMCQ(btn, idx) {
   if (mcqState.answered) return;
   const ch = mcqState.challenge;
+  mcqState.selectedIdx = idx;
   const opts = document.querySelectorAll('.mcq-opt');
   opts.forEach(o => {
     o.classList.add('mcq-locked');
@@ -2520,6 +2570,7 @@ function selectMCQ(btn, idx) {
   if (isCorrect) {
     mcqState.answered = true;
     mcqState.correct  = true;
+    mcqState.outcome  = 'correct';
     btn.style.borderColor = 'var(--green)';
     btn.style.background  = 'rgba(0,255,65,0.06)';
     btn.querySelector('span').style.color = 'var(--green)';
@@ -2556,6 +2607,7 @@ function selectMCQ(btn, idx) {
       // Final wrong
       mcqState.answered = true;
       mcqState.correct  = false;
+      mcqState.outcome  = 'wrong';
       // Reveal correct
       opts[ch.correctIdx].style.borderColor = 'var(--green)';
       opts[ch.correctIdx].style.background  = 'rgba(0,255,65,0.06)';
@@ -2572,8 +2624,9 @@ function selectMCQ(btn, idx) {
   if (mcqState.answered) {
     document.getElementById('mcqActions').style.display    = 'none';
     document.getElementById('mcqPostActions').style.display = 'flex';
-    recordSolve('mcq_daily', ch.id, mcqState.correct ? 'correct' : 'wrong',
+    recordSolve('mcq_weekly', ch.id, mcqState.correct ? 'correct' : 'wrong',
                 mcqState.correct ? (mcqState.hintUsed ? CREDITS_MCQ.hint : CREDITS_MCQ.first) : CREDITS_MCQ.wrong);
+    saveMCQProgress();
   }
 }
 
@@ -2613,6 +2666,8 @@ function giveUpMCQ() {
   if (mcqState.answered) return;
   mcqState.answered = true;
   mcqState.correct  = false;
+  mcqState.outcome  = 'giveup';
+  mcqState.selectedIdx = null;
   const ch = mcqState.challenge;
   // Lock all options, reveal correct
   document.querySelectorAll('.mcq-opt').forEach((o,i) => {
@@ -2631,7 +2686,8 @@ function giveUpMCQ() {
   applyCredits(CREDITS_MCQ.wrong);
   document.getElementById('mcqActions').style.display     = 'none';
   document.getElementById('mcqPostActions').style.display = 'flex';
-  recordSolve('mcq_daily', ch.id, 'giveup', CREDITS_MCQ.wrong);
+  recordSolve('mcq_weekly', ch.id, 'giveup', CREDITS_MCQ.wrong);
+  saveMCQProgress();
   setTimeout(() => showNudge(false), 1600);
 }
 
@@ -2643,7 +2699,7 @@ function shareMCQ() {
     `\n\nhttps://otcyberarena.com\n\n#OTSecurity #ICSCybersecurity #OTCyberArena`
   );
   window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://otcyberarena.com&summary=${text}`, '_blank');
-  logEvent('share_click', { game_type: 'mcq_daily' });
+  logEvent('share_click', { game_type: 'mcq_weekly' });
 }
 
 // ── CYWORDLE ENGINE ───────────────────────────────
@@ -2657,12 +2713,22 @@ let wordleState = {
   failed: false
 };
 
+function cywordleProgressKey(word) { return `ec_cywordle_progress_${word}`; }
+function saveCywordleProgress() {
+  localStorage.setItem(cywordleProgressKey(wordleState.word), JSON.stringify({
+    guesses: wordleState.guesses, solved: wordleState.solved, failed: wordleState.failed
+  }));
+}
+function loadCywordleProgress(word) {
+  try { return JSON.parse(localStorage.getItem(cywordleProgressKey(word))); } catch { return null; }
+}
+
 function renderCywordle(wordData) {
   const word = wordData.word.toUpperCase();
   wordleState = { word, clue:wordData.clue, guesses:[], currentGuess:'', maxGuesses:6, solved:false, failed:false };
   const wordLen = word.length;
 
-  const body = document.getElementById('gameCardBody');
+  const body = document.getElementById('gameCardBodyWordle');
   body.innerHTML = `
     <div id="wordleWrap">
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.5">
@@ -2744,7 +2810,33 @@ function renderCywordle(wordData) {
       </div>
     </div>`;
 
-  document.getElementById('wordleGuessInput').focus();
+  document.getElementById('wordleGuessInput').focus({preventScroll:true});
+
+  // Resume in-progress/finished state (persistence, v2.0.0) — visual replay
+  // only, never re-award credits or re-insert a solve record.
+  const saved = loadCywordleProgress(word);
+  if (saved && saved.guesses && saved.guesses.length) replayCywordleProgress(saved);
+}
+
+function replayCywordleProgress(saved) {
+  saved.guesses.forEach((g,i) => {
+    renderWordleRow(i, g.guess, g.result);
+    updateWordleKeyboard(g.guess, g.result);
+  });
+  wordleState.guesses = saved.guesses.slice();
+  if (saved.solved || saved.failed) {
+    wordleState.solved = saved.solved;
+    wordleState.failed = saved.failed;
+    document.getElementById('wordleInput').style.display = 'none';
+    document.getElementById('wordlePost').style.display   = 'block';
+    setWordleMessage(saved.solved
+      ? `ARIA // Correct — ${wordleState.word}. Threat neutralised. (resumed)`
+      : `ARIA // The word was: ${wordleState.word}. ${wordleState.clue} (resumed)`,
+      saved.solved ? 'var(--green)' : 'var(--red)');
+  } else {
+    const remaining = wordleState.maxGuesses - wordleState.guesses.length;
+    setWordleMessage(`ARIA // ${remaining} attempt${remaining!==1?'s':''} remaining. (resumed)`, 'var(--muted)');
+  }
 }
 
 function wordleKeyPress(letter) {
@@ -2828,6 +2920,8 @@ function submitWordleGuess() {
     const remaining = wordleState.maxGuesses - wordleState.guesses.length;
     setWordleMessage(`ARIA // ${remaining} attempt${remaining!==1?'s':''} remaining.`, 'var(--muted)');
   }
+
+  saveCywordleProgress();
 }
 
 function scoreWordleGuess(guess, target) {
@@ -2917,34 +3011,59 @@ function shareWordle() {
   logEvent('share_click', { game_type: 'cywordle' });
 }
 
-// ── RENDER GAME (dispatcher) ──────────────────────
-function renderGame() {
-  const q = todayQueue || STUB_DAILY_QUEUE;
-  const badge = document.getElementById('gameTypeBadge');
-  const dayLbl = document.getElementById('gameDayLabel');
-  if (badge)  badge.textContent  = q.game_type === 'cywordle' ? 'OT CYWORDLE' : 'DAILY MCQ';
-  if (dayLbl) dayLbl.textContent = q.day_label || getDayLabel();
+// ── RENDER BOTH GAMES (v2.0.0: MCQ + Cywordle both live all week, no tabs) ──
+function renderBothGames() {
+  const wk = weeklyQueue || STUB_WEEKLY_QUEUE;
 
-  // Remove placeholder
-  const ph = document.getElementById('gamePlaceholder');
-  if (ph) ph.remove();
+  const phM = document.getElementById('gamePlaceholderMCQ');
+  if (phM) phM.remove();
+  const phW = document.getElementById('gamePlaceholderWordle');
+  if (phW) phW.remove();
 
-  const tabM = document.getElementById('tabMCQ');
-  const tabW = document.getElementById('tabWordle');
-  if (q.game_type === 'cywordle') {
-    if (tabM) { tabM.classList.remove('active'); tabM.setAttribute('aria-selected','false'); }
-    if (tabW) { tabW.classList.add('active');    tabW.setAttribute('aria-selected','true'); }
-    // Pick today's word from bank by day-of-year index
-    const doy = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
-    const wordData = OT_WORDS_BANK[doy % OT_WORDS_BANK.length];
-    currentWordData = wordData;
-    renderCywordle(wordData);
+  currentMCQId = (wk.mcq_ids && wk.mcq_ids[0]) || 'ec_s1e1_fa1';
+  loadChallengeAndRender(currentMCQId);
+
+  const wordData = wk.cywordle || STUB_WORDLE;
+  currentWordData = wordData;
+  renderCywordle(wordData);
+
+  applyBankOverride();
+}
+
+// ── ARCHIVE/BANK DEEP LINK (v2.0.0) ───────────────
+// archive-mcq.html / archive-cywordle.html link back here as
+// index.html?bank=<id>&type=mcq|cywordle for logged-in players.
+// Same renderMCQ/renderCywordle + localStorage progress keys as the
+// weekly cards, so "no repeat scoring" is enforced automatically —
+// once a challenge id / word is answered anywhere, it replays solved.
+function applyBankOverride() {
+  const params  = new URLSearchParams(location.search);
+  const bankId  = params.get('bank');
+  const bankType = params.get('type');
+  if (!bankId) return;
+
+  if (!currentPlayer) {
+    openModal('register');
+    return;
+  }
+
+  if (bankType === 'cywordle') {
+    const wd = OT_WORDS_BANK.find(w => w.word.toUpperCase() === bankId.toUpperCase()) || STUB_WORDLE;
+    currentWordData = wd;
+    renderCywordle(wd);
+    const badge = document.getElementById('cywordleBadgeLabel');
+    if (badge) badge.textContent = 'BANK REPLAY';
+    const lbl = document.getElementById('cywordleDayLabel');
+    if (lbl) lbl.textContent = 'From the archive';
+    document.getElementById('cywordleSection')?.scrollIntoView({behavior:'smooth'});
   } else {
-    if (tabM) { tabM.classList.add('active');    tabM.setAttribute('aria-selected','true'); }
-    if (tabW) { tabW.classList.remove('active'); tabW.setAttribute('aria-selected','false'); }
-    // Default: MCQ — load challenge JSON or fall back to stub
-    currentMCQId = q.challenge_id || 'ec_s1e1_fa1';
-    loadChallengeAndRender(currentMCQId);
+    currentMCQId = bankId;
+    loadChallengeAndRender(bankId);
+    const badge = document.getElementById('mcqBadgeLabel');
+    if (badge) badge.textContent = 'BANK REPLAY';
+    const lbl = document.getElementById('mcqDayLabel');
+    if (lbl) lbl.textContent = 'From the archive';
+    document.getElementById('mcqSection')?.scrollIntoView({behavior:'smooth'});
   }
 }
 
@@ -3015,7 +3134,9 @@ const FLAG_MAP = {
   CA:'🇨🇦',FR:'🇫🇷',NL:'🇳🇱',MY:'🇲🇾',NZ:'🇳🇿',KR:'🇰🇷',TH:'🇹🇭',CN:'🇨🇳'
 };
 
-let lbData = [...SEED_PLAYERS];  // fallback until Supabase loads
+// v2.0.0: SEED_PLAYERS only ever backs the IS_LOCAL/file:// dev preview.
+// Production must never show fake operatives — real data or an empty state.
+let lbData = [];
 let lbFilter = 'all';
 
 async function loadLeaderboard() {
@@ -3025,7 +3146,7 @@ async function loadLeaderboard() {
       .select('callsign,country,track,credits,current_streak')
       .order('credits', { ascending: false })
       .limit(20);
-    if (error || !data?.length) { lbData = [...SEED_PLAYERS]; }
+    if (error || !data?.length) { lbData = []; }
     else {
       lbData = data.map(p => ({
         callsign: p.callsign,
@@ -3037,7 +3158,7 @@ async function loadLeaderboard() {
       }));
     }
   } catch (e) {
-    lbData = [...SEED_PLAYERS];
+    lbData = [];
   }
   renderLeaderboard();
 }
@@ -3057,6 +3178,17 @@ function renderLeaderboard() {
 
   const container = document.getElementById('lbRows');
   if (!container) return;
+
+  if (!rows.length) {
+    container.innerHTML = `
+      <div class="lb-empty" style="padding:28px 16px;text-align:center;font-family:var(--mono);
+           font-size:12px;color:var(--muted);line-height:1.7">
+        ARIA // No operatives ranked yet.<br>
+        <span style="color:var(--accent)">Play this week's challenge to claim #1.</span>
+      </div>`;
+    return;
+  }
+
   container.innerHTML = rows.map((p,i) => {
     const rank = getRank(p.credits);
     const pos  = i+1;
@@ -3479,7 +3611,7 @@ function initHexBg() {
 
   // Mark hexes that sit under UI panels — threat dots only appear in margins
   function markCoveredHexes() {
-    const uiTargets = ['.navbar', '.hero-brand', '.game-panel', '.hero-rank-bar',
+    const uiTargets = ['.navbar', '.hero-brand', '.game-card', '.hero-rank-bar',
                        '.leaderboard-card', '.intel-item', '.episode-card',
                        '.score-module', '.hero-cta'];
     const rects = uiTargets
@@ -3501,35 +3633,23 @@ function initHexBg() {
 }
 
 
-// ── GAME MODE SWITCHER ────────────────────────────────
-let currentMCQId   = null;  // remembered for tab switching
-let currentWordData = null; // remembered for Cywordle tab
-
-function switchGameMode(mode) {
-  const tabMCQ    = document.getElementById('tabMCQ');
-  const tabWordle = document.getElementById('tabWordle');
-  if (tabMCQ)    { tabMCQ.classList.toggle('active', mode === 'mcq');      tabMCQ.setAttribute('aria-selected', mode==='mcq'); }
-  if (tabWordle) { tabWordle.classList.toggle('active', mode === 'cywordle'); tabWordle.setAttribute('aria-selected', mode==='cywordle'); }
-
-  if (mode === 'mcq') {
-    const id = currentMCQId || 'ec_s1e1_fa1';
-    if (IS_LOCAL) { renderMCQ(STUB_MCQ); }
-    else          { loadChallengeAndRender(id); }
-  } else {
-    const doy = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
-    const wd  = currentWordData || OT_WORDS_BANK[doy % OT_WORDS_BANK.length];
-    renderCywordle(wd);
-  }
-}
+// ── WEEKLY GAME STATE (v2.0.0: both cards always visible, no switcher) ──
+let currentMCQId   = null;  // this week's MCQ id
+let currentWordData = null; // this week's Cywordle word data
 
 // ── INIT ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initHexBg();
   updatePlayerUI();
-  loadDailyQueue();
+  loadWeeklyQueue();
   loadIntelFeed();
   loadLeaderboard();
   initLiveCount();
+
+  // Archive pages link back as index.html#register / #login for anon visitors
+  if (location.hash === '#register' || location.hash === '#login') {
+    openModal(location.hash === '#register' ? 'register' : 'login');
+  }
 
   // OTP digit auto-advance
   document.querySelectorAll('.otp-digit').forEach((input, idx, all) => {
@@ -3557,4 +3677,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 </body>
-</html>             
+</html>

@@ -1,0 +1,10 @@
+[
+  {
+    "week_start": "2026-07-05",
+    "mcq_ids": ["ec_s1e1_fa1"],
+    "cywordle": {
+      "word": "SCADA",
+      "clue": "Supervisory Control and Data Acquisition — the software layer that monitors and controls industrial processes."
+    }
+  }
+]

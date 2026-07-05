@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="ghost">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Past MCQ Challenges — OT CyberArena</title>
+<meta name="description" content="Browse past OT CyberArena MCQ challenges. Free to view, playable with a free account.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+[data-theme="ghost"] {
+  --bg: #050a05; --surface: #0a120a; --surface2: #0f1a0f; --border: #1a2e1a;
+  --accent: #00ff41; --accent-dim: rgba(0,255,65,0.12); --text: #e8f5e8; --muted: #5a7a5a;
+  --red: #ff4444; --mono: 'Share Tech Mono', monospace; --display: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif; --radius: 2px;
+}
+* , *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; overflow-x:clip; }
+body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100dvh; padding-bottom:env(safe-area-inset-bottom); }
+.topbar {
+  position:sticky; top:0; z-index:200; height:52px; padding:0 clamp(12px,3vw,28px);
+  background:rgba(5,10,5,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-mark { width:30px; height:30px; border:2px solid var(--accent); border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--accent); }
+.logo-text { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:0.04em; color:var(--text); }
+.logo-text .cyber { color:var(--accent); }
+.back-link { font-family:var(--mono); font-size:11px; color:var(--muted); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; }
+.back-link:hover { color:var(--accent); }
+.wrap { max-width:900px; margin:0 auto; padding:clamp(24px,4vw,48px) clamp(12px,3vw,28px) 60px; }
+.page-title { font-family:var(--display); font-weight:800; font-size:clamp(26px,3.5vw,38px); text-transform:uppercase; margin-bottom:6px; }
+.page-sub { font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:28px; line-height:1.6; }
+.card-grid { display:flex; flex-direction:column; gap:12px; }
+.mcq-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 18px; cursor:pointer; transition:border-color .15s, transform .1s;
+}
+.mcq-card:hover { border-color:rgba(0,255,65,0.3); transform:translateY(-1px); }
+.mcq-card-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.mcq-tag { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent);
+  border:1px solid var(--accent); background:var(--accent-dim); padding:2px 8px; border-radius:var(--radius); }
+.mcq-tag.week { color:#ffd700; border-color:#ffd700; background:rgba(255,215,0,0.1); }
+.mcq-credits { font-family:var(--mono); font-size:10px; color:var(--muted); margin-left:auto; }
+.mcq-question { font-size:14px; line-height:1.5; color:var(--text); }
+.mcq-lock { font-size:12px; color:var(--muted); margin-left:6px; }
+.gate-note {
+  display:none; margin-top:20px; padding:16px; background:var(--surface); border:1px solid var(--border);
+  border-left:3px solid var(--accent); border-radius:var(--radius); font-family:var(--mono); font-size:12px;
+  color:var(--muted); line-height:1.6;
+}
+.gate-note.show { display:block; }
+.gate-btns { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+.btn-primary, .btn-secondary {
+  font-family:var(--display); font-weight:700; font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+  padding:10px 18px; border-radius:var(--radius); cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;
+}
+.btn-primary { background:var(--accent); color:var(--bg); border:none; }
+.btn-secondary { background:transparent; color:var(--text); border:1px solid var(--border); }
+.loading { font-family:var(--mono); font-size:12px; color:var(--muted); padding:20px 0; }
+footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(--muted); padding:24px; opacity:.7; }
+</style>
+</head>
+<body>
+
+<header class="topbar" role="banner">
+  <a href="index.html" class="logo" aria-label="OT CyberArena Home">
+    <div class="logo-mark" aria-hidden="true">OT</div>
+    <div class="logo-text">OT <span class="cyber">Cyber</span>Arena</div>
+  </a>
+  <a class="back-link" href="index.html">← Back to Arena</a>
+</header>
+
+<div class="wrap">
+  <h1 class="page-title">Past MCQ Challenges</h1>
+  <p class="page-sub">ARIA // Every MCQ we've ever run, reverse-chronological. This week's is live on the
+    homepage — everything else is the bank. <strong style="color:var(--accent)">Free account required to play</strong>;
+    full credit on first attempt, no repeat scoring.</p>
+
+  <div class="card-grid" id="cardGrid">
+    <div class="loading">ARIA // Loading the archive...</div>
+  </div>
+
+  <div class="gate-note" id="gateNote">
+    <span style="color:var(--accent)">ARIA //</span> Sign in or join free to play the bank — it's the fastest
+    way to start climbing the leaderboard.
+    <div class="gate-btns">
+      <a class="btn-primary" href="index.html#register">Join Free — 30 Seconds</a>
+      <a class="btn-secondary" href="index.html#login">Sign In</a>
+    </div>
+  </div>
+</div>
+
+<footer>OT CyberArena · External Community · Free · Vendor-Neutral</footer>
+
+<script>
+const IS_LOCAL = location.protocol === 'file:';
+
+function getPlayer() {
+  try { return JSON.parse(localStorage.getItem('ec_player')) || null; } catch { return null; }
+}
+
+// Content schema has drifted between episodes (s1e1: credits/season/episode(number)
+// vs s1e2: points/episode(string "s1e2")/day). Normalize for display here too —
+// same fix as renderMCQ in the main engine.
+function normalize(ch) {
+  const epLabel = typeof ch.episode === 'number'
+    ? `S${ch.season || 1} · E${ch.episode}`
+    : (ch.episode || '').toUpperCase().replace(/^S(\d)E(\d)$/, 'S$1 · E$2') || 'S1 · E?';
+  return {
+    id: ch.id,
+    epLabel,
+    credits: ch.credits ?? ch.points ?? 20,
+    question: ch.question || ''
+  };
+}
+
+async function loadArchive() {
+  const grid = document.getElementById('cardGrid');
+  let items = [];
+  let weekMcqId = null;
+
+  if (IS_LOCAL) {
+    grid.innerHTML = `<div class="loading">ARIA // Local file preview — open via the live site to see the real archive.</div>`;
+    return;
+  }
+
+  try {
+    const wq = await fetch('weekly_queue.json?v=' + Date.now()).then(r => r.json());
+    const today = new Date().toISOString().slice(0,10);
+    const sorted = [...wq].sort((a,b) => a.week_start.localeCompare(b.week_start));
+    const current = [...sorted].reverse().find(w => w.week_start <= today) || sorted[sorted.length-1];
+    weekMcqId = current?.mcq_ids?.[0] || null;
+  } catch {}
+
+  try {
+    const [a, b] = await Promise.all([
+      fetch('challenges/ec_s1e1_fa.json?v=' + Date.now()).then(r => r.ok ? r.json() : []),
+      fetch('challenges/ec_s1e2_fa.json?v=' + Date.now()).then(r => r.ok ? r.json() : [])
+    ]);
+    items = [...a, ...b].map(normalize).reverse(); // newest episode first
+  } catch {
+    grid.innerHTML = `<div class="loading">ARIA // Could not load the archive right now. Try again shortly.</div>`;
+    return;
+  }
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="loading">ARIA // No past MCQs yet — check back after this week's drop.</div>`;
+    return;
+  }
+
+  const player = getPlayer();
+
+  grid.innerHTML = items.map(it => `
+    <div class="mcq-card" data-id="${it.id}">
+      <div class="mcq-card-top">
+        <span class="mcq-tag${it.id === weekMcqId ? ' week' : ''}">${it.id === weekMcqId ? 'This Week' : it.epLabel}</span>
+        <span class="mcq-credits">+${it.credits} CR ${player ? '' : '<span class="mcq-lock">🔒</span>'}</span>
+      </div>
+      <div class="mcq-question">${it.question}</div>
+    </div>`).join('');
+
+  grid.querySelectorAll('.mcq-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      if (!getPlayer()) {
+        document.getElementById('gateNote').classList.add('show');
+        document.getElementById('gateNote').scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
+      window.location.href = `index.html?bank=${encodeURIComponent(id)}&type=mcq#mcqSection`;
+    });
+  });
+}
+
+loadArchive();
+</script>
+</body>
+</html>

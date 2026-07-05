@@ -1,7 +1,7 @@
 [
   {
     "id": "ec_s1e1_fa1",
-    "game_type": "mcq_daily",
+    "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
     "credits": 20,
@@ -22,7 +22,7 @@
   },
   {
     "id": "ec_s1e1_fa2",
-    "game_type": "mcq_daily",
+    "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
     "credits": 20,
@@ -43,7 +43,7 @@
   },
   {
     "id": "ec_s1e1_fa3",
-    "game_type": "mcq_daily",
+    "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
     "credits": 60,
@@ -64,7 +64,7 @@
   },
   {
     "id": "ec_s1e1_fa4",
-    "game_type": "mcq_daily",
+    "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
     "credits": 40,
@@ -85,7 +85,7 @@
   },
   {
     "id": "ec_s1e1_fa5",
-    "game_type": "mcq_daily",
+    "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
     "credits": 40,
@@ -106,7 +106,7 @@
   },
   {
     "id": "ec_s1e1_fa6",
-    "game_type": "mcq_daily",
+    "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
     "credits": 60,
@@ -127,7 +127,7 @@
   },
   {
     "id": "ec_s1e1_fa7",
-    "game_type": "mcq_daily",
+    "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
     "credits": 100,
