@@ -349,6 +349,24 @@ body {
 
 .btn-nav-ghost:hover { background: var(--accent-dim); }
 
+/* v2.0.1: nav decluttering — plain text links replace the two boxed
+   Login/Join buttons; the one strong CTA lives in the hero instead. */
+.nav-link {
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: none;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-link:hover { color: var(--accent); }
+
 /* ═══════════════════════════════════════════════
    THEME PANEL (dropdown)
    ═══════════════════════════════════════════════ */
@@ -699,12 +717,14 @@ html { overflow-x: clip; }
 /* v2.0.0: single stacked column, page order matches Sandip's section list
    (title -> MCQ -> Cywordle -> intel -> leaderboard -> join -> archive).
    Each section gets a consistent centered reading width instead of the old
-   cramped 3-column grid (root cause of the "messy" layout complaint). */
-.main > .game-section,
-.main > .intel-section,
-.main > .leaderboard-section,
-.main > .join-cta-section,
-.main > .archive-cta-section {
+   cramped 3-column grid (root cause of the "messy" layout complaint).
+   v2.0.1: selectors use descendant (not direct-child) combinator so this
+   still applies when a section is nested inside a .row-pair wrapper. */
+.main .game-section,
+.main .intel-section,
+.main .leaderboard-section,
+.main .join-cta-section,
+.main .archive-cta-section {
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
@@ -714,6 +734,54 @@ html { overflow-x: clip; }
    stretched cards past the viewport and clipped their right edge. Clamp them. */
 .main > * { min-width: 0; max-width: 100%; }
 .game-card, .game-card * { max-width: 100%; }
+
+/* ─── v2.0.1: DESKTOP 2-COLUMN PAIRING ───
+   Mobile (default): .row-pair is a plain block, children stack exactly as
+   before via the .main .game-section etc rule above — no behaviour change.
+   Desktop/laptop (>=900px): paired sections (MCQ+Cywordle, Intel+Leaderboard)
+   sit side by side. Sandip's flag: MCQ card height changes as someone
+   answers (feedback/debrief reveal), which would misalign a stretched grid
+   row. Fix: give paired panels a FIXED height with an internal scrollbar for
+   just the growing content — desktop only, never on mobile. */
+@media (min-width: 900px) {
+  .row-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .row-pair .game-section,
+  .row-pair .intel-section,
+  .row-pair .leaderboard-section {
+    max-width: none;
+    margin: 0;
+    height: 620px;
+    display: flex;
+    flex-direction: column;
+  }
+  .row-pair .game-card,
+  .row-pair .leaderboard-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .row-pair .game-card-body,
+  .row-pair .intel-grid,
+  .row-pair .lb-rows {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .row-pair .game-card-body::-webkit-scrollbar,
+  .row-pair .intel-grid::-webkit-scrollbar,
+  .row-pair .lb-rows::-webkit-scrollbar { width: 6px; }
+  .row-pair .game-card-body::-webkit-scrollbar-thumb,
+  .row-pair .intel-grid::-webkit-scrollbar-thumb,
+  .row-pair .lb-rows::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  /* Archive links section isn't paired — widen it to match so it doesn't
+     look squeezed next to the wider rows above it. */
+  .main .archive-cta-section { max-width: 1200px; }
+}
 
 /* ─── JOIN / SIGN-IN CTA BAND ─── */
 .join-cta-card {
@@ -1093,6 +1161,33 @@ html { overflow-x: clip; }
 .modal-close:hover { border-color: var(--accent); color: var(--accent); }
 
 .modal-body { padding: 20px; }
+
+/* v2.0.1: Share-tone picker (modalShare) */
+.share-tone-list { display: flex; flex-direction: column; gap: 10px; }
+.share-tone-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: border-color 0.15s;
+  min-height: 48px;
+  width: 100%;
+}
+.share-tone-btn:hover { border-color: var(--accent); }
+.share-tone-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text);
+}
+.share-tone-desc { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 
 /* Form elements */
 .form-group { margin-bottom: 18px; }
@@ -1518,9 +1613,9 @@ footer {
       <span id="chipCallsign">—</span>
       <span class="rank-chip" id="chipRank">—</span>
     </div>
-    <!-- Shown when logged out -->
-    <button class="btn-nav-ghost" id="btnLogin"  onclick="openModal('login')"   aria-label="Log in">LOG IN</button>
-    <button class="btn-nav"       id="btnJoin"   onclick="openModal('register')" aria-label="Join the arena">JOIN ARENA</button>
+    <!-- Shown when logged out — v2.0.1: plain text links, decluttered nav -->
+    <button class="nav-link" id="btnLogin"  onclick="openModal('login')"   aria-label="Sign in">Sign In</button>
+    <button class="nav-link" id="btnJoin"   onclick="openModal('register')" aria-label="Sign up">Sign Up</button>
     <!-- Theme picker -->
     <button class="theme-btn" id="themeToggle" onclick="toggleThemePanel()" aria-label="Change theme" title="Change theme">🎨</button>
   </div>
@@ -1574,7 +1669,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.0 · 2026-07-05 · Ghost Protocol</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.1 · 2026-07-06 · Ghost Protocol</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1582,7 +1677,7 @@ footer {
       <span class="aria-prefix">ARIA //</span>
       Real-world ICS threats. Simulated. Gamified. Scored.<br>
       No vendor agenda. No fluff. Just the scenarios that define the discipline.<br><br>
-      One challenge. No login required. See if you belong here.
+      Drop in and play. Join later to save your progress and rank up.
     </div>
 
     <!-- LAUNCH PHASE: feature highlights replace live stats (restore stats-row when user base grows)
@@ -1594,15 +1689,11 @@ footer {
     </div>
     -->
 
-    <div class="feature-pills">
-      <span class="feature-pill">Free — Always</span>
-      <span class="feature-pill">New Challenges Weekly</span>
-      <span class="feature-pill">OT / ICS Focused</span>
-      <span class="feature-pill">No Vendor Agenda</span>
-    </div>
+    <!-- v2.0.1: feature pills removed — redundant with "The Global Community
+         for OT Security" tagline above (Sandip: decluttering pass) -->
 
     <div class="hero-cta">
-      <button class="btn-primary" id="heroCTABtn" onclick="openModal('register')">Join Free — 30 Seconds</button>
+      <button class="btn-primary" id="heroCTABtn" onclick="openModal('register')">Join Free</button>
     </div>
   </div>
 
@@ -1612,6 +1703,9 @@ footer {
 <!-- ─── MAIN CONTENT — stacked sections, page order: MCQ, Cywordle,
      Intel, Leaderboard, Join CTA, Archive access, Episode Bank ─── -->
 <div class="main">
+
+  <!-- v2.0.1: paired on desktop (>=900px), stacked on mobile — see .row-pair CSS -->
+  <div class="row-pair">
 
   <!-- SECTION 2: THIS WEEK'S MCQ -->
   <section class="game-section" id="mcqSection" aria-label="This Week's MCQ Challenge">
@@ -1657,6 +1751,8 @@ footer {
     </div>
   </section>
 
+  </div><!-- /row-pair: MCQ + Cywordle -->
+
   <!-- Register nudge (shown after either game attempt) -->
   <div class="reg-nudge" id="regNudge" aria-live="polite" style="max-width:640px;margin:0 auto;">
     <div class="reg-nudge-title" id="nudgeTitle">You belong here.</div>
@@ -1666,6 +1762,9 @@ footer {
       <button class="btn-secondary" onclick="closeNudge()">Maybe Later</button>
     </div>
   </div>
+
+  <!-- v2.0.1: paired on desktop (>=900px), stacked on mobile — see .row-pair CSS -->
+  <div class="row-pair">
 
   <!-- SECTION 4: THREAT INTEL FEED -->
   <section class="intel-section" aria-label="Threat Intelligence Feed">
@@ -1705,6 +1804,8 @@ footer {
       </div>
     </div>
   </section>
+
+  </div><!-- /row-pair: Intel + Leaderboard -->
 
   <!-- SECTION 6: SIGN IN / SIGN UP -->
   <section class="join-cta-section" aria-label="Join or sign in">
@@ -2003,6 +2104,35 @@ footer {
   </div>
 </div>
 
+<!-- SHARE MODAL (v2.0.1) — 3-way tone picker instead of one fixed template -->
+<div class="modal-overlay" id="modalShare" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="shareModalTitle">Share Your Result</div>
+        <div class="modal-subtitle">ARIA // Pick a tone — we'll build the post for you.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('share')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="share-tone-list">
+        <button class="share-tone-btn" onclick="shareWithTone('competitive')">
+          <span class="share-tone-name">Competitive</span>
+          <span class="share-tone-desc">Dares others to beat your score</span>
+        </button>
+        <button class="share-tone-btn" onclick="shareWithTone('streak')">
+          <span class="share-tone-name">Streak-flex</span>
+          <span class="share-tone-desc">Short, stat-first brag</span>
+        </button>
+        <button class="share-tone-btn" onclick="shareWithTone('learning')">
+          <span class="share-tone-name">Learning-forward</span>
+          <span class="share-tone-desc">Reads as professional development</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ─── FOOTER ─── -->
 <footer role="contentinfo">
   <div class="footer-left">
@@ -2013,7 +2143,7 @@ footer {
     <span class="footer-link" onclick="openModal('register')">Join Arena</span>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v1.3.2</span>
+    <span class="version-stamp" id="versionStamp">EC v2.0.1</span>
   </div>
 </footer>
 
@@ -2026,7 +2156,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.0';
+const EC_VERSION = '2.0.1';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── THEME SYSTEM ─────────────────────────────────
@@ -2297,7 +2427,7 @@ function updatePlayerUI() {
     if (cta) { cta.textContent = "▶ Play This Week's Challenge"; cta.onclick = () => document.getElementById("mcqSection")?.scrollIntoView({behavior:"smooth"}); }
   } else {
     const cta = document.getElementById('heroCTABtn');
-    if (cta) { cta.textContent = "Join Free — 30 Seconds"; cta.onclick = () => openModal("register"); }
+    if (cta) { cta.textContent = "Join Free"; cta.onclick = () => openModal("register"); }
   }
 }
 
@@ -2501,7 +2631,7 @@ function renderMCQ(rawChallenge) {
           <button class="btn-primary" onclick="openModal('register')" style="flex:1;min-width:160px">
             Join Free — Save Score
           </button>
-          <button onclick="shareMCQ()"
+          <button onclick="openSharePicker('mcq')"
             style="background:#0a66c2;color:#fff;border:none;padding:12px 16px;
                    font-family:var(--display);font-weight:700;font-size:12px;
                    text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
@@ -2691,16 +2821,9 @@ function giveUpMCQ() {
   setTimeout(() => showNudge(false), 1600);
 }
 
-function shareMCQ() {
-  const correct = mcqState.correct;
-  const text = encodeURIComponent(
-    `I just tested my OT cybersecurity knowledge on OT CyberArena — the free, vendor-neutral ICS security challenge platform.\n\n` +
-    (correct ? '✅ Correct on the first attempt!' : '📚 Learned something new today.') +
-    `\n\nhttps://otcyberarena.com\n\n#OTSecurity #ICSCybersecurity #OTCyberArena`
-  );
-  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://otcyberarena.com&summary=${text}`, '_blank');
-  logEvent('share_click', { game_type: 'mcq_weekly' });
-}
+// v2.0.1: replaced by the 3-way tone picker (openSharePicker/shareWithTone),
+// defined once both mcqState and wordleState exist — see below the Cywordle
+// engine. Sandip: let the player choose the tone instead of one fixed post.
 
 // ── CYWORDLE ENGINE ───────────────────────────────
 let wordleState = {
@@ -2767,12 +2890,12 @@ function renderCywordle(wordData) {
           onfocus="this.style.borderColor='var(--accent)'"
           onblur="this.style.borderColor='var(--border)'"
           onkeydown="if(event.key==='Enter')submitWordleGuess()"/>
-        <button onclick="submitWordleGuess()"
+        <button onclick="submitWordleGuess()" aria-label="Submit guess" title="Submit guess"
           style="background:var(--accent);color:var(--bg);border:none;
-                 padding:0 18px;font-family:var(--display);font-weight:700;font-size:13px;
-                 letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
-                 border-radius:var(--radius);min-height:48px;transition:opacity .15s"
-          onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">GUESS</button>
+                 padding:0 16px;font-family:var(--display);font-weight:700;font-size:20px;
+                 line-height:1;cursor:pointer;flex-shrink:0;
+                 border-radius:var(--radius);min-height:48px;min-width:48px;transition:opacity .15s"
+          onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">⏎</button>
       </div>
 
       <div id="wordleKeyboard" style="display:flex;flex-direction:column;gap:4px;user-select:none">
@@ -2798,7 +2921,7 @@ function renderCywordle(wordData) {
           <button class="btn-primary" onclick="openModal('register')" style="flex:1;min-width:160px">
             Join Free — Save Score
           </button>
-          <button onclick="shareWordle()"
+          <button onclick="openSharePicker('cywordle')"
             style="background:#0a66c2;color:#fff;border:none;padding:12px 16px;
                    font-family:var(--display);font-weight:700;font-size:12px;
                    text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
@@ -2996,19 +3119,57 @@ function setWordleMessage(msg, color) {
   el.style.color  = color || 'var(--muted)';
 }
 
-function shareWordle() {
+// ── LINKEDIN SHARE — 3-way tone picker (v2.0.1) ──────────────────────────
+// Sandip: instead of one fixed post, let the player pick how they want to
+// sound — Competitive (dares others to beat the score), Streak-flex (short,
+// stat-first), or Learning-forward (reads as professional development, not
+// a game score). Covers both MCQ and Cywordle shares.
+let shareContext = null; // { gameType: 'mcq' | 'cywordle' }
+
+function openSharePicker(gameType) {
+  shareContext = { gameType };
+  openModal('share');
+}
+
+function buildShareText(gameType, tone) {
+  if (gameType === 'mcq') {
+    const correct = mcqState.correct;
+    if (tone === 'competitive') {
+      return correct
+        ? `Nailed this week's OT security question on my first try. Think you can? otcyberarena.com`
+        : `This week's OT security question got me. Think you can crack it? otcyberarena.com`;
+    }
+    if (tone === 'streak') {
+      return `This week's OT CyberArena MCQ: ${correct ? '✅ solved' : '❌ missed'}. otcyberarena.com #OTSecurity`;
+    }
+    return `Sharpened my OT/ICS security knowledge today with OT CyberArena's weekly challenge. Free, no login needed: otcyberarena.com`;
+  }
+
+  // cywordle
   const emojiMap = { correct:'🟩', present:'🟨', absent:'⬛' };
-  const rows = wordleState.guesses.map(g =>
-    g.result.map(r => emojiMap[r]||'⬛').join('')
-  ).join('\n');
-  const status = wordleState.solved
-    ? `Solved in ${wordleState.guesses.length}/${wordleState.maxGuesses}`
-    : 'Did not solve today';
-  const text = encodeURIComponent(
-    `OT Cywordle — ${status}\n${rows}\n\nhttps://otcyberarena.com #OTSecurity #OTCyberArena`
-  );
+  const rows = wordleState.guesses.map(g => g.result.map(r => emojiMap[r]||'⬛').join('')).join('\n');
+  const solved = wordleState.solved;
+  if (tone === 'competitive') {
+    return solved
+      ? `Solved today's OT Cywordle in ${wordleState.guesses.length}/${wordleState.maxGuesses}. Think you know your OT security terms? Beat my score → otcyberarena.com`
+      : `Today's OT Cywordle got me. Think you can crack it? otcyberarena.com`;
+  }
+  if (tone === 'streak') {
+    return (solved
+      ? `OT Cywordle: cracked it in ${wordleState.guesses.length} guesses.\n${rows}\nYour turn`
+      : `OT Cywordle: didn't crack it today.\n${rows}\nYour turn`) + ` → otcyberarena.com #OTSecurity`;
+  }
+  return `Learned a new OT security term today via OT CyberArena's Cywordle. Free weekly challenge, 2 minutes: otcyberarena.com`;
+}
+
+function shareWithTone(tone) {
+  if (!shareContext) return;
+  const gameType = shareContext.gameType;
+  const text = encodeURIComponent(buildShareText(gameType, tone));
   window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://otcyberarena.com&summary=${text}`, '_blank');
-  logEvent('share_click', { game_type: 'cywordle' });
+  logEvent('share_click', { game_type: gameType === 'mcq' ? 'mcq_weekly' : 'cywordle', tone });
+  closeModal('share');
+  shareContext = null;
 }
 
 // ── RENDER BOTH GAMES (v2.0.0: MCQ + Cywordle both live all week, no tabs) ──
@@ -3139,6 +3300,21 @@ const FLAG_MAP = {
 let lbData = [];
 let lbFilter = 'all';
 
+// ── TEMP (2026-07-06): STAGING VISUAL PREVIEW ONLY ──────────────────────
+// Sandip asked to see 5 dummy rows so he can review the leaderboard's look
+// before real players exist. This must NOT ship to the live domain — flip
+// SHOW_STAGING_LEADERBOARD_PREVIEW to false (or delete this block down to
+// the ───── line) before promoting to otcyberarena.com.
+const SHOW_STAGING_LEADERBOARD_PREVIEW = true;
+const STAGING_PREVIEW_PLAYERS = [
+  { callsign:'GridWatch_AUS',  track:'CP', credits:1920, country:'AU', rank:'Ghost in the Machine' },
+  { callsign:'NullVector_SGS', track:'CP', credits:1640, country:'SG', rank:'Ghost in the Machine' },
+  { callsign:'ThreatHunt_USS', track:'CP', credits:1340, country:'US', rank:'Threat Hunter' },
+  { callsign:'SOCGuard_DES',   track:'CP', credits:890,  country:'DE', rank:'SOC Analyst' },
+  { callsign:'FieldOps_INS',   track:'FA', credits:720,  country:'IN', rank:'Field Tech' }
+];
+// ─────────────────────────────────────────────────────────────────────────
+
 async function loadLeaderboard() {
   if (IS_LOCAL) { lbData = [...SEED_PLAYERS]; renderLeaderboard(); return; }
   try {
@@ -3146,7 +3322,9 @@ async function loadLeaderboard() {
       .select('callsign,country,track,credits,current_streak')
       .order('credits', { ascending: false })
       .limit(20);
-    if (error || !data?.length) { lbData = []; }
+    if (error || !data?.length) {
+      lbData = SHOW_STAGING_LEADERBOARD_PREVIEW ? [...STAGING_PREVIEW_PLAYERS] : [];
+    }
     else {
       lbData = data.map(p => ({
         callsign: p.callsign,
