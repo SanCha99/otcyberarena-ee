@@ -8,5 +8,15 @@
       "word": "CERT",
       "clue": "Computer Emergency Response Team — the coordination group you notify when an ICS incident hits."
     }
+  },
+  {
+    "week_start": "2026-07-10",
+    "mcq_ids": [
+      "ec_s1e1_fa1"
+    ],
+    "cywordle": {
+      "word": "PATCH",
+      "clue": "The fix a vendor ships for a known vulnerability — applying it in OT usually needs a planned maintenance window."
+    }
   }
 ]
