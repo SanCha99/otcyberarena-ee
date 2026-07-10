@@ -2,6 +2,7 @@
   {
     "week_start": "2026-07-05",
     "mcq_ids": [
+      "ec_s1e1_fa1",
       "ec_s1e1_fa2"
     ],
     "cywordle": {
@@ -12,7 +13,7 @@
   {
     "week_start": "2026-07-10",
     "mcq_ids": [
-      "ec_s1e1_fa1"
+      "ec_s1e1_fa3"
     ],
     "cywordle": {
       "word": "PATCH",
