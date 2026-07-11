@@ -7,7 +7,7 @@
     ],
     "cywordle": {
       "word": "CERT",
-      "clue": "Computer Emergency Response Team — the coordination group you notify when an ICS incident hits."
+      "clue": "Computer Emergency Response Team \u2014 the coordination group you notify when an ICS incident hits."
     }
   },
   {
@@ -17,7 +17,17 @@
     ],
     "cywordle": {
       "word": "PATCH",
-      "clue": "The fix a vendor ships for a known vulnerability — applying it in OT usually needs a planned maintenance window."
+      "clue": "The fix a vendor ships for a known vulnerability \u2014 applying it in OT usually needs a planned maintenance window."
+    }
+  },
+  {
+    "week_start": "2026-07-11",
+    "mcq_ids": [
+      "ec_s1e1_fa4"
+    ],
+    "cywordle": {
+      "word": "LADDER",
+      "clue": "A widely used PLC programming language whose diagrams resemble the rails and rungs of this physical structure."
     }
   }
 ]
