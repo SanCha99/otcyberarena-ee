@@ -29,5 +29,15 @@
       "word": "LADDER",
       "clue": "A widely used PLC programming language whose diagrams resemble the rails and rungs of this physical structure."
     }
+  },
+  {
+    "week_start": "2026-07-13",
+    "mcq_ids": [
+      "ec_s1e1_fa5"
+    ],
+    "cywordle": {
+      "word": "ROOT",
+      "clue": "The highest-privilege account on a Unix-based system, and often an attacker's ultimate goal after breaching a network."
+    }
   }
 ]
