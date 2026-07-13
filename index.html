@@ -1596,7 +1596,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.2 · 2026-07-11 · Ghost Protocol</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.3 · 2026-07-13 · Ghost Protocol</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2011,7 +2011,7 @@ footer {
     <span class="footer-link" onclick="openModal('register')">Join Arena</span>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.0.2</span>
+    <span class="version-stamp" id="versionStamp">EC v2.0.3</span>
   </div>
 </footer>
 
@@ -2024,7 +2024,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.2';
+const EC_VERSION = '2.0.3';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── THEME SYSTEM ─────────────────────────────────
@@ -2416,6 +2416,7 @@ function normalizeMCQChallenge(challenge) {
     ...challenge,
     credits:       challenge.credits ?? challenge.points ?? 20,
     concept_brief: challenge.concept_brief ?? challenge.scenario ?? '',
+    aria_hint:     challenge.aria_hint ?? '',
     source: challenge.source ?? (Array.isArray(challenge.sources)
               ? challenge.sources.map(s => s.url ? `${s.text} — ${s.url}` : s.text).join(' | ')
               : '')
@@ -2435,16 +2436,24 @@ function renderMCQ(rawChallenge) {
         <span id="mcqAttemptLabel" style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto"></span>
       </div>
 
-      <div class="mcq-concept" id="mcqConcept" style="display:none;
+      <div class="mcq-concept" id="mcqConcept" style="
            background:var(--accent-dim);border-left:2px solid var(--accent);
            padding:10px 14px;margin-bottom:14px;
            font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6;border-radius:var(--radius)">
-        <span style="color:var(--accent)">ARIA // BRIEF —</span>
+        <span style="color:var(--accent)">ARIA // SCENARIO —</span>
         ${challenge.concept_brief || ''}
       </div>
 
       <div class="mcq-question" style="font-size:15px;line-height:1.55;margin-bottom:18px;color:var(--text)">
         ${challenge.question}
+      </div>
+
+      <div class="mcq-hint-box" id="mcqHintBox" style="display:none;
+           background:rgba(179,136,255,0.08);border-left:2px solid #b388ff;
+           padding:10px 14px;margin-bottom:14px;
+           font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6;border-radius:var(--radius)">
+        <span style="color:#b388ff">ARIA // HINT —</span>
+        ${challenge.aria_hint || ''}
       </div>
 
       <div class="mcq-options" id="mcqOptions" style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px">
@@ -2646,9 +2655,10 @@ function useMCQHint() {
   mcqState.hintUsed = true;
   document.getElementById('mcqHint').style.opacity = '0.4';
   document.getElementById('mcqHint').disabled = true;
-  // Reveal concept brief
-  const brief = document.getElementById('mcqConcept');
-  if (brief) { brief.style.display = 'block'; brief.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+  // Reveal the ARIA hint (scenario is visible by default now — this is the
+  // separate one-sentence clue field, gated behind the credit penalty)
+  const hintBox = document.getElementById('mcqHintBox');
+  if (hintBox) { hintBox.style.display = 'block'; hintBox.scrollIntoView({behavior:'smooth',block:'nearest'}); }
   // Second attempt message
   document.getElementById('mcqAttemptLabel').textContent = 'HINT USED — MAX +20 CR';
 }
