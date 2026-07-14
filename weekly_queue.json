@@ -39,5 +39,15 @@
       "word": "ROOT",
       "clue": "The highest-privilege account on a Unix-based system, and often an attacker's ultimate goal after breaching a network."
     }
+  },
+  {
+    "week_start": "2026-07-14",
+    "mcq_ids": [
+      "ec_s1e1_fa6"
+    ],
+    "cywordle": {
+      "word": "WIPER",
+      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it \u2014 used in some of the most destructive attacks on OT networks."
+    }
   }
 ]
