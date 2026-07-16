@@ -49,5 +49,15 @@
       "word": "WIPER",
       "clue": "Malware built to permanently destroy or erase data and systems rather than steal it \u2014 used in some of the most destructive attacks on OT networks."
     }
+  },
+  {
+    "week_start": "2026-07-16",
+    "mcq_ids": [
+      "ec_s1e1_fa7"
+    ],
+    "cywordle": {
+      "word": "LEGACY",
+      "clue": "An outdated system or piece of equipment still running well past its expected lifespan, common in OT environments and often hard to patch or secure."
+    }
   }
 ]
