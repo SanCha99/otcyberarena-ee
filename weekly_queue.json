@@ -59,5 +59,15 @@
       "word": "LEGACY",
       "clue": "An outdated system or piece of equipment still running well past its expected lifespan, common in OT environments and often hard to patch or secure."
     }
+  },
+  {
+    "week_start": "2026-07-18",
+    "mcq_ids": [
+      "s1e2_fa01"
+    ],
+    "cywordle": {
+      "word": "HASH",
+      "clue": "A fixed-size digital fingerprint of a file or message, used to confirm it has not been altered or tampered with."
+    }
   }
 ]
