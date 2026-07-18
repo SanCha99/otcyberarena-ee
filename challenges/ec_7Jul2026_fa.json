@@ -1,0 +1,294 @@
+[
+  {
+    "id": "ec_7Jul2026_q1",
+    "game_type": "mcq_weekly",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "Security researchers at a Middle Eastern petrochemical facility discover malware communicating with Schneider Electric Triconex controllers via the TriStation protocol. Safety systems have shut down unexpectedly — twice — in the same week.",
+    "question": "Which category of OT system did TRITON/TRISIS specifically target?",
+    "options": [
+      "Distributed Control Systems managing the facility's primary chemical batch processes.",
+      "Safety Instrumented Systems — the last engineering layer preventing physical harm.",
+      "SCADA historian servers collecting and archiving process data for operators.",
+      "Engineering workstations running ladder logic programming tools for the PLCs."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "TRITON spoke TriStation — a protocol exclusive to one type of independent safety controller.",
+    "debrief": "TRITON/TRISIS was the first publicly known malware designed specifically to target Safety Instrumented Systems (SIS) — the independent engineering controls that detect unsafe conditions and trigger emergency shutdowns. Targeting a SIS bypasses the last protective layer before a physical incident occurs. Options A and D describe process control layers (DCS, PLCs); SIS are architecturally separate and independent. Option C (historian servers) are IT-adjacent data systems; TRITON spoke directly to SIS controller firmware via the TriStation protocol.",
+    "sources": [
+      {
+        "text": "MITRE ATT&CK — S1009 TRITON",
+        "url": "https://attack.mitre.org/software/S1009/"
+      },
+      {
+        "text": "Mandiant — Attackers Deploy New ICS Attack Framework TRITON",
+        "url": "https://cloud.google.com/blog/topics/threat-intelligence/attackers-deploy-new-ics-attack-framework-triton/"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q2",
+    "game_type": "mcq_weekly",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "Post-incident forensics of the December 2016 Kyiv blackout reveal malware modules that sent native industrial protocol messages directly to substation protection relays and RTUs — opening circuit breakers without any human operator involvement.",
+    "question": "Which industrial protocol did CRASHOVERRIDE/INDUSTROYER use to control Ukrainian substation equipment?",
+    "options": [
+      "Modbus TCP — the most common OT protocol for PLC register read/write operations.",
+      "DNP3 — the SCADA communication standard across North American electric utilities.",
+      "IEC 104 — the TCP/IP adaptation of the IEC 60870-5-101 telecontrol standard.",
+      "PROFINET — the Ethernet protocol used across Siemens industrial control environments."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "The Ukrainian grid was built with European utility protocols — not the North American standard.",
+    "debrief": "CRASHOVERRIDE/INDUSTROYER contained a purpose-built attack module for IEC 104 (IEC 60870-5-104), the TCP/IP protocol used in European electric grid SCADA systems to control remote substation equipment. The malware also included modules for IEC 101 and IEC 61850. Option A (Modbus) was not an INDUSTROYER target. Option B (DNP3) is the North American grid standard — INDUSTROYER had no DNP3 module; the attack targeted European protocols only. Option D (PROFINET) is a factory automation protocol, not used in power grid telecontrol.",
+    "sources": [
+      {
+        "text": "ESET — Industroyer: Biggest Threat to Industrial Control Systems Since Stuxnet",
+        "url": "https://www.welivesecurity.com/2017/06/12/industroyer-biggest-threat-industrial-control-systems-since-stuxnet/"
+      },
+      {
+        "text": "MITRE ATT&CK — S0604 INDUSTROYER",
+        "url": "https://attack.mitre.org/software/S0604/"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q3",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "A Dragos threat intelligence report documents VOLTZITE spending months inside North American electric utility networks — using Ping, Tracert, and built-in OS utilities to map OT assets — without deploying any custom ICS malware or destructive payloads.",
+    "question": "What term describes VOLTZITE's approach of using built-in system tools for OT reconnaissance?",
+    "options": [
+      "Living off the Land — abusing legitimate system tools to avoid custom malware detection.",
+      "Zero-day exploitation — leveraging undisclosed vulnerabilities in OT firmware and protocols.",
+      "Island hopping — pivoting through supply chain vendors to reach OT networks.",
+      "Watering hole compromise — embedding malware in utility-sector websites for initial access."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "VOLTZITE's hallmark is what they didn't deploy — think about why native tools are harder to detect than custom malware.",
+    "debrief": "Living off the Land (LotL) means using tools and protocols already present in the environment — built-in OS utilities, legitimate admin tools — to conduct reconnaissance without deploying detectable custom malware. VOLTZITE (linked to VOLT TYPHOON by US government agencies) used standard network utilities to map OT assets inside electric utility networks. Option B (zero-day) is not VOLTZITE's documented OT technique. Option C (island hopping) describes a supply chain pivot — a different initial access vector. Option D (watering hole) is an initial access technique unrelated to LotL behavior inside the network.",
+    "sources": [
+      {
+        "text": "Dragos — VOLTZITE Threat Group",
+        "url": "https://www.dragos.com/threat/voltzite"
+      },
+      {
+        "text": "CISA Advisory AA24-038A",
+        "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q4",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "TRITON injected malicious TRILOG programs into Schneider Electric Triconex SIS controllers using the TriStation protocol. The injected code was designed to cause the SIS to behave incorrectly or remain idle during a process upset.",
+    "question": "Which MITRE ATT&CK for ICS technique does injecting malicious programs into the Triconex SIS represent?",
+    "options": [
+      "T0836 — Modify Parameter, changing SIS safety setpoints to permit dangerous conditions.",
+      "T0838 — Modify Alarm Settings, suppressing safety alarms to hide the process upset.",
+      "T0857 — System Firmware, replacing Triconex base firmware with a malicious version.",
+      "T0821 — Modify Controller Tasking, injecting malicious programs into the SIS controller."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "TRITON didn't change values or firmware — it changed which programmes the SIS was executing.",
+    "debrief": "T0821 Modify Controller Tasking covers adversaries changing the programmes a controller executes. TRITON injected a malicious TRILOG programme directly into Triconex controllers, replacing legitimate safety logic with attacker-controlled code. T0836 (Option A) changes setpoint values — not programmes. T0838 (Option B) suppresses alarms — TRITON targeted controller execution, not alarm reporting. T0857 (Option C) modifies firmware at a lower hardware level; TRITON targeted the application-layer programs running on the controller, not the Triconex firmware itself.",
+    "sources": [
+      {
+        "text": "MITRE ATT&CK for ICS — T0821",
+        "url": "https://attack.mitre.org/techniques/T0821/"
+      },
+      {
+        "text": "MITRE ATT&CK — S1009 TRITON",
+        "url": "https://attack.mitre.org/software/S1009/"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q5",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "CRASHOVERRIDE/INDUSTROYER sent IEC 104 commands directly to RTUs at a Kyiv transmission substation in December 2016, opening circuit breakers and causing a power outage across parts of the city for over an hour.",
+    "question": "Which MITRE ATT&CK for ICS technique does sending IEC 104 commands to open circuit breakers represent?",
+    "options": [
+      "T0801 — Monitor Process State, reading substation RTU data to identify target equipment.",
+      "T0855 — Unauthorized Command Message, sending protocol commands to open circuit breakers.",
+      "T0836 — Modify Parameter, changing RTU configuration values to disable protection relays.",
+      "T0831 — Manipulation of Control, altering substation control logic to force relay operation."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "CRASHOVERRIDE didn't read or configure — it sent direct operational commands to switch equipment state.",
+    "debrief": "T0855 Unauthorized Command Message covers adversaries sending commands to control system devices to perform actions outside intended operation. INDUSTROYER sent IEC 104 messages directly to RTUs instructing them to open circuit breakers — classic T0855 behaviour. Option A (T0801) is passive monitoring — reading data, not sending commands. Option C (T0836) modifies configuration values like thresholds, not operational switch commands. Option D (T0831) is a broader manipulation category — T0855 is the more specific and most precisely cited technique for INDUSTROYER's circuit breaker attack on the MITRE S0604 page.",
+    "sources": [
+      {
+        "text": "MITRE ATT&CK for ICS — T0855",
+        "url": "https://attack.mitre.org/techniques/T0855/"
+      },
+      {
+        "text": "MITRE ATT&CK — S0604 INDUSTROYER",
+        "url": "https://attack.mitre.org/software/S0604/"
+      },
+      {
+        "text": "CISA — CrashOverride Malware Alert",
+        "url": "https://www.cisa.gov/news-events/alerts/2017/06/12/crashoverride-malware"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q6",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "Before TRITON, ICS malware like Stuxnet and CRASHOVERRIDE targeted PLCs and SCADA systems — the process control layer. TRITON went one layer deeper, targeting a system that runs independently of the control layer.",
+    "question": "Why was TRITON's targeting of the SIS more dangerous than targeting PLCs or SCADA?",
+    "options": [
+      "SIS controllers are physically harder to replace and take months to re-commission after attacks.",
+      "SIS systems store more sensitive process data than PLCs or DCS controllers.",
+      "SIS are the last automated safety layer — disabling them removes protection before a physical incident.",
+      "SIS are connected to external networks and thus more accessible to remote attackers."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "What happens to the facility if the safety system fails at the same time as a process upset?",
+    "debrief": "Safety Instrumented Systems function independently of PLCs and DCS — they monitor process conditions and force emergency shutdowns when parameters exceed safe limits. If TRITON successfully disabled the SIS while the attacker simultaneously caused a process upset via the DCS, there would be no automated safety response — creating conditions for an explosion or toxic release. TRITON was designed to give attackers that ability. Option A is wrong — re-commissioning time is irrelevant to the attack mechanism. Option B is wrong — SIS contain safety logic, not sensitive process data records. Option D is wrong — SIS are intentionally air-gapped from external networks.",
+    "sources": [
+      {
+        "text": "Mandiant — TRITON Attribution: Russian Government-Owned Lab",
+        "url": "https://cloud.google.com/blog/topics/threat-intelligence/triton-attribution-russian-government-owned-lab-most-likely-built-tools"
+      },
+      {
+        "text": "MITRE ATT&CK — S1009 TRITON",
+        "url": "https://attack.mitre.org/software/S1009/"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q7",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "Dragos analysts tracking VOLTZITE observe the group querying OT devices inside North American electric utilities — collecting device models, firmware versions, and network topology — without sending any commands or deploying destructive payloads.",
+    "question": "Which MITRE ATT&CK for ICS technique best describes this OT device information gathering?",
+    "options": [
+      "T0888 — Remote System Information Discovery, collecting device model and firmware details.",
+      "T0855 — Unauthorized Command Message, sending unsolicited commands to OT devices.",
+      "T0836 — Modify Parameter, altering device configuration values for persistent access.",
+      "T0862 — Supply Chain Compromise, inserting malicious code into firmware update packages."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "VOLTZITE collected — they didn't command or change anything. Which technique is specifically about gathering system details?",
+    "debrief": "T0888 Remote System Information Discovery covers adversaries querying OT devices to collect system information — model numbers, firmware versions, configuration — typically to identify applicable vulnerabilities and plan future actions. VOLTZITE's documented OT activity is consistent with pre-positioning and intelligence gathering. Option B (T0855) involves sending unauthorized operational commands — that is the opposite of what VOLTZITE was observed doing. Option C (T0836) actively modifies parameters — VOLTZITE was read-only in OT networks. Option D (T0862) is a supply chain initial access technique, not network-based device enumeration.",
+    "sources": [
+      {
+        "text": "MITRE ATT&CK for ICS — T0888",
+        "url": "https://attack.mitre.org/techniques/T0888/"
+      },
+      {
+        "text": "MITRE ATT&CK — G1017 Volt Typhoon",
+        "url": "https://attack.mitre.org/groups/G1017/"
+      },
+      {
+        "text": "Dragos — VOLTZITE Threat Group",
+        "url": "https://www.dragos.com/threat/voltzite"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q8",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "After INDUSTROYER opened circuit breakers across Kyiv substations, a secondary component executed on operator workstations and SCADA servers — overwriting system data and making the machines unbootable. Operators could not use their own tools to restore power.",
+    "question": "What was the purpose of INDUSTROYER's data wiper component deployed after the main attack?",
+    "options": [
+      "To encrypt workstation files for ransom and fund the threat group's future operations.",
+      "To exfiltrate SCADA historian data before operators noticed the outage had begun.",
+      "To spread INDUSTROYER laterally to backup substations not yet compromised.",
+      "To destroy operator recovery tools and extend the outage by slowing power restoration."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "The wiper ran after the blackout, targeting the systems operators would use to respond — think about why.",
+    "debrief": "INDUSTROYER deployed a data wiper that overwrote system data on Windows workstations and SCADA servers after the circuit breaker attack was triggered. By destroying the tools operators needed to diagnose faults and restore power, the attacker extended the impact of the outage — a deliberate sequencing of: disrupt → destroy recovery capability. Option A (ransomware) is wrong — CRASHOVERRIDE was a geopolitical attack, not financially motivated. Option B (exfiltration) was not INDUSTROYER's documented purpose. Option C (lateral spread) describes a different function; the wiper targeted systems already on the compromised network, not for propagation.",
+    "sources": [
+      {
+        "text": "ESET — Industroyer: Biggest Threat to Industrial Control Systems Since Stuxnet",
+        "url": "https://www.welivesecurity.com/2017/06/12/industroyer-biggest-threat-industrial-control-systems-since-stuxnet/"
+      },
+      {
+        "text": "MITRE ATT&CK — S0604 INDUSTROYER",
+        "url": "https://attack.mitre.org/software/S0604/"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q9",
+    "game_type": "mcq_weekly",
+    "difficulty": "expert",
+    "points": 100,
+    "penalty": -20,
+    "scenario": "In August 2017, operators at a Saudi petrochemical plant found the process had shut down safely — but found no process fault. Forensic investigation later revealed TRITON had already injected code into the Triconex SIS controllers. The attacker's goal was not achieved.",
+    "question": "Why did TRITON fail to disable the SIS, and instead cause a safe shutdown?",
+    "options": [
+      "Plant operators detected TriStation protocol traffic and manually isolated the controllers.",
+      "A bug in TRITON's injected code triggered the SIS's own fail-safe mechanism.",
+      "Schneider Electric had released a firmware patch blocking the TriStation exploit before the attack.",
+      "The attacker aborted the operation after detecting increased network security monitoring."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "The SIS did exactly what it was designed to do — but not because of a real process hazard.",
+    "debrief": "TRITON contained a software bug in the malicious TRILOG programme it injected into Triconex controllers. When the code executed, a runtime error caused the SIS to detect an internal inconsistency and enter its designed fail-safe state — triggering a process shutdown. This is the SIS working correctly (safe shutdown) but triggered by the attack itself rather than a genuine hazard. The unexpected shutdown alerted operators, who began investigating and discovered the intrusion. Option A is wrong — the TriStation traffic was not caught in real-time by operators. Option C is wrong — the firmware patch came after the incident was discovered. Option D is unsupported by forensic evidence.",
+    "sources": [
+      {
+        "text": "Mandiant — Attackers Deploy New ICS Attack Framework TRITON",
+        "url": "https://cloud.google.com/blog/topics/threat-intelligence/attackers-deploy-new-ics-attack-framework-triton/"
+      },
+      {
+        "text": "MIT Technology Review — Triton is the World's Most Murderous Malware",
+        "url": "https://www.technologyreview.com/2019/03/05/103328/cybersecurity-critical-infrastructure-triton-malware/"
+      }
+    ]
+  },
+  {
+    "id": "ec_7Jul2026_q10",
+    "game_type": "mcq_weekly",
+    "difficulty": "expert",
+    "points": 100,
+    "penalty": -20,
+    "scenario": "Mandiant's analysis of the 2017 Saudi petrochemical incident attributed TRITON to an advanced persistent threat group. Digital artefacts — including a PDB path and an IP address — were linked to a specific Russian government research institute.",
+    "question": "Which threat group name did Mandiant assign to the TRITON actor?",
+    "options": [
+      "SANDWORM Team — the Russian GRU unit behind INDUSTROYER and the 2016 Kyiv blackout.",
+      "VOLTZITE — Dragos's designation for the China-nexus group targeting US utilities.",
+      "TEMP.Veles — linked to Russia's CNIIHM institute via developer artefact analysis.",
+      "APT33 (MAGNALLIUM) — the Iranian group targeting energy and aviation sectors."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "The attribution came from developer artefacts — a PDB path and an IP address linked to a specific Russian research institute.",
+    "debrief": "Mandiant attributed TRITON to TEMP.Veles (also known as XENOTIME by Dragos, G0088 on MITRE ATT&CK). Investigation found a PDB file path and an IP address used during the attack that were linked to the Central Scientific Research Institute of Chemistry and Mechanics (CNIIHM) in Moscow — a Russian government institution. Option A (SANDWORM) is the GRU-linked group behind INDUSTROYER and the Ukraine grid attacks — a completely different actor. Option B (VOLTZITE) is the China-nexus group targeting North American electric utilities — unrelated. Option D (APT33/MAGNALLIUM) is an Iranian group focused on energy and aviation sectors — also unrelated.",
+    "sources": [
+      {
+        "text": "MITRE ATT&CK — G0088 TEMP.Veles (XENOTIME)",
+        "url": "https://attack.mitre.org/groups/G0088/"
+      },
+      {
+        "text": "Mandiant — TRITON Attribution",
+        "url": "https://cloud.google.com/blog/topics/threat-intelligence/triton-attribution-russian-government-owned-lab-most-likely-built-tools"
+      },
+      {
+        "text": "Dragos — XENOTIME Threat Group",
+        "url": "https://www.dragos.com/threat/xenotime"
+      }
+    ]
+  }
+]

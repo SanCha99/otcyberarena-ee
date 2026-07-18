@@ -1604,7 +1604,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.4 · 2026-07-18 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.5 · 2026-07-18 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2025,7 +2025,7 @@ footer {
     <span class="footer-link" onclick="openModal('register')">Join Arena</span>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.0.4</span>
+    <span class="version-stamp" id="versionStamp">EC v2.0.5</span>
   </div>
 </footer>
 
@@ -2038,7 +2038,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.4';
+const EC_VERSION = '2.0.5';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3133,24 +3133,36 @@ function applyBankOverride() {
   }
 }
 
+// v2.0.5 (2026-07-18): CHALLENGE_BANK_FILES replaces id-pattern parsing.
+// Bug found while publishing the first date-based batch: parseChallId's
+// regex only matched the old `ec_s{S}e{E}_{track}{N}` scheme. It silently
+// failed for both `s1e2_fa01` (no `ec_` prefix — already live!) and the new
+// date-based ids like `ec_7Jul2026_q1`, falling back to a hardcoded default
+// that fetched the WRONG file and rendered data[0] instead of the intended
+// question. Fix: list every bank file once here; loadChallengeAndRender
+// fetches them all and finds the id directly — no filename parsing, no
+// dependency on any particular id scheme (old or new).
+// APPEND new filenames here every time a new batch is published — nothing
+// else in the engine needs to change when the id scheme evolves again.
+const CHALLENGE_BANK_FILES = [
+  'challenges/ec_s1e1_fa.json',
+  'challenges/ec_s1e2_fa.json',
+  'challenges/ec_7Jul2026_fa.json'
+];
+
 async function loadChallengeAndRender(id) {
   if (IS_LOCAL) { renderMCQ(STUB_MCQ); return; }
   try {
-    const [season, ep, track] = parseChallId(id);
-    const res = await fetch(`challenges/ec_s${season}e${ep}_${track}.json`);
-    if (!res.ok) throw new Error('not found');
-    const data = await res.json();
-    const ch = data.find(c => c.id === id) || data[0];
+    const results = await Promise.all(
+      CHALLENGE_BANK_FILES.map(f => fetch(f).then(r => r.ok ? r.json() : []).catch(() => []))
+    );
+    const all = results.flat();
+    const ch = all.find(c => c.id === id);
+    if (!ch) throw new Error('id not found in any bank file: ' + id);
     renderMCQ(ch);
   } catch {
     renderMCQ(STUB_MCQ);
   }
-}
-
-function parseChallId(id) {
-  // ec_s1e1_fa1 → [1,1,'fa']
-  const m = id.match(/ec_s(\d+)e(\d+)_(fa|cp)/i);
-  return m ? [m[1], m[2], m[3].toLowerCase()] : ['1','1','fa'];
 }
 
 // ── INTEL FEED ────────────────────────────────────

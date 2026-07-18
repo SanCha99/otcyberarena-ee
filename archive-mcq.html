@@ -101,13 +101,20 @@ function getPlayer() {
   try { return JSON.parse(localStorage.getItem('ec_player')) || null; } catch { return null; }
 }
 
-// Content schema has drifted between episodes (s1e1: credits/season/episode(number)
-// vs s1e2: points/episode(string "s1e2")/day). Normalize for display here too —
-// same fix as renderMCQ in the main engine.
+// Content schema has drifted across batches (s1e1: credits/season/episode(number);
+// s1e2: points/episode(string "s1e2")/day; date-based batches (2026-07-11 on): no
+// season/episode fields at all, id like "ec_7Jul2026_q3"). Normalize for display.
 function normalize(ch) {
-  const epLabel = typeof ch.episode === 'number'
-    ? `S${ch.season || 1} · E${ch.episode}`
-    : (ch.episode || '').toUpperCase().replace(/^S(\d)E(\d)$/, 'S$1 · E$2') || 'S1 · E?';
+  let epLabel;
+  if (typeof ch.episode === 'number') {
+    epLabel = `S${ch.season || 1} · E${ch.episode}`;
+  } else if (ch.episode) {
+    epLabel = ch.episode.toUpperCase().replace(/^S(\d)E(\d)$/, 'S$1 · E$2');
+  } else {
+    // date-based id, e.g. ec_7Jul2026_q3 -> "7 Jul 2026"
+    const m = (ch.id || '').match(/ec_(\d{1,2}[A-Za-z]{3}\d{4})_/);
+    epLabel = m ? m[1].replace(/([A-Za-z]{3})/, ' $1 ').replace(/\s+/g,' ').trim() : 'Weekly Bank';
+  }
   return {
     id: ch.id,
     epLabel,
@@ -115,6 +122,14 @@ function normalize(ch) {
     question: ch.question || ''
   };
 }
+
+// Bank files — same manifest approach as the main engine (v2.0.5 fix,
+// 2026-07-18): append new filenames here when a new batch is published.
+const CHALLENGE_BANK_FILES = [
+  'challenges/ec_s1e1_fa.json',
+  'challenges/ec_s1e2_fa.json',
+  'challenges/ec_7Jul2026_fa.json'
+];
 
 async function loadArchive() {
   const grid = document.getElementById('cardGrid');
@@ -135,11 +150,10 @@ async function loadArchive() {
   } catch {}
 
   try {
-    const [a, b] = await Promise.all([
-      fetch('challenges/ec_s1e1_fa.json?v=' + Date.now()).then(r => r.ok ? r.json() : []),
-      fetch('challenges/ec_s1e2_fa.json?v=' + Date.now()).then(r => r.ok ? r.json() : [])
-    ]);
-    items = [...a, ...b].map(normalize).reverse(); // newest episode first
+    const results = await Promise.all(
+      CHALLENGE_BANK_FILES.map(f => fetch(f + '?v=' + Date.now()).then(r => r.ok ? r.json() : []))
+    );
+    items = results.flat().map(normalize).reverse(); // newest batch first
   } catch {
     grid.innerHTML = `<div class="loading">ARIA // Could not load the archive right now. Try again shortly.</div>`;
     return;
