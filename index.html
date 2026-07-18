@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="ghost">
+<html lang="en" data-theme="steel">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -9,8 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- ═══════════════════════════════════════════════
-     THEME SYSTEM — 5 skins via CSS custom properties
-     Ghost Protocol is launch skin.
+     THEME SYSTEM — 5 skins built; only 2 selectable at
+     first release (2026-07-18): Steel Green (default) and Frost.
+     Ghost/Storm/Ember CSS kept in place for a later re-enable.
      ═══════════════════════════════════════════════ -->
 <style>
 /* GHOST PROTOCOL (launch) */
@@ -402,6 +403,23 @@ html { overflow-x: clip; }
   .logo { font-size: 14px; gap: 6px; }
   .btn-nav, .btn-nav-ghost { padding: 0 10px; font-size: 11px; min-height: 40px; }
   .theme-btn { min-width: 40px; min-height: 40px; }
+}
+
+/* v2.0.4 (2026-07-18): on mobile the topbar's small "OT CyberArena" logo sat
+   right above the large hero heading of the same name — duplicate branding.
+   Sign In/Sign Up already live in the bottom join-cta-section; skin picker
+   gets its own mobile-only trigger down there too (Sandip: move the whole
+   band down, don't just shrink it). */
+.mobile-skin-toggle {
+  display: none;
+  width: auto; height: auto; min-width: 0; min-height: 44px;
+  padding: 10px 18px; font-size: 12px; gap: 6px;
+  font-family: var(--display); font-weight: 600; letter-spacing: 0.04em;
+}
+@media (max-width: 760px) {
+  .topbar { display: none !important; }
+  .mobile-skin-toggle { display: inline-flex !important; margin: 16px auto 0; }
+  .theme-panel { top: auto; bottom: 100px; }
 }
 
 .theme-panel-title {
@@ -1563,26 +1581,16 @@ footer {
 <!-- Theme panel -->
 <div class="theme-panel" id="themePanel" role="dialog" aria-label="Theme selector">
   <div class="theme-panel-title">Select Skin</div>
-  <div class="theme-option active" data-theme="ghost"  onclick="setTheme('ghost')">
-    <div class="theme-swatch" style="background:#00ff41"></div>Ghost Protocol
-  </div>
-  <div class="theme-option" data-theme="steel"  onclick="setTheme('steel')">
+  <div class="theme-option active" data-theme="steel"  onclick="setTheme('steel')">
     <div class="theme-swatch" style="background:#22c55e"></div>Steel Green
-    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
-  </div>
-  <div class="theme-option" data-theme="storm"  onclick="setTheme('storm')">
-    <div class="theme-swatch" style="background:#00d4ff"></div>Cyber Storm
-    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
-  </div>
-  <div class="theme-option" data-theme="ember"  onclick="setTheme('ember')">
-    <div class="theme-swatch" style="background:#ff8c00"></div>Ember
-    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
   </div>
   <div class="theme-option" data-theme="frost"  onclick="setTheme('frost')">
     <div class="theme-swatch" style="background:#0066cc"></div>Frost
-    <span style="margin-left:auto;font-size:9px;opacity:.5">SOON</span>
   </div>
 </div>
+<!-- Ghost/Storm/Ember removed from the picker (2026-07-18): first release
+     ships with 2 skins only. CSS blocks kept above for a later re-enable —
+     see PROJECT.md decision log. -->
 
 <!-- ─── HERO — DIRECTION B SPLIT OPS ─── -->
 <main id="mainContent">
@@ -1596,7 +1604,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.3 · 2026-07-13 · Ghost Protocol</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.4 · 2026-07-18 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1713,6 +1721,10 @@ footer {
         <div class="intel-date">—</div>
       </div>
     </div>
+    <div style="margin-top:12px;text-align:right">
+      <a class="btn-secondary archive-btn" href="archive-intel.html"
+         style="font-size:11px;padding:8px 14px;min-height:38px;min-width:0;flex:none">Past Intel →</a>
+    </div>
   </section>
 
   <!-- SECTION 5: LEADERBOARD -->
@@ -1743,11 +1755,13 @@ footer {
         <button class="btn-primary" onclick="openModal('register')">Sign Up — 30 Seconds</button>
         <button class="btn-secondary" onclick="openModal('login')">Sign In</button>
       </div>
+      <button class="theme-btn mobile-skin-toggle" onclick="toggleThemePanel()"
+              aria-label="Change theme" title="Change theme">🎨 Change Skin</button>
     </div>
   </section>
 
   <!-- SECTIONS 7 & 8: PAST MCQs / PAST CYWORDLES -->
-  <section class="archive-cta-section" aria-label="Past challenges">
+  <section class="archive-cta-section" id="archiveCtaSection" aria-label="Past challenges" style="display:none">
     <div class="section-label">Past Challenges</div>
     <div class="archive-cta-row">
       <a class="btn-secondary archive-btn" href="archive-mcq.html">Past MCQs →</a>
@@ -2024,14 +2038,32 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.3';
+const EC_VERSION = '2.0.4';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
+// ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
+// Sandip: don't show "Past MCQs"/"Past Cywordles" at launch — wait until
+// there's ~8 weeks of real accumulated history. LAUNCH_DATE is a placeholder;
+// update it to the actual public-announcement date once golive_check passes
+// (see PROJECT.md §7). Until then this section stays hidden by design.
+const LAUNCH_DATE = new Date('2026-07-25T00:00:00Z');
+const ARCHIVE_REVEAL_WEEKS = 8;
+function archiveLinksShouldShow() {
+  const weeksSince = (Date.now() - LAUNCH_DATE.getTime()) / (7 * 24 * 3600 * 1000);
+  return weeksSince >= ARCHIVE_REVEAL_WEEKS;
+}
+function applyArchiveGate() {
+  const el = document.getElementById('archiveCtaSection');
+  if (el && archiveLinksShouldShow()) el.style.display = '';
+}
+
 // ── THEME SYSTEM ─────────────────────────────────
-const THEMES = ['ghost','steel','storm','ember','frost'];
+// Only steel + frost are selectable at first release (2026-07-18).
+// ghost/storm/ember CSS still exists above for a later re-enable.
+const THEMES = ['steel','frost'];
 
 function setTheme(name) {
-  if (!THEMES.includes(name)) name = 'ghost';
+  if (!THEMES.includes(name)) name = 'steel';
   document.documentElement.setAttribute('data-theme', name);
   localStorage.setItem('ec_theme', name);
   // Update panel active state
@@ -2058,7 +2090,7 @@ document.addEventListener('click', e => {
 
 // Load saved theme
 (function() {
-  const saved = localStorage.getItem('ec_theme') || 'ghost';
+  const saved = localStorage.getItem('ec_theme') || 'steel';
   setTheme(saved);
 })();
 
@@ -2498,14 +2530,15 @@ function renderMCQ(rawChallenge) {
 
       <div id="mcqPostActions" style="display:none;margin-top:12px;display:none;">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-primary" onclick="openModal('register')" style="flex:1;min-width:160px">
+          <button class="btn-primary" onclick="openModal('register')"
+                  style="flex:1;min-width:140px;padding:8px 14px;font-size:11px;min-height:38px">
             Join Free — Save Score
           </button>
           <button onclick="openSharePicker('mcq')"
-            style="background:#0a66c2;color:#fff;border:none;padding:12px 16px;
-                   font-family:var(--display);font-weight:700;font-size:12px;
+            style="background:#0a66c2;color:#fff;border:none;padding:8px 14px;
+                   font-family:var(--display);font-weight:700;font-size:11px;
                    text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
-                   display:flex;align-items:center;gap:6px;min-height:48px">
+                   display:flex;align-items:center;gap:6px;min-height:38px">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
             Share
           </button>
@@ -2789,14 +2822,15 @@ function renderCywordle(wordData) {
 
       <div id="wordlePost" style="display:none;margin-top:14px">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-primary" onclick="openModal('register')" style="flex:1;min-width:160px">
+          <button class="btn-primary" onclick="openModal('register')"
+                  style="flex:1;min-width:140px;padding:8px 14px;font-size:11px;min-height:38px">
             Join Free — Save Score
           </button>
           <button onclick="openSharePicker('cywordle')"
-            style="background:#0a66c2;color:#fff;border:none;padding:12px 16px;
-                   font-family:var(--display);font-weight:700;font-size:12px;
+            style="background:#0a66c2;color:#fff;border:none;padding:8px 14px;
+                   font-family:var(--display);font-weight:700;font-size:11px;
                    text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
-                   display:flex;align-items:center;gap:6px;min-height:48px">
+                   display:flex;align-items:center;gap:6px;min-height:38px">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
             Share
           </button>
@@ -2824,7 +2858,7 @@ function replayCywordleProgress(saved) {
     document.getElementById('wordleInput').style.display = 'none';
     document.getElementById('wordlePost').style.display   = 'block';
     setWordleMessage(saved.solved
-      ? `ARIA // Correct — ${wordleState.word}. Threat neutralised. (resumed)`
+      ? `ARIA // Correct — ${wordleState.word}. Threat neutralised. ${wordleState.clue} (resumed)`
       : `ARIA // The word was: ${wordleState.word}. ${wordleState.clue} (resumed)`,
       saved.solved ? 'var(--green)' : 'var(--red)');
   } else {
@@ -2895,7 +2929,7 @@ function submitWordleGuess() {
   if (solved) {
     wordleState.solved = true;
     const earned = CREDITS_WORDLE.solve;
-    setWordleMessage(`ARIA // Correct — ${target}. Threat neutralised. +${earned} CR`, 'var(--green)');
+    setWordleMessage(`ARIA // Correct — ${target}. Threat neutralised. +${earned} CR — ${wordleState.clue}`, 'var(--green)');
     scoreFlash(earned, true);
     applyCredits(earned);
     document.getElementById('wordleInput').style.display = 'none';
@@ -3140,7 +3174,9 @@ const STUB_INTEL = [
 function renderIntelFeed(items) {
   const feed = document.getElementById('intelFeed');
   if (!feed || !items?.length) return;
-  feed.innerHTML = items.map(item => `
+  // v2.0.4 (2026-07-18): front page shows only the latest 3 (decision 2026-07-10) —
+  // items are appended newest-first in intel_feed.json, so a plain slice works.
+  feed.innerHTML = items.slice(0, 3).map(item => `
     <div class="intel-item" onclick="window.open('${item.url||'#'}','_blank')"
          style="cursor:${item.url?'pointer':'default'}">
       <div class="intel-source-tag">${item.source}</div>
@@ -3694,6 +3730,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadIntelFeed();
   loadLeaderboard();
   initLiveCount();
+  applyArchiveGate();
 
   // Archive pages link back as index.html#register / #login for anon visitors
   if (location.hash === '#register' || location.hash === '#login') {

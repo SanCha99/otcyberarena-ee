@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="steel">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Past Threat Intel — OT CyberArena</title>
+<meta name="description" content="Full history of OT CyberArena's weekly threat intelligence feed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+[data-theme="steel"] {
+  --bg: #050a05; --surface: #0a120a; --surface2: #0f1a0f; --border: #1a2e1a;
+  --accent: #22c55e; --accent-dim: rgba(34,197,94,0.12); --text: #e8f5e8; --muted: #5a7a5a;
+  --red: #ff4444; --mono: 'Share Tech Mono', monospace; --display: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif; --radius: 2px;
+}
+* , *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; overflow-x:clip; }
+body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100dvh; padding-bottom:env(safe-area-inset-bottom); }
+.topbar {
+  position:sticky; top:0; z-index:200; height:52px; padding:0 clamp(12px,3vw,28px);
+  background:rgba(5,10,5,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-mark { width:30px; height:30px; border:2px solid var(--accent); border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--accent); }
+.logo-text { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:0.04em; color:var(--text); }
+.logo-text .cyber { color:var(--accent); }
+.back-link { font-family:var(--mono); font-size:11px; color:var(--muted); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; }
+.back-link:hover { color:var(--accent); }
+.wrap { max-width:900px; margin:0 auto; padding:clamp(24px,4vw,48px) clamp(12px,3vw,28px) 60px; }
+.page-title { font-family:var(--display); font-weight:800; font-size:clamp(26px,3.5vw,38px); text-transform:uppercase; margin-bottom:6px; }
+.page-sub { font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:28px; line-height:1.6; }
+.card-grid { display:flex; flex-direction:column; gap:12px; }
+.intel-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 18px; cursor:pointer; transition:border-color .15s, transform .1s;
+}
+.intel-card:hover { border-color:rgba(34,197,94,0.3); transform:translateY(-1px); }
+.intel-source-tag { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+.intel-headline { font-size:14px; line-height:1.5; color:var(--text); margin-bottom:6px; }
+.intel-date { font-family:var(--mono); font-size:10px; color:var(--muted); }
+.loading { font-family:var(--mono); font-size:12px; color:var(--muted); padding:20px 0; }
+footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(--muted); padding:24px; opacity:.7; }
+</style>
+</head>
+<body>
+
+<header class="topbar" role="banner">
+  <a href="index.html" class="logo" aria-label="OT CyberArena Home">
+    <div class="logo-mark" aria-hidden="true">OT</div>
+    <div class="logo-text">OT <span class="cyber">Cyber</span>Arena</div>
+  </a>
+  <a class="back-link" href="index.html">← Back to Arena</a>
+</header>
+
+<div class="wrap">
+  <h1 class="page-title">Past Threat Intel</h1>
+  <p class="page-sub">ARIA // Full history of verified OT/ICS threat intelligence we've surfaced, reverse-chronological.
+    The homepage always shows the latest 3 — everything else lives here. No account needed.</p>
+
+  <div class="card-grid" id="cardGrid">
+    <div class="loading">ARIA // Loading the archive...</div>
+  </div>
+</div>
+
+<footer>OT CyberArena · External Community · Free · Vendor-Neutral</footer>
+
+<script>
+const IS_LOCAL = location.protocol === 'file:';
+
+async function loadArchive() {
+  const grid = document.getElementById('cardGrid');
+  if (IS_LOCAL) {
+    grid.innerHTML = `<div class="loading">ARIA // Local file preview — open via the live site to see the real archive.</div>`;
+    return;
+  }
+  let items = [];
+  try {
+    items = await fetch('intel_feed.json?v=' + Date.now()).then(r => r.json());
+  } catch {
+    grid.innerHTML = `<div class="loading">ARIA // Could not load the archive right now. Try again shortly.</div>`;
+    return;
+  }
+  if (!items.length) {
+    grid.innerHTML = `<div class="loading">ARIA // No intel items yet.</div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => `
+    <div class="intel-card" onclick="window.open('${item.url||'#'}','_blank')">
+      <div class="intel-source-tag">${item.source}</div>
+      <div class="intel-headline">${item.headline}</div>
+      <div class="intel-date">${item.date || ''}</div>
+    </div>`).join('');
+}
+
+loadArchive();
+</script>
+</body>
+</html>
