@@ -1,5 +1,17 @@
 [
   {
+    "source": "SecurityWeek",
+    "headline": "ICS Patch Tuesday July 2026: Siemens, Schneider Electric and Rockwell Automation patch dozens of vulnerabilities",
+    "date": "2026-07-15",
+    "url": "https://www.securityweek.com/ics-patch-tuesday-vulnerabilities-fixed-by-siemens-schneider-rockwell/"
+  },
+  {
+    "source": "WaterISAC / CISA",
+    "headline": "CISA releases three ICS advisories July 9 covering Schneider Electric Easergy MiCOM Px40, PowerChute and OpenPLC v3",
+    "date": "2026-07-09",
+    "url": "https://www.waterisac.org/tlpclear-cisa-ics-advisories-additional-alerts-updates-and-bulletins-july-9-2026"
+  },
+  {
     "source": "WaterISAC / CISA",
     "headline": "CISA releases six ICS advisories July 2 covering ST Engineering iDirect terminals, Mitsubishi CNC and more",
     "date": "2026-07-02",
