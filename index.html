@@ -920,6 +920,20 @@ html { overflow-x: clip; }
 /* ─── LEADERBOARD ─── */
 .leaderboard-section { width: 100%; }
 
+/* v2.0.6: extra breathing room + a visual break before the join ask and
+   the archive links. Previously these bottom sections (leaderboard, join
+   CTA, archive links, footer) all just used the same flat .main flex gap
+   as every other section, so scrolling through them read as one long
+   uniform block with no sense of moving into a new part of the page.
+   Sandip: "the bottom part design can be improved" -> spacing/hierarchy. */
+.join-cta-section {
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.archive-cta-section {
+  padding-top: 24px;
+}
+
 .leaderboard-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1604,7 +1618,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.6 · 2026-07-21 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.7 · 2026-07-21 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2026,7 +2040,7 @@ footer {
             onclick="openModal('register')">Join Arena</button>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.0.6</span>
+    <span class="version-stamp" id="versionStamp">EC v2.0.7</span>
   </div>
 </footer>
 
@@ -2039,7 +2053,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.6';
+const EC_VERSION = '2.0.7';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
