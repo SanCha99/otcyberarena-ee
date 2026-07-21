@@ -1618,7 +1618,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.7 · 2026-07-21 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.8 · 2026-07-21 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2040,7 +2040,7 @@ footer {
             onclick="openModal('register')">Join Arena</button>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.0.7</span>
+    <span class="version-stamp" id="versionStamp">EC v2.0.8</span>
   </div>
 </footer>
 
@@ -2053,7 +2053,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.7';
+const EC_VERSION = '2.0.8';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3162,7 +3162,9 @@ function applyBankOverride() {
 const CHALLENGE_BANK_FILES = [
   'challenges/ec_s1e1_fa.json',
   'challenges/ec_s1e2_fa.json',
-  'challenges/ec_7Jul2026_fa.json'
+  'challenges/ec_7Jul2026_fa.json',
+  'challenges/ec_11Jul2026_fa.json',
+  'challenges/ec_18Jul2026_fa.json'
 ];
 
 async function loadChallengeAndRender(id) {

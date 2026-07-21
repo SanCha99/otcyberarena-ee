@@ -1,0 +1,23 @@
+[
+  {
+    "id": "ec_18Jul2026_q1",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "At Solara Water Utilities, the OT team wants to deploy an AI model directly onto the SCADA historian server to flag anomalous valve behavior in real time. A newly hired OT security lead pushes back, citing the December 2025 CISA/NSA/ASD joint guidance on secure AI integration in OT.",
+    "question": "Per the December 2025 CISA/NSA/ASD joint guidance “Principles for the Secure Integration of Artificial Intelligence in Operational Technology,” which practice should the team prioritize before deploying the AI model?",
+    "options": [
+      "Skip governance review since the model only flags anomalies and does not control equipment",
+      "Push OT data to a separate, secured AI system outside the safety-critical control loop, with a human in the loop for critical decisions",
+      "Embed the model directly into the PLC firmware for the fastest possible response time",
+      "Deploy the model without fail-safe mechanisms since anomaly detection is monitoring-only"
+    ],
+    "correctIdx": 1,
+    "aria_hint": "The guidance's architecture principle is about where AI processing should physically happen relative to the safety-critical loop.",
+    "debrief": "B is correct: the joint CISA/NSA/ASD guidance recommends keeping AI processing off the plant floor by sending sanitized OT data to a separate, secured AI system, paired with human-in-the-loop oversight for critical decisions. Option A skips governance entirely -- the guidance requires review regardless of whether the model controls equipment directly. Option C embeds the model into the safety-critical loop itself, exactly what the guidance warns against. Option D deploys without fail-safes, again contrary to the guidance's core recommendation.",
+    "sources": [
+      { "text": "NSA/CISA/ASD joint guidance, \"Principles for the Secure Integration of Artificial Intelligence in Operational Technology\" (3 Dec 2025)", "url": "https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4347041/nsa-cisa-and-others-release-guidance-on-integrating-ai-in-operational-technology/" }
+    ]
+  }
+]

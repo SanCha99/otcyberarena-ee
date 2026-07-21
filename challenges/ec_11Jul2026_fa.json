@@ -1,0 +1,24 @@
+[
+  {
+    "id": "ec_11Jul2026_q1",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "At Meridian Robotics, a mid-size industrial automation vendor, the security team runs an internal red-team exercise using an AI-driven reconnaissance agent against their OT lab network. In under six hours the agent enumerates the PLC fleet, cracks a legacy protocol credential, and maps an exploitable path to the safety controller — a task their human red team had budgeted three days for.",
+    "question": "Which MITRE framework catalogs adversary tactics and techniques against the AI/ML components enabling this kind of autonomous reconnaissance — distinct from MITRE ATT&CK for ICS, which covers the OT infrastructure itself?",
+    "options": [
+      "MITRE ATT&CK for Enterprise — covers adversary tactics against standard IT infrastructure and cloud services.",
+      "MITRE ATLAS — catalogs adversary tactics and techniques against AI-enabled systems, including reconnaissance and ML attack staging.",
+      "MITRE D3FEND — a defensive countermeasure taxonomy mapped to ATT&CK techniques, not a threat catalog.",
+      "MITRE ATT&CK for ICS — covers execution, lateral movement, and impact against traditional OT infrastructure."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "Think about which MITRE framework was built specifically for attacks against machine-learning models and pipelines, not physical OT infrastructure.",
+    "debrief": "MITRE ATLAS (Adversarial Threat Landscape for AI Systems) catalogs adversary tactics and techniques against AI-enabled systems — reconnaissance, ML attack staging, and exfiltration against models, training data, and inference logic — filling a gap ATT&CK for ICS does not cover. Independent research on the 2025 Dragos OT CTF found an AI agent reached rank 1 within 8 hours and held a 37% velocity advantage over the top human teams, underscoring why AI-specific threat modelling now matters for OT defenders. Option D (ATT&CK for ICS) maps adversary behaviour against the OT infrastructure itself — PLCs, HMIs, protocols — but has no coverage for attacks against the AI components performing reconnaissance. Option A (ATT&CK for Enterprise) covers standard IT/cloud systems, not AI-specific attack surface. Option C (D3FEND) is a defensive countermeasure taxonomy mapped to ATT&CK — useful for building defences, but not a threat catalog itself.",
+    "sources": [
+      { "text": "MITRE ATLAS", "url": "https://atlas.mitre.org/" },
+      { "text": "Mayoral-Vilches et al., \"Cybersecurity AI in OT: Insights from an AI Top-10 Ranker in the Dragos OT CTF 2025\" (arXiv:2511.05119)", "url": "https://arxiv.org/abs/2511.05119" }
+    ]
+  }
+]
