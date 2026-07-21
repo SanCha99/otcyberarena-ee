@@ -7,7 +7,7 @@
     ],
     "cywordle": {
       "word": "CERT",
-      "clue": "Computer Emergency Response Team — the coordination group you notify when an ICS incident hits."
+      "clue": "Computer Emergency Response Team \u2014 the coordination group you notify when an ICS incident hits."
     }
   },
   {
@@ -17,7 +17,7 @@
     ],
     "cywordle": {
       "word": "PATCH",
-      "clue": "The fix a vendor ships for a known vulnerability — applying it in OT usually needs a planned maintenance window."
+      "clue": "The fix a vendor ships for a known vulnerability \u2014 applying it in OT usually needs a planned maintenance window."
     }
   },
   {
@@ -47,7 +47,7 @@
     ],
     "cywordle": {
       "word": "WIPER",
-      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it — used in some of the most destructive attacks on OT networks."
+      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it \u2014 used in some of the most destructive attacks on OT networks."
     }
   },
   {
@@ -78,6 +78,16 @@
     "cywordle": {
       "word": "PROXY",
       "clue": "A server that sits between an OT network zone and other systems, relaying and inspecting traffic on its behalf rather than allowing direct connections."
+    }
+  },
+  {
+    "week_start": "2026-07-22",
+    "mcq_ids": [
+      "s1e2_fa03"
+    ],
+    "cywordle": {
+      "word": "MODBUS",
+      "clue": "A widely used industrial communication protocol connecting PLCs, sensors, and control devices."
     }
   }
 ]
