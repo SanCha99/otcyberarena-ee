@@ -413,16 +413,15 @@ html { overflow-x: clip; }
    footer-right, inline next to Join Arena — dropped the standalone
    width/padding/margin overrides so it inherits .btn-primary sizing and the
    footer's own inline size overrides, same as Join Arena. */
+/* This element also carries .btn-primary (added v2.0.9 for the
+   accent-color look), and .btn-primary's own display value is declared
+   LATER in this stylesheet -- so this rule needs its own priority flag,
+   not just source order, or .btn-primary would win on every screen size
+   and this "mobile-only" button would show on desktop too (found
+   2026-07-22, right after shipping it: desktop showed this button next
+   to Join Arena AND the topbar's own theme icon -- two skin toggles at
+   once). */
 .mobile-skin-toggle {
-  /* !important because this element also carries .btn-primary (added
-     v2.0.9 for the accent-color look), and .btn-primary's own
-     display:inline-flex is declared LATER in this stylesheet — without
-     !important here, source-order alone would make .btn-primary win on
-     EVERY screen size, silently showing this "mobile-only" button on
-     desktop too (found 2026-07-22, right after shipping it: desktop was
-     showing this button next to Join Arena AND the topbar's own theme
-     icon — two skin toggles at once). !important pins this to actually
-     be conditional on screen width, the way the class name promises. */
   display: none !important;
 }
 @media (max-width: 760px) {
