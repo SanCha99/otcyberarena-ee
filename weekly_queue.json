@@ -89,5 +89,15 @@
       "word": "MODBUS",
       "clue": "A widely used industrial communication protocol connecting PLCs, sensors, and control devices."
     }
+  },
+  {
+    "week_start": "2026-07-23",
+    "mcq_ids": [
+      "s1e2_fa04"
+    ],
+    "cywordle": {
+      "word": "RELAY",
+      "clue": "An electrically operated switch that uses a small control signal to open or close a circuit controlling much larger OT equipment."
+    }
   }
 ]
