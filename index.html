@@ -407,18 +407,18 @@ html { overflow-x: clip; }
 
 /* v2.0.4 (2026-07-18): on mobile the topbar's small "OT CyberArena" logo sat
    right above the large hero heading of the same name — duplicate branding.
-   Sign In/Sign Up already live in the bottom join-cta-section; skin picker
-   gets its own mobile-only trigger down there too (Sandip: move the whole
-   band down, don't just shrink it). */
+   Skin picker gets its own mobile-only trigger in the footer (Sandip: move
+   it down there, next to Join Arena, matching color).
+   v2.0.9 (2026-07-22): relocated from the (now-removed) join-cta-card into
+   footer-right, inline next to Join Arena — dropped the standalone
+   width/padding/margin overrides so it inherits .btn-primary sizing and the
+   footer's own inline size overrides, same as Join Arena. */
 .mobile-skin-toggle {
   display: none;
-  width: auto; height: auto; min-width: 0; min-height: 44px;
-  padding: 10px 18px; font-size: 12px; gap: 6px;
-  font-family: var(--display); font-weight: 600; letter-spacing: 0.04em;
 }
 @media (max-width: 760px) {
   .topbar { display: none !important; }
-  .mobile-skin-toggle { display: inline-flex !important; margin: 16px auto 0; }
+  .mobile-skin-toggle { display: inline-flex !important; }
   .theme-panel { top: auto; bottom: 100px; }
 }
 
@@ -741,7 +741,6 @@ html { overflow-x: clip; }
 .main .game-section,
 .main .intel-section,
 .main .leaderboard-section,
-.main .join-cta-section,
 .main .archive-cta-section {
   width: 100%;
   max-width: 640px;
@@ -799,28 +798,6 @@ html { overflow-x: clip; }
   /* Archive links section isn't paired — widen it to match so it doesn't
      look squeezed next to the wider rows above it. */
   .main .archive-cta-section { max-width: 1200px; }
-}
-
-/* ─── JOIN / SIGN-IN CTA BAND ─── */
-.join-cta-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px 20px;
-  text-align: center;
-}
-.join-cta-text {
-  font-family: var(--body);
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-.join-cta-btns {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
 /* ─── ARCHIVE ACCESS BUTTONS ─── */
@@ -926,12 +903,12 @@ html { overflow-x: clip; }
    as every other section, so scrolling through them read as one long
    uniform block with no sense of moving into a new part of the page.
    Sandip: "the bottom part design can be improved" -> spacing/hierarchy. */
-.join-cta-section {
+/* v2.0.9 (2026-07-22): .join-cta-section removed (card deleted). Its
+   breathing-room/border treatment now applies to .archive-cta-section,
+   since that's the first section after the leaderboard. */
+.archive-cta-section {
   padding-top: 32px;
   border-top: 1px solid var(--border);
-}
-.archive-cta-section {
-  padding-top: 24px;
 }
 
 .leaderboard-card {
@@ -1576,7 +1553,7 @@ footer {
     <button class="nav-link" id="btnLogin"  onclick="openModal('login')"   aria-label="Sign in">Sign In</button>
     <button class="nav-link" id="btnJoin"   onclick="openModal('register')" aria-label="Sign up">Sign Up</button>
     <!-- Theme picker -->
-    <button class="theme-btn" id="themeToggle" onclick="toggleThemePanel()" aria-label="Change theme" title="Change theme">🎨</button>
+    <button class="theme-btn theme-toggle-btn" id="themeToggle" onclick="toggleThemePanel()" aria-label="Change theme" title="Change theme">🎨</button>
   </div>
 </header>
 
@@ -1618,7 +1595,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.8 · 2026-07-21 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.0.9 · 2026-07-22 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1641,9 +1618,11 @@ footer {
     <!-- v2.0.1: feature pills removed — redundant with "The Global Community
          for OT Security" tagline above (Sandip: decluttering pass) -->
 
-    <div class="hero-cta">
-      <button class="btn-primary" id="heroCTABtn" onclick="openModal('register')">Join Free</button>
-    </div>
+    <!-- v2.0.9 (2026-07-22): top hero "Join Free" button removed (Sandip:
+         redundant with the many other join prompts on the page; the footer
+         Join Arena button, distinct color, is the one dedicated "just join"
+         CTA now). heroCTABtn references below are null-checked and safe to
+         leave as-is even with no button in the DOM. -->
   </div>
 
 
@@ -1753,26 +1732,18 @@ footer {
       </div>
       <div class="lb-footer">
         <button class="btn-primary" style="font-size:11px;padding:8px 16px;width:100%;"
-                onclick="openModal('register')">See Your Rank — Join Free</button>
+                onclick="openModal('register')">See Your Rank</button>
       </div>
     </div>
   </section>
 
   </div><!-- /row-pair: Intel + Leaderboard -->
 
-  <!-- SECTION 6: SIGN IN / SIGN UP -->
-  <section class="join-cta-section" aria-label="Join or sign in">
-    <div class="section-label">Join The Arena</div>
-    <div class="join-cta-card">
-      <p class="join-cta-text">Free. Vendor-neutral. Always. Track your score, save your streak, and climb the global leaderboard.</p>
-      <div class="join-cta-btns">
-        <button class="btn-primary" onclick="openModal('register')">Sign Up — 30 Seconds</button>
-        <button class="btn-secondary" onclick="openModal('login')">Sign In</button>
-      </div>
-      <button class="theme-btn mobile-skin-toggle" onclick="toggleThemePanel()"
-              aria-label="Change theme" title="Change theme">🎨 Change Skin</button>
-    </div>
-  </section>
+  <!-- v2.0.9 (2026-07-22): "Join The Arena" card removed (Sandip: too many
+       redundant sign-up/sign-in prompts already on the page). The mobile
+       skin-toggle button that lived in this card is now in the footer,
+       next to Join Arena — see footer-right below. Desktop is unaffected;
+       desktop players still use the topbar's #themeToggle. -->
 
   <!-- SECTIONS 7 & 8: PAST MCQs / PAST CYWORDLES -->
   <section class="archive-cta-section" id="archiveCtaSection" aria-label="Past challenges" style="display:none">
@@ -2032,15 +2003,18 @@ footer {
 <!-- ─── FOOTER ─── -->
 <footer role="contentinfo">
   <div class="footer-left">
-    <strong>OT CyberArena</strong> · External Community · Vendor-Neutral<br>
+    <strong>OT CyberArena</strong> · Vendor-Neutral<br>
     Sources: CISA · NIST SP 800-82 · IEC 62443 · MITRE ATT&CK · MITRE ATLAS · SANS ICS
   </div>
   <div class="footer-right">
+    <button class="btn-primary mobile-skin-toggle theme-toggle-btn" onclick="toggleThemePanel()"
+            aria-label="Change theme" title="Change theme"
+            style="font-size:10px;padding:6px 14px;min-height:0;letter-spacing:0.06em;">🎨 Skin</button>
     <button class="btn-primary" style="font-size:10px;padding:6px 14px;min-height:0;letter-spacing:0.06em;"
             onclick="openModal('register')">Join Arena</button>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.0.8</span>
+    <span class="version-stamp" id="versionStamp">EC v2.0.9</span>
   </div>
 </footer>
 
@@ -2053,7 +2027,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.8';
+const EC_VERSION = '2.0.9';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2099,8 +2073,10 @@ function closeThemePanel() {
 // Close theme panel on outside click
 document.addEventListener('click', e => {
   const panel  = document.getElementById('themePanel');
-  const toggle = document.getElementById('themeToggle');
-  if (!panel.contains(e.target) && e.target !== toggle) closeThemePanel();
+  // v2.0.9: check any theme-toggle-btn (desktop + footer/mobile), not just
+  // the desktop #themeToggle by id — fixes the footer skin button opening
+  // and then immediately closing the panel in the same click.
+  if (!panel.contains(e.target) && !e.target.closest('.theme-toggle-btn')) closeThemePanel();
 });
 
 // Load saved theme
@@ -2486,8 +2462,8 @@ function renderMCQ(rawChallenge) {
       <div class="mcq-concept" id="mcqConcept" style="
            background:var(--accent-dim);border-left:2px solid var(--accent);
            padding:10px 14px;margin-bottom:14px;
-           font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.6;border-radius:var(--radius)">
-        <span style="color:var(--accent)">ARIA // SCENARIO —</span>
+           font-size:15px;color:var(--text);line-height:1.55;border-radius:var(--radius)">
+        <span style="color:var(--accent);font-family:var(--mono);font-size:11px;letter-spacing:.04em">ARIA // SCENARIO —</span>
         ${challenge.concept_brief || ''}
       </div>
 
@@ -2547,13 +2523,16 @@ function renderMCQ(rawChallenge) {
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-primary" onclick="openModal('register')"
                   style="flex:1;min-width:140px;padding:8px 14px;font-size:11px;min-height:38px">
-            Join Free — Save Score
+            Save My Score
           </button>
+          <!-- v2.0.9 (2026-07-22): LinkedIn share button hidden for now
+               (Sandip: bring back in a future release) -- kept in DOM/JS,
+               just display:none, so re-enabling later is a one-line flip. -->
           <button onclick="openSharePicker('mcq')"
             style="background:#0a66c2;color:#fff;border:none;padding:8px 14px;
                    font-family:var(--display);font-weight:700;font-size:11px;
                    text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
-                   display:flex;align-items:center;gap:6px;min-height:38px">
+                   display:none;align-items:center;gap:6px;min-height:38px">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
             Share
           </button>
@@ -2782,7 +2761,7 @@ function renderCywordle(wordData) {
 
       <div id="wordleGrid" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px">
         ${Array.from({length:6}, (_,r) => `
-          <div class="wordle-row" id="wrow${r}" style="display:flex;gap:4px">
+          <div class="wordle-row" id="wrow${r}" style="display:flex;gap:4px;justify-content:center">
             ${Array.from({length:wordLen}, (_,c) => `
               <div class="wordle-cell" id="wc${r}_${c}"
                 style="width:clamp(32px,calc(100%/${wordLen} - 4px),48px);height:clamp(32px,7vw,48px);
@@ -2839,13 +2818,16 @@ function renderCywordle(wordData) {
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-primary" onclick="openModal('register')"
                   style="flex:1;min-width:140px;padding:8px 14px;font-size:11px;min-height:38px">
-            Join Free — Save Score
+            Save My Score
           </button>
+          <!-- v2.0.9 (2026-07-22): LinkedIn share button hidden for now
+               (Sandip: bring back in a future release) -- kept in DOM/JS,
+               just display:none, so re-enabling later is a one-line flip. -->
           <button onclick="openSharePicker('cywordle')"
             style="background:#0a66c2;color:#fff;border:none;padding:8px 14px;
                    font-family:var(--display);font-weight:700;font-size:11px;
                    text-transform:uppercase;cursor:pointer;border-radius:var(--radius);
-                   display:flex;align-items:center;gap:6px;min-height:38px">
+                   display:none;align-items:center;gap:6px;min-height:38px">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
             Share
           </button>
