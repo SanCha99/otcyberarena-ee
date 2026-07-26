@@ -1,6 +1,6 @@
 [
   {
-    "id": "ec_s1e1_fa1",
+    "id": "EC-00001",
     "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
@@ -18,10 +18,11 @@
     "correctIdx": 2,
     "aria_hint": "Think about the level where operators can watch and supervise the process — not command field devices directly.",
     "debrief": "Level 2 is the supervisory control tier — SCADA servers aggregate data from controllers, HMIs provide operator views, and historians log process data over time. Level 0 is the physical/field device layer. Level 1 is the basic control layer (PLCs, RTUs). Level 3 is the site operations layer — MES and production scheduling — one tier above supervisory control.",
-    "source": "NIST SP 800-82 Rev 3 §2.2 | Purdue Enterprise Reference Architecture (PERA)"
+    "source": "NIST SP 800-82 Rev 3 §2.2 | Purdue Enterprise Reference Architecture (PERA)",
+    "old_id": "ec_s1e1_fa1"
   },
   {
-    "id": "ec_s1e1_fa2",
+    "id": "EC-00002",
     "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
@@ -39,10 +40,11 @@
     "correctIdx": 0,
     "aria_hint": "In OT, a process that stops is more dangerous than a process whose data is read by an outsider.",
     "debrief": "In OT, availability is paramount — a stopped or disrupted process can cause physical harm, environmental damage, or lost production. Integrity matters too (a tampered setpoint can be dangerous), but confidentiality ranks lowest because control logic visibility is less immediately dangerous than downtime. IT reverses this: confidentiality of data is typically the primary concern. Option B is wrong — the priority order is a core difference. Option C is wrong — integrity failures (e.g. TRITON) can cause serious harm. Option D is wrong — confidentiality ranks lowest in OT.",
-    "source": "NIST SP 800-82 Rev 3 §2.1 | IEC 62443-1-1 §7"
+    "source": "NIST SP 800-82 Rev 3 §2.1 | IEC 62443-1-1 §7",
+    "old_id": "ec_s1e1_fa2"
   },
   {
-    "id": "ec_s1e1_fa3",
+    "id": "EC-00003",
     "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
@@ -60,10 +62,11 @@
     "correctIdx": 3,
     "aria_hint": "The goal is one-way flow: data leaves the OT zone but nothing can enter through the same path.",
     "debrief": "A data diode enforces hardware-level unidirectional flow — it is physically impossible for a signal to travel backwards. VPNs (Option A) are bidirectional by design; encrypting the tunnel does not prevent a compromised enterprise host from traversing it into OT. Option B opens a two-way SQL path — a classic lateral movement route. Option C establishes inbound remote desktop sessions, creating exactly the inbound attack path the architect is trying to eliminate.",
-    "source": "NIST SP 800-82 Rev 3 §5.7 | IEC 62443-3-3 SR 5.2 | CISA — Network Architecture and Segmentation"
+    "source": "NIST SP 800-82 Rev 3 §5.7 | IEC 62443-3-3 SR 5.2 | CISA — Network Architecture and Segmentation",
+    "old_id": "ec_s1e1_fa3"
   },
   {
-    "id": "ec_s1e1_fa4",
+    "id": "EC-00004",
     "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
@@ -81,10 +84,11 @@
     "correctIdx": 1,
     "aria_hint": "The infection timing matches exactly when external software was loaded — focus on what was introduced, not who introduced it.",
     "debrief": "T0862 Supply Chain Compromise fits best: malicious code embedded in a legitimate vendor package, two-week staged delay before calling home — a pattern common in ICS-targeting campaigns. Option A requires the contractor to have browsed a malicious site; this is not stated. Option C requires a USB drive; the scenario states 'vendor programming software upload' not removable media. Option D requires an internet-exposed service, which is not described here.",
-    "source": "MITRE ATT&CK for ICS — T0862 Supply Chain Compromise | CISA Advisory AA22-103A"
+    "source": "MITRE ATT&CK for ICS — T0862 Supply Chain Compromise | CISA Advisory AA22-103A",
+    "old_id": "ec_s1e1_fa4"
   },
   {
-    "id": "ec_s1e1_fa5",
+    "id": "EC-00005",
     "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
@@ -102,10 +106,11 @@
     "correctIdx": 2,
     "aria_hint": "An active scanner only sees what responds to its probes — think about what only appears when devices are naturally communicating.",
     "debrief": "Passive monitoring captures Modbus, DNP3, and EtherNet/IP traffic already flowing on the network — revealing which PLCs poll which HMIs, which register addresses are written, and what function codes are in use. An active scanner cannot observe these natural conversations; it only enumerates devices that respond to its probes. Options A and D describe outputs of active scanning and vulnerability assessment tools, not passive monitoring. Option B (IP counts) is a basic output of either approach.",
-    "source": "NIST SP 800-82 Rev 3 §6.2.1 | CISA — Recommended Practices for Securing ICS Networks"
+    "source": "NIST SP 800-82 Rev 3 §6.2.1 | CISA — Recommended Practices for Securing ICS Networks",
+    "old_id": "ec_s1e1_fa5"
   },
   {
-    "id": "ec_s1e1_fa6",
+    "id": "EC-00006",
     "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
@@ -123,10 +128,11 @@
     "correctIdx": 0,
     "aria_hint": "The key event is what changed inside the PLC project — not the connection method or the preparatory steps.",
     "debrief": "T0833 Modify Control Logic is the direct match: the attacker changed the program controlling physical process behaviour — ladder logic, in this case. Both TRITON/TRISIS and INCONTROLLER/PIPEDREAM used this technique. Option B (Spoof Reporting Message) is a concealment layer that may accompany T0833 but was not observed here. Option C misstates the objective — the program was modified and returned, not exfiltrated. Option D (Change Operating Mode) is typically a prerequisite step taken before logic modification, not the modification itself.",
-    "source": "MITRE ATT&CK for ICS — T0833 Modify Control Logic | CISA Advisory AA22-103A (INCONTROLLER/PIPEDREAM)"
+    "source": "MITRE ATT&CK for ICS — T0833 Modify Control Logic | CISA Advisory AA22-103A (INCONTROLLER/PIPEDREAM)",
+    "old_id": "ec_s1e1_fa6"
   },
   {
-    "id": "ec_s1e1_fa7",
+    "id": "EC-00007",
     "game_type": "mcq_weekly",
     "season": 1,
     "episode": 1,
@@ -144,6 +150,7 @@
     "correctIdx": 3,
     "aria_hint": "Once inside the OT zone, ask what technically stops a host from sending a command to a PLC — and whether that mechanism exists.",
     "debrief": "Modbus, DNP3, and most legacy OT protocols have no native authentication mechanism. Any device that can reach a PLC on the network segment can send it a structurally valid command — the PLC has no way to verify whether the sender is authorised. Firewalls control which hosts can reach the PLC's IP and port, but once inside the same segment, protocol-level authentication is the only remaining control — and it does not exist. Option A is partially true but the critical gap is authorisation, not visibility. Option B is a staffing issue, not a protocol architecture failure. Option C is a misconception; most modern OT environments have IT/OT connectivity.",
-    "source": "NIST SP 800-82 Rev 3 §3.2 | IEC 62443-3-3 SR 1.2 | MITRE ATT&CK for ICS — TA0109 Lateral Movement"
+    "source": "NIST SP 800-82 Rev 3 §3.2 | IEC 62443-3-3 SR 1.2 | MITRE ATT&CK for ICS — TA0109 Lateral Movement",
+    "old_id": "ec_s1e1_fa7"
   }
 ]

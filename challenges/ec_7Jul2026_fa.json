@@ -1,6 +1,6 @@
 [
   {
-    "id": "ec_7Jul2026_q1",
+    "id": "EC-00015",
     "game_type": "mcq_weekly",
     "difficulty": "easy",
     "points": 20,
@@ -25,10 +25,11 @@
         "text": "Mandiant — Attackers Deploy New ICS Attack Framework TRITON",
         "url": "https://cloud.google.com/blog/topics/threat-intelligence/attackers-deploy-new-ics-attack-framework-triton/"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q1"
   },
   {
-    "id": "ec_7Jul2026_q2",
+    "id": "EC-00016",
     "game_type": "mcq_weekly",
     "difficulty": "easy",
     "points": 20,
@@ -53,10 +54,11 @@
         "text": "MITRE ATT&CK — S0604 INDUSTROYER",
         "url": "https://attack.mitre.org/software/S0604/"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q2"
   },
   {
-    "id": "ec_7Jul2026_q3",
+    "id": "EC-00017",
     "game_type": "mcq_weekly",
     "difficulty": "medium",
     "points": 40,
@@ -81,10 +83,11 @@
         "text": "CISA Advisory AA24-038A",
         "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa24-038a"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q3"
   },
   {
-    "id": "ec_7Jul2026_q4",
+    "id": "EC-00018",
     "game_type": "mcq_weekly",
     "difficulty": "medium",
     "points": 40,
@@ -109,10 +112,11 @@
         "text": "MITRE ATT&CK — S1009 TRITON",
         "url": "https://attack.mitre.org/software/S1009/"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q4"
   },
   {
-    "id": "ec_7Jul2026_q5",
+    "id": "EC-00019",
     "game_type": "mcq_weekly",
     "difficulty": "medium",
     "points": 40,
@@ -141,10 +145,11 @@
         "text": "CISA — CrashOverride Malware Alert",
         "url": "https://www.cisa.gov/news-events/alerts/2017/06/12/crashoverride-malware"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q5"
   },
   {
-    "id": "ec_7Jul2026_q6",
+    "id": "EC-00020",
     "game_type": "mcq_weekly",
     "difficulty": "hard",
     "points": 60,
@@ -169,10 +174,11 @@
         "text": "MITRE ATT&CK — S1009 TRITON",
         "url": "https://attack.mitre.org/software/S1009/"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q6"
   },
   {
-    "id": "ec_7Jul2026_q7",
+    "id": "EC-00021",
     "game_type": "mcq_weekly",
     "difficulty": "hard",
     "points": 60,
@@ -201,10 +207,11 @@
         "text": "Dragos — VOLTZITE Threat Group",
         "url": "https://www.dragos.com/threat/voltzite"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q7"
   },
   {
-    "id": "ec_7Jul2026_q8",
+    "id": "EC-00022",
     "game_type": "mcq_weekly",
     "difficulty": "hard",
     "points": 60,
@@ -229,10 +236,11 @@
         "text": "MITRE ATT&CK — S0604 INDUSTROYER",
         "url": "https://attack.mitre.org/software/S0604/"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q8"
   },
   {
-    "id": "ec_7Jul2026_q9",
+    "id": "EC-00023",
     "game_type": "mcq_weekly",
     "difficulty": "expert",
     "points": 100,
@@ -257,10 +265,11 @@
         "text": "MIT Technology Review — Triton is the World's Most Murderous Malware",
         "url": "https://www.technologyreview.com/2019/03/05/103328/cybersecurity-critical-infrastructure-triton-malware/"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q9"
   },
   {
-    "id": "ec_7Jul2026_q10",
+    "id": "EC-00024",
     "game_type": "mcq_weekly",
     "difficulty": "expert",
     "points": 100,
@@ -289,6 +298,7 @@
         "text": "Dragos — XENOTIME Threat Group",
         "url": "https://www.dragos.com/threat/xenotime"
       }
-    ]
+    ],
+    "old_id": "ec_7Jul2026_q10"
   }
 ]

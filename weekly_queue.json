@@ -2,28 +2,28 @@
   {
     "week_start": "2026-07-05",
     "mcq_ids": [
-      "ec_s1e1_fa1",
-      "ec_s1e1_fa2"
+      "EC-00001",
+      "EC-00002"
     ],
     "cywordle": {
       "word": "CERT",
-      "clue": "Computer Emergency Response Team \u2014 the coordination group you notify when an ICS incident hits."
+      "clue": "Computer Emergency Response Team — the coordination group you notify when an ICS incident hits."
     }
   },
   {
     "week_start": "2026-07-10",
     "mcq_ids": [
-      "ec_s1e1_fa3"
+      "EC-00003"
     ],
     "cywordle": {
       "word": "PATCH",
-      "clue": "The fix a vendor ships for a known vulnerability \u2014 applying it in OT usually needs a planned maintenance window."
+      "clue": "The fix a vendor ships for a known vulnerability — applying it in OT usually needs a planned maintenance window."
     }
   },
   {
     "week_start": "2026-07-11",
     "mcq_ids": [
-      "ec_s1e1_fa4"
+      "EC-00004"
     ],
     "cywordle": {
       "word": "LADDER",
@@ -33,7 +33,7 @@
   {
     "week_start": "2026-07-13",
     "mcq_ids": [
-      "ec_s1e1_fa5"
+      "EC-00005"
     ],
     "cywordle": {
       "word": "ROOT",
@@ -43,17 +43,17 @@
   {
     "week_start": "2026-07-14",
     "mcq_ids": [
-      "ec_s1e1_fa6"
+      "EC-00006"
     ],
     "cywordle": {
       "word": "WIPER",
-      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it \u2014 used in some of the most destructive attacks on OT networks."
+      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it — used in some of the most destructive attacks on OT networks."
     }
   },
   {
     "week_start": "2026-07-16",
     "mcq_ids": [
-      "ec_s1e1_fa7"
+      "EC-00007"
     ],
     "cywordle": {
       "word": "LEGACY",
@@ -63,7 +63,7 @@
   {
     "week_start": "2026-07-18",
     "mcq_ids": [
-      "s1e2_fa01"
+      "EC-00008"
     ],
     "cywordle": {
       "word": "HASH",
@@ -73,7 +73,7 @@
   {
     "week_start": "2026-07-21",
     "mcq_ids": [
-      "s1e2_fa02"
+      "EC-00009"
     ],
     "cywordle": {
       "word": "PROXY",
@@ -83,7 +83,7 @@
   {
     "week_start": "2026-07-22",
     "mcq_ids": [
-      "s1e2_fa03"
+      "EC-00010"
     ],
     "cywordle": {
       "word": "MODBUS",
@@ -93,7 +93,7 @@
   {
     "week_start": "2026-07-23",
     "mcq_ids": [
-      "s1e2_fa04"
+      "EC-00011"
     ],
     "cywordle": {
       "word": "RELAY",
@@ -103,7 +103,7 @@
   {
     "week_start": "2026-07-24",
     "mcq_ids": [
-      "s1e2_fa05"
+      "EC-00012"
     ],
     "cywordle": {
       "word": "BREACH",
@@ -113,7 +113,7 @@
   {
     "week_start": "2026-07-25",
     "mcq_ids": [
-      "s1e2_fa06"
+      "EC-00013"
     ],
     "cywordle": {
       "word": "SENSOR",

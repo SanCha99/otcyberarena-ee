@@ -1,0 +1,242 @@
+[
+  {
+    "id": "EC-00027",
+    "game_type": "mcq_weekly",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "At Meridian Grid Operators, the security team notices repeated automated probes against their public-facing AI-powered outage-prediction API, including scans that specifically check for known AI DevOps tooling and public AI chat-agent endpoints.",
+    "question": "Which MITRE ATLAS technique does this probing represent?",
+    "options": [
+      "Active Scanning - directly probing systems for AI services, DevOps tooling, and chat-agent endpoints.",
+      "Search Open Technical Databases - passively searching public repositories for technical details.",
+      "AI Model Inference API Access - using a model's legitimate prediction interface as intended.",
+      "Full AI Model Access - obtaining complete white-box access to a model's architecture and weights."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "This involves direct interaction with the victim's own systems - not passive open-source searching.",
+    "debrief": "Active Scanning (AML.T0006) covers direct probing of a victim's systems for AI services or DevOps tooling - exactly the scans Meridian's team observed. Search Open Technical Databases (Option B) is passive, using public sources rather than touching the victim's systems. Option C describes normal, legitimate use of a model's API, not reconnaissance. Option D (Full AI Model Access) is a much later-stage technique requiring the adversary to already have complete access to the model itself.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0006",
+        "url": "https://atlas.mitre.org/techniques/AML.T0006"
+      }
+    ]
+  },
+  {
+    "id": "EC-00028",
+    "game_type": "mcq_weekly",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "An insider at Solstice Refining downloads the complete architecture and trained weights of the plant's proprietary corrosion-prediction model before leaving the company, later using an identical offline copy to test evasive inputs without ever touching the live system.",
+    "question": "What does obtaining a model's complete architecture, parameters, and output categories represent in MITRE ATLAS?",
+    "options": [
+      "AI Model Inference API Access - querying a deployed model only through its public interface.",
+      "Full AI Model Access - complete \"white-box\" access enabling offline attack development.",
+      "Discover AI Model Ontology - inferring a model's output categories through repeated queries.",
+      "AI Artifact Collection - gathering supporting artifacts like logs or documentation about a model."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "The insider didn't have to query anything remotely - they already had the whole model.",
+    "debrief": "Full AI Model Access (AML.T0044) means complete white-box knowledge of a model's architecture, parameters, and class ontology - exactly what the departing insider took, letting them craft and verify adversarial inputs offline where detection is hard. Option A describes black-box access through a public interface only, not full internal knowledge. Option C is a discovery technique used when an attacker does NOT already have full access. Option D covers collecting supporting artifacts, not the model itself.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0044",
+        "url": "https://atlas.mitre.org/techniques/AML.T0044"
+      }
+    ]
+  },
+  {
+    "id": "EC-00029",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "At Harborline Water Utility, an attacker with early access to the historian used to build a predictive-maintenance model quietly relabels a fraction of pump-vibration samples as \"normal\" before the next model retraining run - embedding a blind spot the security team doesn't discover for months.",
+    "question": "Which MITRE ATLAS technique does the attacker use?",
+    "options": [
+      "Manipulate AI Model - directly changing the weights of an already-trained, deployed model.",
+      "AI Supply Chain Compromise - compromising a vendor's model before the victim ever receives it.",
+      "Poison Training Data - modifying underlying data or labels before or during model training.",
+      "Craft Adversarial Data - crafting an input at inference time to fool an already-trained model."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "The tampering happened to the training data itself, before the model was even retrained - not to a finished model or a live input.",
+    "debrief": "Poison Training Data (AML.T0020) covers exactly this: modifying the underlying data or labels used to train a model, embedding a hard-to-detect vulnerability that surfaces once the poisoned model is deployed. Option A (Manipulate AI Model) changes an already-trained model's weights directly - no training data is involved here. Option B (Supply Chain Compromise) requires the compromise to happen upstream, before the victim organization controls the data; here the attacker already had internal historian access. Option D (Craft Adversarial Data) is an inference-time attack against a finished model, not a training-time data attack.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0020",
+        "url": "https://atlas.mitre.org/techniques/AML.T0020"
+      }
+    ]
+  },
+  {
+    "id": "EC-00030",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "Northgate Manufacturing licenses a pre-trained defect-detection model from a third-party vendor and deploys it directly onto the plant floor. Months later, forensic analysis reveals the vendor's own training pipeline had been compromised before the model was ever delivered to Northgate.",
+    "question": "Which MITRE ATLAS technique best matches this scenario?",
+    "options": [
+      "Poison Training Data - poisoning data that the victim organization itself collects and controls.",
+      "Manipulate AI Model - directly changing the weights of a model already deployed at the victim.",
+      "Full AI Model Access - obtaining complete white-box access to a model already in production.",
+      "AI Supply Chain Compromise - compromising the unique parts of the AI supply chain before delivery."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "Northgate never touched the compromised pipeline - the damage was already done before the model arrived.",
+    "debrief": "AI Supply Chain Compromise (AML.T0010) covers gaining initial access by compromising a unique part of the AI supply chain - hardware, data, software stack, or the model itself - before it reaches the victim organization, which is exactly what happened at the vendor. Option A requires the victim's own data to be poisoned; here the compromise was entirely upstream. Option B requires the victim's deployed copy to be directly altered after delivery, which isn't described. Option C is about gaining access to an existing model, not a supply-chain compromise before delivery.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0010",
+        "url": "https://atlas.mitre.org/techniques/AML.T0010"
+      }
+    ]
+  },
+  {
+    "id": "EC-00031",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "At Cascade Steel, an attacker studies the plant's AI-based intrusion-detection sensor and crafts network traffic that is subtly altered so the model classifies it as benign, letting a traditional cyberattack proceed undetected.",
+    "question": "Which MITRE ATLAS technique describes crafting input specifically to fool an AI model into misclassifying malicious activity?",
+    "options": [
+      "Evade AI Model - crafting adversarial data that prevents correct identification of malicious content.",
+      "Denial of AI Service - flooding an AI-enabled system with requests to degrade or shut it down.",
+      "Exfiltration via AI Inference API - extracting private information through a model's inference interface.",
+      "Active Scanning - directly probing a victim's systems to gather targeting information."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "The attacker's goal wasn't to break the sensor or steal from it - it was to slip past it unnoticed.",
+    "debrief": "Evade AI Model (AML.T0015) covers crafting adversarial data (or deepfakes) that prevents an AI model from correctly identifying content, letting a downstream attack - like traditional malware or network intrusion - proceed undetected. Option B is about degrading or shutting down the service entirely, not slipping past it. Option C is about stealing information via the model's API, unrelated to evasion. Option D is a reconnaissance technique used before an attack, not the evasion itself.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0015",
+        "url": "https://atlas.mitre.org/techniques/AML.T0015"
+      }
+    ]
+  },
+  {
+    "id": "EC-00032",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "A competitor repeatedly queries Vantage Energy's public equipment-health prediction API with carefully chosen inputs, gradually reconstructing a functionally equivalent model - without ever gaining any direct access to Vantage's internal systems.",
+    "question": "Which MITRE ATLAS technique does this repeated, purposeful querying represent?",
+    "options": [
+      "Active Scanning - directly probing a victim's network for exposed AI services and tooling.",
+      "Exfiltration via AI Inference API - extracting model or training-data information through legitimate queries.",
+      "Full AI Model Access - obtaining complete white-box access to the model's architecture and weights.",
+      "Manipulate AI Model - directly changing an already-trained model's weights or behavior."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "Nothing was probed or broken into - every query used the API exactly as it was designed to be used.",
+    "debrief": "Exfiltration via AI Inference API (AML.T0024) covers extracting private model or training-data information - including effectively extracting the model itself - purely through a legitimate inference interface, which is exactly what the competitor did. Option A involves direct probing of systems, not API queries. Option C (Full AI Model Access) means the attacker already has complete internal access; here the model was reconstructed from the outside only. Option D requires directly altering the model's own weights, which never happened - Vantage's model was untouched throughout.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0024",
+        "url": "https://atlas.mitre.org/techniques/AML.T0024"
+      }
+    ]
+  },
+  {
+    "id": "EC-00033",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "Overnight, Redstone Chemical's AI-based anomaly-detection service is flooded with deliberately crafted, computation-heavy inputs. The service becomes so overloaded that operators disable it and fall back to manual monitoring for the rest of the shift.",
+    "question": "Which MITRE ATLAS technique matches this attack?",
+    "options": [
+      "Spamming AI System with Chaff Data - flooding an AI system with data to increase false-positive detections.",
+      "Evade AI Model - crafting data that prevents an AI model from correctly identifying content.",
+      "Denial of AI Service - flooding an AI-enabled system with requests to degrade or shut it down.",
+      "Active Scanning - directly probing a victim's systems to gather information for targeting."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "The goal here was to make the service too expensive to keep running - not to trick it or hide from it.",
+    "debrief": "Denial of AI Service (AML.T0029) covers flooding AI-enabled systems with requests - often computationally expensive ones - to degrade or shut the service down, forcing operators to disable it entirely, exactly as happened at Redstone. Option A (Chaff Data) is a related but distinct technique aimed at wasting analysts' time reviewing false positives, not at overloading the system's compute until it's shut down. Option B is about evading detection, not overwhelming the service. Option D is reconnaissance, not an availability attack.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0029",
+        "url": "https://atlas.mitre.org/techniques/AML.T0029"
+      }
+    ]
+  },
+  {
+    "id": "EC-00034",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "An engineering team at Ferrum Alloys deploys an LLM-based copilot that reads equipment manuals to answer operator questions. An attacker embeds hidden instructions inside a PDF manual on the shared drive; when the copilot later reads that manual to answer a routine question, it follows the embedded instructions instead and reveals internal network configuration details.",
+    "question": "Which MITRE ATLAS technique does the embedded, hidden instruction represent?",
+    "options": [
+      "LLM Jailbreak - inducing an LLM to ignore or override its safety and alignment behaviors generally.",
+      "User Execution - a human operator directly runs a malicious file or command.",
+      "Extract LLM System Prompt - causing an LLM to reveal its own confidential system instructions.",
+      "LLM Prompt Injection - malicious instructions ingested indirectly from a data source the LLM reads."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "The attacker never talked to the copilot directly - the malicious instruction rode in inside a document it was reading anyway.",
+    "debrief": "LLM Prompt Injection (AML.T0051) covers exactly this: malicious instructions injected indirectly, ingested by the LLM as part of its normal operation (here, reading a manual), causing it to follow the adversary's instructions instead of its original ones. Option A (Jailbreak) is about circumventing safety alignment generally, not specifically via a hidden instruction planted in ingested content. Option B requires a human to directly execute something, not an LLM reading a document. Option C is a narrower technique specifically about revealing the system prompt, not general internal network information.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0051",
+        "url": "https://atlas.mitre.org/techniques/AML.T0051"
+      }
+    ]
+  },
+  {
+    "id": "EC-00035",
+    "game_type": "mcq_weekly",
+    "difficulty": "expert",
+    "points": 100,
+    "penalty": -20,
+    "scenario": "Solara Water Utilities pilots an AI agent with tool access to query the historian and draft maintenance tickets. An attacker who has compromised the agent's chat interface issues carefully worded requests that cause the agent to invoke its ticketing tool with a much broader scope than intended - mass-closing active alarms across the plant.",
+    "question": "Which MITRE ATLAS technique does the attacker's abuse of the agent's own tool access represent?",
+    "options": [
+      "AI Agent Tool Invocation - using access to an AI agent to invoke tools and integrations it can reach.",
+      "Reverse Shell - establishing a traditional command-and-control channel back to the attacker.",
+      "Valid Accounts - using legitimate, directly stolen credentials to access a system.",
+      "Manipulate AI Model - directly changing the agent's underlying model weights or architecture."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "The attacker didn't steal a password or open a backdoor - they got the agent itself to misuse the tools it was already trusted with.",
+    "debrief": "AI Agent Tool Invocation (AML.T0053) covers adversaries using their access to an AI agent to invoke the tools and integrations that agent has access to - here, the ticketing and historian tools - gaining effective privileges without directly compromising those systems. Option B describes a traditional malware C2 channel, not tool abuse through an agent. Option C requires directly stolen, valid credentials used outside the agent; here the agent itself was the vector. Option D requires altering the model's weights, not simply directing its existing, legitimate tool access.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0053",
+        "url": "https://atlas.mitre.org/techniques/AML.T0053"
+      }
+    ]
+  },
+  {
+    "id": "EC-00036",
+    "game_type": "mcq_weekly",
+    "difficulty": "expert",
+    "points": 100,
+    "penalty": -20,
+    "scenario": "During a routine audit at Iron Bridge Foundry, engineers discover that the deployed defect-classification model's weight file on disk differs from the vendor-signed original - someone with access to the model registry had modified specific weights so a category of surface cracks is systematically misclassified as passing.",
+    "question": "Which MITRE ATLAS technique does this direct alteration of deployed model weights represent?",
+    "options": [
+      "Poison Training Data - modifying the underlying data or labels used to train a model.",
+      "Manipulate AI Model - directly changing an already-existing model's weights, architecture, or behavior.",
+      "AI Supply Chain Compromise - compromising the AI supply chain before a model reaches the victim.",
+      "Craft Adversarial Data - crafting a malicious input at inference time to fool a trained model."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "No training data was touched and no input was crafted - the finished, deployed model itself was changed directly.",
+    "debrief": "Manipulate AI Model (AML.T0018) covers directly manipulating an existing AI model to change its behavior - including poisoning it by changing its weights after the fact - giving the adversary a persistent change in the deployed system, exactly what happened to the registry copy at Iron Bridge. Option A requires the training data itself to be poisoned before or during training; here the finished model's weights were altered directly. Option C requires the compromise to happen upstream at the vendor, but the audit trail points to registry access at Iron Bridge itself. Option D is an inference-time input attack, not a change to the model file itself.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0018",
+        "url": "https://atlas.mitre.org/techniques/AML.T0018"
+      }
+    ]
+  }
+]

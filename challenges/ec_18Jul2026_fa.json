@@ -1,6 +1,6 @@
 [
   {
-    "id": "ec_18Jul2026_q1",
+    "id": "EC-00026",
     "game_type": "mcq_weekly",
     "difficulty": "medium",
     "points": 40,
@@ -17,7 +17,11 @@
     "aria_hint": "The guidance's architecture principle is about where AI processing should physically happen relative to the safety-critical loop.",
     "debrief": "B is correct: the joint CISA/NSA/ASD guidance recommends keeping AI processing off the plant floor by sending sanitized OT data to a separate, secured AI system, paired with human-in-the-loop oversight for critical decisions. Option A skips governance entirely -- the guidance requires review regardless of whether the model controls equipment directly. Option C embeds the model into the safety-critical loop itself, exactly what the guidance warns against. Option D deploys without fail-safes, again contrary to the guidance's core recommendation.",
     "sources": [
-      { "text": "NSA/CISA/ASD joint guidance, \"Principles for the Secure Integration of Artificial Intelligence in Operational Technology\" (3 Dec 2025)", "url": "https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4347041/nsa-cisa-and-others-release-guidance-on-integrating-ai-in-operational-technology/" }
-    ]
+      {
+        "text": "NSA/CISA/ASD joint guidance, \"Principles for the Secure Integration of Artificial Intelligence in Operational Technology\" (3 Dec 2025)",
+        "url": "https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4347041/nsa-cisa-and-others-release-guidance-on-integrating-ai-in-operational-technology/"
+      }
+    ],
+    "old_id": "ec_18Jul2026_q1"
   }
 ]

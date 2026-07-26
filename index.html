@@ -3243,7 +3243,8 @@ const CHALLENGE_BANK_FILES = [
   'challenges/ec_s1e2_fa.json',
   'challenges/ec_7Jul2026_fa.json',
   'challenges/ec_11Jul2026_fa.json',
-  'challenges/ec_18Jul2026_fa.json'
+  'challenges/ec_18Jul2026_fa.json',
+  'challenges/ec_19Jul2026_fa.json'
 ];
 
 async function loadChallengeAndRender(id) {
@@ -3253,7 +3254,7 @@ async function loadChallengeAndRender(id) {
       CHALLENGE_BANK_FILES.map(f => fetch(f).then(r => r.ok ? r.json() : []).catch(() => []))
     );
     const all = results.flat();
-    const ch = all.find(c => c.id === id);
+    const ch = all.find(c => c.id === id || c.old_id === id); // old_id: EC-##### id retrofit (2026-07-26) — keeps any pre-existing bookmarked/shared link working
     if (!ch) throw new Error('id not found in any bank file: ' + id);
     renderMCQ(ch);
   } catch {
