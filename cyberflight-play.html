@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="steel">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CyberFlight — OT CyberArena</title>
+<meta name="description" content="Play CYBERFLIGHT — dodge live OT/ICS threats, collect real defenses, and bank credits on the OT CyberArena leaderboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+[data-theme="steel"] {
+  --bg: #050a05; --surface: #0a120a; --surface2: #0f1a0f; --border: #1a2e1a;
+  --accent: #22c55e; --accent-dim: rgba(34,197,94,0.12); --text: #e8f5e8; --muted: #5a7a5a;
+  --red: #ff4444; --mono: 'Share Tech Mono', monospace; --display: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif; --radius: 2px;
+}
+* , *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; overflow-x:clip; }
+body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100dvh; padding-bottom:env(safe-area-inset-bottom); }
+.topbar {
+  position:sticky; top:0; z-index:200; height:52px; padding:0 clamp(12px,3vw,28px);
+  background:rgba(5,10,5,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-mark { width:30px; height:30px; border:2px solid var(--accent); border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--accent); }
+.logo-text { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:0.04em; color:var(--text); }
+.logo-text .cyber { color:var(--accent); }
+.back-link { font-family:var(--mono); font-size:11px; color:var(--muted); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; }
+.back-link:hover { color:var(--accent); }
+.wrap { max-width:900px; margin:0 auto; padding:clamp(16px,3vw,32px) clamp(12px,3vw,28px) 60px; }
+.page-title { font-family:var(--display); font-weight:800; font-size:clamp(22px,3.5vw,32px); text-transform:uppercase; margin-bottom:6px; }
+.page-sub { font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:18px; line-height:1.6; }
+
+.status-bar {
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:12px 16px; margin-bottom:16px; font-family:var(--mono); font-size:11px;
+}
+.status-bar .status-text { color:var(--muted); line-height:1.5; }
+.status-bar .status-text strong { color:var(--text); }
+.status-bar a.status-cta {
+  color:var(--bg); background:var(--accent); text-decoration:none; padding:8px 14px;
+  border-radius:var(--radius); font-weight:700; letter-spacing:.04em; white-space:nowrap;
+}
+.status-bar.warn { border-color: rgba(255,68,68,0.4); }
+.status-bar.warn .status-text strong { color: var(--red); }
+
+.frame-wrap {
+  position:relative; width:100%; aspect-ratio:9/16; max-height:80vh;
+  background:#000; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+}
+@media (min-width:700px) { .frame-wrap { aspect-ratio:16/10; max-height:720px; } }
+.frame-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+.toast {
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+  background:var(--surface); border:1px solid var(--accent); color:var(--text);
+  font-family:var(--mono); font-size:12px; padding:12px 20px; border-radius:var(--radius);
+  opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:500;
+  max-width:90vw; text-align:center; line-height:1.5;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(--muted); padding:24px; opacity:.7; }
+</style>
+</head>
+<body>
+
+<header class="topbar" role="banner">
+  <a href="index.html" class="logo" aria-label="OT CyberArena Home">
+    <div class="logo-mark" aria-hidden="true">OT</div>
+    <div class="logo-text">OT <span class="cyber">Cyber</span>Arena</div>
+  </a>
+  <a class="back-link" href="index.html">← Back to Arena</a>
+</header>
+
+<div class="wrap">
+  <h1 class="page-title">CyberFlight</h1>
+  <p class="page-sub">ARIA // Arcade defense run — dodge named OT/ICS threats, collect real defenses, and bank your final score
+    as leaderboard credits. Up to 3 credited runs per day, any speed or mode.</p>
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-text" id="statusText">ARIA // Checking your session...</div>
+  </div>
+
+  <div class="frame-wrap">
+    <iframe id="gameFrame" src="games/cyberflight.html" title="CyberFlight" allow="autoplay"></iframe>
+  </div>
+</div>
+
+<footer>OT CyberArena · Vendor-Neutral</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const IS_LOCAL = location.protocol === 'file:';
+const STORAGE_KEY   = 'ec_player';
+const PENDING_KEY    = 'ec_pending_cyberflight_score';
+const DAILY_CREDIT_CAP = 3;
+
+const SUPABASE_URL  = 'https://obqqbfvrnkwkgucqdqad.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icXFiZnZybmt3a2d1Y3FkcWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MjU2NDUsImV4cCI6MjA5NjMwMTY0NX0.I5KjNSrEgF4fZ3jlYqgGj-TVIeQo5XKCQAcK8RHPnzs';
+const sb = IS_LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+function loadPlayer() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; }
+  catch { return null; }
+}
+function savePlayer(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+
+let currentPlayer = loadPlayer();
+
+function showToast(msg, ms) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove('show'), ms || 4200);
+}
+
+function renderStatus() {
+  const bar = document.getElementById('statusBar');
+  const txt = document.getElementById('statusText');
+  if (IS_LOCAL) {
+    txt.innerHTML = 'ARIA // Local file preview — scores will not save. Open via the live site to save runs.';
+    return;
+  }
+  if (currentPlayer) {
+    bar.classList.remove('warn');
+    txt.innerHTML = `ARIA // Flying as <strong>${currentPlayer.callsign}</strong> — final score of each run banks straight to your credits (up to ${DAILY_CREDIT_CAP}/day).`;
+  } else {
+    bar.classList.add('warn');
+    txt.innerHTML = `ARIA // <strong>Not signed in</strong> — your run will still play, but sign in to bank the score to the leaderboard. <a class="status-cta" href="index.html#register">Save My Score →</a>`;
+  }
+}
+
+async function cyberflightRunsToday(playerId) {
+  if (IS_LOCAL || !sb) return 0;
+  const start = new Date(); start.setHours(0,0,0,0);
+  const { count, error } = await sb.from('solves')
+    .select('id', { count: 'exact', head: true })
+    .eq('player_id', playerId)
+    .eq('game_type', 'cyberflight')
+    .gte('created_at', start.toISOString());
+  if (error) { console.warn('cyberflightRunsToday error:', error.message); return 0; }
+  return count || 0;
+}
+
+// Mirrors index.html's applyCredits()/recordSolve() — kept local to this
+// self-contained page rather than shared, per the site's single-file
+// page convention (no shared JS include exists between pages).
+async function creditRun(score) {
+  if (!currentPlayer || !currentPlayer.id) return;
+  const runsToday = await cyberflightRunsToday(currentPlayer.id);
+  if (runsToday >= DAILY_CREDIT_CAP) {
+    showToast(`ARIA // Nice run — daily CyberFlight credit cap (${DAILY_CREDIT_CAP}/day) already reached. Score not added this time.`);
+    return;
+  }
+  const newAmount = Math.max(0, (currentPlayer.credits || 0) + score);
+  currentPlayer.credits = newAmount;
+  savePlayer(currentPlayer);
+  if (!IS_LOCAL && !currentPlayer.id.startsWith('local_')) {
+    await sb.from('credits').upsert(
+      { player_id: currentPlayer.id, amount: newAmount, reason: 'game_score' },
+      { onConflict: 'player_id' }
+    );
+    await sb.from('solves').insert({
+      player_id:         currentPlayer.id,
+      challenge_id:      'cyberflight_' + Date.now(),
+      challenge_id_text: 'cyberflight_' + Date.now(),
+      outcome:           null,
+      credits_earned:    score,
+      game_type:         'cyberflight'
+    });
+  }
+  showToast(`ARIA // +${score.toLocaleString()} credits banked from CyberFlight. New balance: ${newAmount.toLocaleString()}.`);
+}
+
+window.addEventListener('message', (e) => {
+  const data = e.data;
+  if (!data || data.type !== 'cyberflight_score' || data.game !== 'CYBERFLIGHT') return;
+  const score = Math.max(0, Math.floor(Number(data.score) || 0));
+  if (!currentPlayer) {
+    try { localStorage.setItem(PENDING_KEY, JSON.stringify({ score, ts: Date.now() })); } catch {}
+    showToast(`ARIA // Run complete — score ${score.toLocaleString()}. Sign in to bank it to your leaderboard credits.`, 6000);
+    return;
+  }
+  creditRun(score);
+});
+
+renderStatus();
+</script>
+</body>
+</html>

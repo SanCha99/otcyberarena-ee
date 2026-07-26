@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>OT CYBERARENA — CYBERFLIGHT</title>
+<style>
+:root{
+  --cyan:#29e6ff; --green:#37ff8b; --red:#ff3b4d; --amber:#ffb347; --purple:#b366ff;
+  --bg:#04060e; --mono:'Consolas','Courier New',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);overflow:hidden;font-family:var(--mono);touch-action:none;overscroll-behavior:none}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+canvas{display:block;background:var(--bg)}
+/* HUD overlays are drawn on canvas; DOM only for screens */
+/* screens now scroll vertically so long content never clips on small phones */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  background:radial-gradient(ellipse at 50% 30%,rgba(10,30,55,.92),rgba(4,6,14,.97));z-index:10;color:#cfe8f5;
+  text-align:center;padding:max(18px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));gap:10px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen::before{content:"";flex:0 0 auto;height:8px}      /* small top breathing room, keeps title clear of browser chrome */
+.screen>*{flex:0 0 auto}
+.screen.hidden{display:none}
+h1{font-size:clamp(24px,7.5vw,44px);letter-spacing:.16em;color:var(--cyan);margin-top:2px;font-weight:700;
+  text-shadow:0 0 18px rgba(41,230,255,.7),0 0 50px rgba(41,230,255,.25)}
+h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:#6f8ba3;font-weight:normal;margin-top:-2px}
+.tagline{font-size:clamp(12px,3.2vw,14px);color:#8fa6ba;max-width:360px;line-height:1.5;margin-top:2px}
+.btn{margin-top:4px;background:linear-gradient(180deg,#123147,#0b1f30);border:1px solid var(--cyan);color:var(--cyan);
+  font-family:var(--mono);font-size:clamp(15px,4vw,19px);letter-spacing:.2em;padding:15px 46px;cursor:pointer;border-radius:6px;
+  animation:pulsebtn 1.6s ease-in-out infinite}
+.btn:active{background:var(--cyan);color:#04222e}
+@keyframes pulsebtn{0%,100%{box-shadow:0 0 10px rgba(41,230,255,.3)}50%{box-shadow:0 0 30px rgba(41,230,255,.8)}}
+#finalStats{font-size:clamp(13px,3.6vw,17px);line-height:2}
+#finalStats .big{font-size:clamp(26px,8vw,44px);color:var(--green);text-shadow:0 0 16px rgba(55,255,139,.7)}
+#finalStats .rank{color:var(--amber);letter-spacing:.15em}
+.tag{font-size:clamp(10px,2.6vw,12px);color:#4d7691;letter-spacing:.12em;margin-top:6px}
+/* unified card so the screen reads as tidy panels, not scattered lines */
+.panel{width:min(420px,92vw);background:rgba(9,20,34,.5);border:1px solid rgba(41,230,255,.16);border-radius:12px;padding:14px 16px}
+/* mission briefing — color lives ONLY in the small leading glyph */
+.brief{text-align:left;display:flex;flex-direction:column;gap:9px}
+.brief .row{display:flex;gap:11px;align-items:baseline;font-size:clamp(12px,3.2vw,14px);line-height:1.45;color:#aebfce}
+.brief .row .g{flex:0 0 16px;text-align:center;font-size:14px}
+.brief .row strong{color:#e7f3fb;font-weight:600}
+.g-t{color:var(--red)} .g-d{color:var(--green)} .g-a{color:var(--amber)} .g-c{color:var(--cyan)}
+.ctl{display:flex;flex-direction:column;gap:10px;align-items:center}
+.seclabel{font-size:10px;letter-spacing:.28em;color:#5f7488;text-transform:uppercase}
+.spdrow{display:flex;gap:8px;justify-content:center;margin-top:6px}
+.spdbtn{background:#0b1c2b;border:1px solid #16324a;color:#8fa6ba;font-family:var(--mono);
+  font-size:clamp(11px,3vw,13px);letter-spacing:.06em;padding:9px 14px;cursor:pointer;border-radius:6px}
+.spdbtn.sel{border-color:var(--cyan);color:var(--cyan);background:rgba(41,230,255,.08);box-shadow:0 0 12px rgba(41,230,255,.25)}
+.spdgroup.locked{opacity:.4;pointer-events:none}
+.toggle{background:#0b1c2b;border:1px solid #16324a;color:#8fa6ba;font-family:var(--mono);
+  font-size:clamp(11px,3vw,13px);letter-spacing:.08em;padding:10px 16px;cursor:pointer;border-radius:6px;width:100%}
+.toggle.on{border-color:var(--cyan);color:var(--cyan);background:rgba(41,230,255,.08)}
+.prog{display:flex;flex-direction:column;gap:9px}
+.codexbar{font-size:11px;letter-spacing:.06em;color:#8fa6ba;text-align:left}
+.codexbar .track{height:6px;background:rgba(41,230,255,.12);border-radius:3px;margin-top:6px;overflow:hidden}
+.codexbar .fill{height:100%;background:linear-gradient(90deg,var(--cyan),#7ef0ff);box-shadow:0 0 10px rgba(41,230,255,.5)}
+.badgewrap{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start}
+.badgewrap .b{font-size:11px;letter-spacing:.03em;border:1px solid #16324a;border-radius:20px;
+  padding:5px 11px;color:#5f7488;background:rgba(11,28,43,.5)}
+.badgewrap .b.got{border-color:rgba(255,179,71,.6);color:var(--amber);background:rgba(255,179,71,.06)}
+#infoCard{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:30;width:min(460px,90vw);
+  background:linear-gradient(180deg,#0b1826,#070f18);border:1px solid var(--green);border-radius:6px;
+  padding:20px 22px;color:#cfe8f5;box-shadow:0 0 40px rgba(55,255,139,.3);font-size:clamp(13px,3.5vw,15px);line-height:1.6}
+#infoCard.threat{border-color:var(--red);box-shadow:0 0 40px rgba(255,59,77,.4)}
+#infoCard h3{font-size:clamp(16px,4.5vw,20px);letter-spacing:.1em;margin-bottom:4px}
+#infoCard.threat h3{color:var(--red)} #infoCard:not(.threat) h3{color:var(--green)}
+#infoCard .chip{display:inline-block;font-size:10px;letter-spacing:.15em;border:1px solid;padding:2px 8px;border-radius:2px;margin-bottom:10px}
+#infoCard.threat .chip{color:var(--red);border-color:var(--red)}
+#infoCard:not(.threat) .chip{color:var(--green);border-color:var(--green)}
+#infoCard .newtag{display:inline-block;margin-left:8px;font-size:10px;letter-spacing:.12em;color:var(--amber);border:1px solid var(--amber);padding:2px 6px;border-radius:2px}
+#infoCard .counter{margin-top:10px;padding-top:10px;border-top:1px dashed #12314a;color:var(--cyan);font-size:clamp(12px,3.2vw,14px)}
+#infoCard .close{margin-top:14px;width:100%;background:#0b1f30;border:1px solid #12314a;color:#7fa3bd;
+  font-family:var(--mono);font-size:14px;letter-spacing:.15em;padding:10px;cursor:pointer;border-radius:4px}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="cv"></canvas></div>
+
+<div class="screen" id="startScreen">
+  <h1>⬡ CYBERFLIGHT</h1>
+  <h2>OT CYBERARENA · DEFENSE RUN</h2>
+  <div class="tagline">Pilot your packet through hostile cyberspace.</div>
+
+  <div class="panel brief">
+    <div class="row"><span class="g g-t">☠</span><span><strong>Avoid threats</strong> — Stuxnet, TRITON, LockBit &amp; friends</span></div>
+    <div class="row"><span class="g g-d">⬡</span><span><strong>Collect defenses</strong> — Firewall, EDR, MFA, Backups…</span></div>
+    <div class="row"><span class="g g-a">◆</span><span><strong>5 defenses = 1 shield</strong> · you fly with 3 hulls</span></div>
+    <div class="row"><span class="g g-a">🛰</span><span><strong>Dock at a station</strong> to pause safely &amp; tap objects to learn</span></div>
+    <div class="row"><span class="g g-c">✦</span><span>Near-misses, power-ups &amp; bosses reward deep runs</span></div>
+    <div class="row"><span class="g g-c">🎮</span><span>Drag anywhere to fly · arrow keys / mouse</span></div>
+  </div>
+
+  <div class="panel ctl">
+    <div class="spdgroup" id="spdGroup">
+      <div class="seclabel">Flight speed</div>
+      <div class="spdrow">
+        <button class="spdbtn" data-s="0.75">🐢 CRUISE</button>
+        <button class="spdbtn sel" data-s="1">▶ STANDARD</button>
+        <button class="spdbtn" data-s="1.35">🔥 AFTERBURN</button>
+      </div>
+    </div>
+    <button class="toggle" id="dailyBtn">📅 DAILY CHALLENGE: OFF</button>
+  </div>
+
+  <div class="panel prog">
+    <div class="codexbar">
+      <span id="codexLabel">CODEX 0 / 44 IDENTIFIED</span>
+      <div class="track"><div class="fill" id="codexFill" style="width:0%"></div></div>
+    </div>
+    <div class="badgewrap" id="badgeWrap"></div>
+  </div>
+
+  <button class="btn" id="startBtn">▶ LAUNCH</button>
+  <div class="tag" id="versionTag">v1.2.1 · OTCYBERARENA.COM · COMMUNITY EDITION</div>
+</div>
+
+<div id="infoCard" hidden>
+  <h3 id="icTitle"></h3>
+  <span class="chip" id="icChip"></span><span class="newtag" id="icNew" hidden>★ NEW CODEX ENTRY</span>
+  <div id="icDesc"></div>
+  <div class="counter" id="icCounter"></div>
+  <button class="close" id="icClose">✕ CLOSE</button>
+</div>
+
+<div class="screen hidden" id="overScreen">
+  <h1 style="color:var(--red);text-shadow:0 0 18px rgba(255,59,77,.8)">✘ CONNECTION LOST</h1>
+  <div id="finalStats"></div>
+  <div class="panel prog">
+    <div class="codexbar">
+      <span id="codexLabel2">CODEX 0 / 44</span>
+      <div class="track"><div class="fill" id="codexFill2" style="width:0%"></div></div>
+    </div>
+    <div class="badgewrap" id="badgeWrap2"></div>
+  </div>
+  <button class="btn" id="againBtn">↻ RECONNECT</button>
+  <div class="tag">OT CYBERARENA · CYBERFLIGHT</div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================
+   OT CYBERARENA — CYBERFLIGHT  v1.2.1
+   Canvas arcade flyer · touch + keyboard · single file
+   ===================================================== */
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  W=window.innerWidth;H=window.innerHeight;
+  cv.width=W*DPR;cv.height=H*DPR;
+  cv.style.width=W+"px";cv.style.height=H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+resize();window.addEventListener("resize",resize);
+
+/* ---------- content ---------- */
+const THREATS=["STUXNET","TRITON","INDUSTROYER","LOCKBIT","MIRAI","NOTPETYA","BLACKENERGY","PIPEDREAM","EKANS","WANNACRY","HAVEX","EMOTET","QAKBOT","FUXNET","VOLT TYPHOON","RANSOMWARE","0-DAY","PHISHING","BOTNET","ROOTKIT","TROJAN","WORM","KEYLOGGER","C2 BEACON"];
+const DEFENSES=["FIREWALL","EDR","IDS","MFA","PATCHING","BACKUPS","SEGMENTATION","ALLOWLIST","SIEM","ZERO TRUST","AIR GAP","SBOM","HONEYPOT","VPN","DMZ","ASSET INVENTORY","IR PLAN","TRAINING","ENCRYPTION","PORT SECURITY"];
+const SECTORS=["ENTERPRISE EDGE","CORPORATE LAN","IT/OT DMZ","SCADA ZONE","CONTROL NETWORK","FIELD BUS","SAFETY SYSTEMS","DEEP PLANT CORE"];
+const BOSSES=["STUXNET","TRITON","INDUSTROYER","NOTPETYA","PIPEDREAM","VOLT TYPHOON"]; // named mega-threats (all have codex lore)
+const VERSION="1.2.1";
+const DEEP_SECTOR=5; // bosses begin here
+
+/* ---------- knowledge base (docking-station learning mode) ---------- */
+const INFO={
+// threats — d: what it is, c: how to counter
+"STUXNET":{d:"The worm that sabotaged Iranian uranium centrifuges (2010). It manipulated Siemens PLCs to spin centrifuges to destruction while replaying normal readings to operators. The first known cyber-physical weapon.",c:"Removable-media control, PLC logic integrity checks, network segmentation."},
+"TRITON":{d:"2017 malware built to reprogram Schneider Triconex SAFETY controllers at a petrochemical plant — targeting the system that prevents explosions. Only a coding bug stopped a potential disaster.",c:"SIS key-switch locked to RUN, isolated safety network, logic baselines."},
+"INDUSTROYER":{d:"Caused the 2016 Kyiv blackout. Speaks grid protocols (IEC-104, IEC-61850, OPC) natively to flip circuit breakers directly — no humans needed at the keyboard.",c:"Protocol-aware monitoring, substation segmentation, breaker command authentication."},
+"LOCKBIT":{d:"One of the most prolific ransomware-as-a-service operations. Affiliates encrypt and extort; manufacturing is its most-hit sector because downtime forces fast payment.",c:"Offline backups, EDR, patched perimeter, tested IR plan."},
+"MIRAI":{d:"IoT botnet that hijacks cameras/routers still using default passwords, then launches record-breaking DDoS floods (2016, 1+ Tbps).",c:"Change default credentials, segment IoT from control networks."},
+"NOTPETYA":{d:"2017 wiper disguised as ransomware. Spread automatically via EternalBlue + stolen credentials; ~$10B global damage; shut down Maersk shipping in minutes.",c:"Patching, network segmentation, no flat domains, offline backups."},
+"BLACKENERGY":{d:"Malware behind the 2015 Ukraine power grid attack — the first confirmed cyber-caused blackout, cutting power to ~230,000 people.",c:"Phishing defenses, VPN 2FA, firmware integrity, manual fallback drills."},
+"PIPEDREAM":{d:"2022 modular ICS attack toolkit — a 'Swiss army knife' able to discover, access and manipulate Omron and Schneider PLCs and OPC UA servers at scale. Found before it was used.",c:"OT network monitoring, PLC access hardening, protocol allow-listing."},
+"EKANS":{d:"Ransomware with an OT hit-list: it kills ICS/SCADA software processes (GE, Honeywell, historian services) before encrypting, to maximize plant impact.",c:"Application allow-listing, OT/IT segmentation, offline backups."},
+"WANNACRY":{d:"2017 self-spreading ransomware using the EternalBlue SMB exploit. Froze UK hospitals, car factories and rail displays in a single weekend.",c:"Patching, disable SMBv1, segment legacy Windows systems."},
+"HAVEX":{d:"Espionage RAT distributed via trojanized ICS vendor installers (supply chain). Scanned OPC servers to map industrial equipment across the energy sector.",c:"Verify vendor downloads, monitor OPC traffic, egress filtering."},
+"EMOTET":{d:"Banking trojan that evolved into the internet's top malware-delivery botnet — its emails opened the door for ransomware gangs worldwide.",c:"Email filtering, macro blocking, user training."},
+"QAKBOT":{d:"Banking trojan turned initial-access loader: steals credentials, then sells access to ransomware crews. Spread via hijacked email threads.",c:"MFA, EDR, email authentication (DMARC)."},
+"FUXNET":{d:"2024 malware reported to have bricked thousands of sensor-network devices in Moscow's municipal infrastructure — flooding and disabling the sensor bus itself.",c:"Segmented sensor networks, firmware write protection."},
+"VOLT TYPHOON":{d:"State-sponsored group pre-positioning inside Western critical infrastructure using 'living off the land' — legitimate admin tools, no malware, very hard to spot.",c:"Behavior analytics, credential hygiene, logging of admin tool use."},
+"RANSOMWARE":{d:"Malware that encrypts systems and data for extortion — today's #1 cause of unplanned OT downtime, usually entering via IT and spreading to plant networks.",c:"Offline backups, segmentation, EDR, rehearsed recovery."},
+"0-DAY":{d:"An exploit for a vulnerability the vendor doesn't know exists — so no patch exists. Traded for six-plus figures; defense relies on layers, not patches.",c:"Defense in depth, least privilege, anomaly detection."},
+"PHISHING":{d:"Fraudulent messages that steal credentials or deliver malware. Still the #1 initial access vector into industrial organizations.",c:"MFA, email filtering, reporting culture and training."},
+"BOTNET":{d:"A network of hijacked devices remotely controlled by an attacker — rented out for DDoS, spam and credential stuffing.",c:"Patch + credential hygiene, egress monitoring."},
+"ROOTKIT":{d:"Malware that buries itself in the OS kernel or firmware to hide an attacker's presence from security tools — sometimes surviving reinstalls.",c:"Secure boot, firmware integrity verification, EDR."},
+"TROJAN":{d:"Malware disguised as legitimate software — the user installs it willingly. Named after the wooden horse, and still working 3,000 years later.",c:"Application allow-listing, verified software sources."},
+"WORM":{d:"Self-replicating malware that spreads across networks with no user action — the fastest-moving class of malware (Stuxnet, WannaCry, NotPetya were all worms).",c:"Segmentation, patching, host firewalls."},
+"KEYLOGGER":{d:"Records every keystroke — passwords, commands, everything — and ships them to the attacker.",c:"MFA (makes stolen passwords useless), EDR."},
+"C2 BEACON":{d:"The periodic 'phone home' from an implant to its command-and-control server, asking for orders. Regular-interval DNS/HTTPS calls are the classic tell.",c:"Egress filtering, DNS monitoring, beacon-pattern detection."},
+// defenses
+"FIREWALL":{d:"Filters network traffic by rules — the gatekeeper between zones. In OT, firewalls enforce the IT/OT boundary and zone-to-zone conduits (IEC 62443)."},
+"EDR":{d:"Endpoint Detection & Response — watches process behavior on hosts to catch what antivirus misses, and lets responders isolate a machine remotely."},
+"IDS":{d:"Intrusion Detection System — inspects network traffic for attack patterns and anomalies. Passive monitoring makes it OT-friendly (no risk of blocking control traffic)."},
+"MFA":{d:"Multi-Factor Authentication — a stolen password alone is no longer enough. The single cheapest way to stop remote-access compromise."},
+"PATCHING":{d:"Closing known holes before attackers use them. In OT it needs maintenance windows and testing — which is why compensating controls matter too."},
+"BACKUPS":{d:"Offline, tested backups are the ultimate ransomware counter. If they're reachable from the network, they're not backups — they're targets."},
+"SEGMENTATION":{d:"Dividing the network into zones so a breach in one can't reach the rest. The core principle of IEC 62443 — and what keeps IT infections out of the plant."},
+"ALLOWLIST":{d:"Application allow-listing — only pre-approved programs may run. Brutal against malware on servers and HMIs that should never run anything new."},
+"SIEM":{d:"Security Information & Event Management — collects and correlates logs from everywhere so one analyst can see the whole attack story."},
+"ZERO TRUST":{d:"'Never trust, always verify' — every access request is authenticated and authorized regardless of network location. No more soft interior."},
+"AIR GAP":{d:"Physical separation from other networks. Powerful but fragile — one USB stick or rogue modem quietly bridges it (ask Stuxnet)."},
+"SBOM":{d:"Software Bill of Materials — a list of every component inside your software, so when the next Log4j hits you know in minutes what's affected."},
+"HONEYPOT":{d:"A decoy system designed to be attacked. Any touch is a high-confidence alarm — attackers reveal themselves on fake PLCs before reaching real ones."},
+"VPN":{d:"Encrypted tunnel for remote access. Essential — but only with MFA, per-user accounts and time-limited vendor access. Shared always-on VPNs are a top OT entry vector."},
+"DMZ":{d:"A buffer zone between IT and OT networks. Data crosses through brokers (historians, jump hosts) so the two sides never talk directly."},
+"ASSET INVENTORY":{d:"You can't defend what you don't know you have. A live inventory is why a rogue device gets noticed — the foundation every other control builds on."},
+"IR PLAN":{d:"Incident Response plan — who decides, who isolates, who calls whom, rehearsed before the bad day. The difference between a drill and a disaster."},
+"TRAINING":{d:"The human firewall. Trained people spot the phish, question the odd USB, and report early — turning your biggest attack surface into a sensor network."},
+"ENCRYPTION":{d:"Scrambles data so intercepting it is worthless without the key — protecting credentials, backups and communications in transit and at rest."},
+"PORT SECURITY":{d:"Switch-level control (MAC limits, 802.1X) so unknown devices can't just plug into a field cabinet and join the control network."}
+};
+const CODEX_TOTAL=Object.keys(INFO).length; // 44
+const RANKS=[[8000,"🏆 ZERO-DAY ACE"],[5000,"⭐ THREAT HUNTER"],[3000,"🛡 PACKET PILOT"],[1500,"🔧 SCRIPT DODGER"],[0,"📡 PING"]];
+
+/* ---------- power-ups ---------- */
+const POWERUPS={
+  slow:{label:"SLOW-MO",icon:"🐢",col:"41,230,255",dur:6,msg:"⏱ SLOW-MO ENGAGED"},
+  magnet:{label:"MAGNET",icon:"🧲",col:"179,102,255",dur:7,msg:"🧲 DEFENSE MAGNET ON"}
+};
+
+/* ---------- badges / achievements (persistent) ---------- */
+const BADGES=[
+  {id:"codex5", kind:"codex", n:5,          t:"🔰 FIELD RECRUIT",  d:"Identify 5 objects"},
+  {id:"codex15",kind:"codex", n:15,         t:"🧭 THREAT ANALYST", d:"Identify 15 objects"},
+  {id:"codex30",kind:"codex", n:30,         t:"🛡 OT SPECIALIST",  d:"Identify 30 objects"},
+  {id:"codex44",kind:"codex", n:CODEX_TOTAL,t:"📚 CODEX COMPLETE", d:"Identify all 44 objects"},
+  {id:"boss",   kind:"event",               t:"⚔ BOSS SLAYER",    d:"Evade a boss threat"},
+  {id:"core",   kind:"event",               t:"🌌 CORE DIVER",     d:"Reach Deep Plant Core"},
+  {id:"score5k",kind:"event",               t:"⭐ THREAT HUNTER",  d:"Score 5,000 in one run"}
+];
+
+/* ---------- audio ---------- */
+let AC=null,muted=false;
+function initAudio(){ if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}} if(AC&&AC.state==="suspended")AC.resume(); }
+function tone(f,dur,type,g,when){
+  if(!AC||muted)return;
+  const o=AC.createOscillator(),v=AC.createGain();
+  o.type=type||"square";o.frequency.value=f;
+  const t0=AC.currentTime+(when||0);
+  v.gain.setValueAtTime(g||.05,t0);
+  v.gain.exponentialRampToValueAtTime(.001,t0+dur);
+  o.connect(v);v.connect(AC.destination);o.start(t0);o.stop(t0+dur+.05);
+}
+function noiseBurst(dur,g){
+  if(!AC||muted)return;
+  const n=AC.sampleRate*dur,buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+  const s=AC.createBufferSource(),v=AC.createGain(),f=AC.createBiquadFilter();
+  f.type="lowpass";f.frequency.value=900;
+  s.buffer=buf;v.gain.value=g||.18;
+  s.connect(f);f.connect(v);v.connect(AC.destination);s.start();
+}
+const sfx={
+  pick(){tone(740,.07,"square",.05);tone(1180,.1,"square",.05,.06);},
+  shield(){[523,659,784].forEach((f,i)=>tone(f,.12,"triangle",.06,i*.08));},
+  hit(){noiseBurst(.35,.22);tone(120,.3,"sawtooth",.08);},
+  shieldHit(){tone(300,.15,"sawtooth",.07);tone(200,.2,"sawtooth",.07,.1);},
+  sector(){tone(880,.09,"square",.04);tone(1320,.12,"square",.04,.09);},
+  near(){tone(1000,.05,"sine",.035);},
+  power(){[659,880,1174].forEach((f,i)=>tone(f,.1,"triangle",.05,i*.06));},
+  boss(){tone(90,.5,"sawtooth",.09);tone(70,.6,"sawtooth",.08,.12);},
+  badge(){[784,988,1319,1568].forEach((f,i)=>tone(f,.14,"triangle",.05,i*.09));},
+  over(){[392,311,262,196,131].forEach((f,i)=>tone(f,.25,"sawtooth",.07,i*.16));}
+};
+
+/* ---------- persistence: best, codex, badges ---------- */
+let best=0,codex=new Set(),unlocked=new Set();
+try{best=+localStorage.getItem("cyberflight_best")||0;}catch(e){}
+try{codex=new Set(JSON.parse(localStorage.getItem("cyberflight_codex")||"[]"));}catch(e){}
+try{unlocked=new Set(JSON.parse(localStorage.getItem("cyberflight_badges")||"[]"));}catch(e){}
+function saveCodex(){try{localStorage.setItem("cyberflight_codex",JSON.stringify([...codex]));}catch(e){}}
+function saveBadges(){try{localStorage.setItem("cyberflight_badges",JSON.stringify([...unlocked]));}catch(e){}}
+function seen(k){try{return localStorage.getItem("cyberflight_"+k)==="1";}catch(e){return false;}}
+function markSeen(k){try{localStorage.setItem("cyberflight_"+k,"1");}catch(e){}}
+
+/* ---------- seeded RNG (daily challenge) ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function todaySeed(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+let rng=Math.random,dailyMode=false;
+
+/* ---------- state ---------- */
+let game=null,speedSel=1;
+document.querySelectorAll(".spdbtn").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".spdbtn").forEach(x=>x.classList.remove("sel"));
+  b.classList.add("sel"); speedSel=parseFloat(b.dataset.s);
+}));
+const dailyBtn=document.getElementById("dailyBtn"),spdGroup=document.getElementById("spdGroup");
+dailyBtn.addEventListener("click",()=>{
+  dailyMode=!dailyMode;
+  dailyBtn.classList.toggle("on",dailyMode);
+  dailyBtn.textContent="📅 DAILY CHALLENGE: "+(dailyMode?"ON (seed "+todaySeed()+")":"OFF");
+  spdGroup.classList.toggle("locked",dailyMode); // speed locked to STANDARD for a fair shared board
+});
+
+function newGame(){
+  return{
+    t:0,score:0,lives:3,shields:0,defCount:0,dodged:0,collected:0,
+    sector:1,sectorTimer:0,sectorFlash:0,
+    speed:1,speedMul:dailyMode?1:speedSel,spawnT:0,over:false,paused:false,
+    docked:false,station:null,learned:0,nearMiss:0,newCodex:0,
+    slowT:0,magnetT:0,bossOn:false,bossName:"",bossWarn:0,bossedSectors:new Set(),
+    stationHint:0,tapHintDone:seen("hint_tap"),
+    ship:{x:W/2,y:H*.82,tx:W/2,ty:H*.82,r:16,tilt:0,inv:0},
+    ents:[],parts:[],pops:[],toasts:[],
+    stars:makeStars(),shake:0,flash:0,flashCol:"255,59,77"
+  };
+}
+function makeStars(){
+  const s=[];
+  for(let i=0;i<110;i++)s.push({x:Math.random()*W,y:Math.random()*H,z:Math.random()*2+ .4,tw:Math.random()*Math.PI*2});
+  return s;
+}
+
+/* ---------- input ---------- */
+const keys={};
+window.addEventListener("keydown",e=>{keys[e.key]=true; if(game&&game.paused&&!game.over){game.paused=false;} if(game&&game.docked&&(e.key===" "||e.key==="Escape"))undock(); if(e.key==="m"||e.key==="M")muted=!muted;});
+window.addEventListener("keyup",e=>keys[e.key]=false);
+let dragging=false;
+function ptr(e){ const t=e.touches?e.touches[0]:e; return{x:t.clientX,y:t.clientY}; }
+cv.addEventListener("pointerdown",e=>{
+  if(!game||game.over)return;
+  // mute zone top-right
+  const p=ptr(e);
+  if(p.x>W-56&&p.y<56){muted=!muted;return;}
+  if(game.paused){game.paused=false;return;}
+  if(game.docked){dockedTap(p);return;}
+  dragging=true;setTarget(p);
+});
+function dockedTap(p){
+  const g=game;
+  // undock button (drawn at bottom center)
+  if(p.x>W/2-90&&p.x<W/2+90&&p.y>H-104&&p.y<H-56){ undock(); return; }
+  // tap an object to identify it
+  let bestE=null,bestD=1e9;
+  for(const e of g.ents){
+    if(e.kind==="p")continue;
+    const d=(e.x-p.x)**2+(e.y-p.y)**2, hit=(e.r+22)**2;
+    if(d<hit&&d<bestD){bestD=d;bestE=e;}
+  }
+  if(bestE){ identify(bestE); }
+  else hideInfo();
+}
+function identify(e){
+  const g=game;
+  const isNew=!codex.has(e.label);
+  if(isNew){ codex.add(e.label); saveCodex(); g.newCodex++; checkBadges(); }
+  showInfo(e,isNew);
+  g.learned++;
+  if(!g.tapHintDone){ g.tapHintDone=true; markSeen("hint_tap"); }
+  sfx.pick();
+}
+function showInfo(e,isNew){
+  const card=document.getElementById("infoCard"),info=INFO[e.label];
+  if(!info)return;
+  card.classList.toggle("threat",e.kind==="t");
+  document.getElementById("icTitle").textContent=(e.kind==="t"?"☠ ":"⛨ ")+e.label;
+  document.getElementById("icChip").textContent=e.kind==="t"?"THREAT — AVOID IN FLIGHT":"DEFENSE — COLLECT IN FLIGHT";
+  document.getElementById("icNew").hidden=!isNew;
+  document.getElementById("icDesc").textContent=info.d;
+  const c=document.getElementById("icCounter");
+  if(info.c){c.style.display="block";c.textContent="🛡 COUNTER: "+info.c;}else c.style.display="none";
+  card.hidden=false;
+}
+function hideInfo(){document.getElementById("infoCard").hidden=true;}
+document.getElementById("icClose").addEventListener("click",hideInfo);
+function undock(){
+  const g=game;
+  hideInfo();
+  g.docked=false; g.ship.inv=2;
+  if(g.station){ boom(g.station.x,g.station.y,"255,179,71",18); g.station=null; }
+  pop(g.ship.x,g.ship.y-34,"UNDOCKED — GOOD HUNTING","#ffb347");
+  sfx.shield();
+}
+cv.addEventListener("pointermove",e=>{ if(dragging&&game&&!game.over)setTarget(ptr(e)); });
+window.addEventListener("pointerup",()=>dragging=false);
+function setTarget(p){
+  game.ship.tx=p.x;
+  game.ship.ty=Math.min(H-40,Math.max(H*.35,p.y-70)); // ship rides above the finger
+}
+document.addEventListener("visibilitychange",()=>{ if(document.hidden&&game&&!game.over)game.paused=true; });
+
+/* ---------- badges ---------- */
+function checkBadges(){
+  const g=game;
+  for(const b of BADGES){
+    if(unlocked.has(b.id))continue;
+    if(b.kind==="codex"&&codex.size>=b.n){ awardBadge(b); }
+  }
+}
+function awardEvent(id){
+  const b=BADGES.find(x=>x.id===id);
+  if(b&&!unlocked.has(id))awardBadge(b);
+}
+function awardBadge(b){
+  unlocked.add(b.id);saveBadges();
+  if(game)toast("🏅 BADGE: "+b.t, "#ffb347");
+  sfx.badge();
+}
+function toast(txt,col){ if(game)game.toasts.push({txt,col,life:3.6}); }
+
+/* ---------- spawning ---------- */
+function spawn(){
+  const g=game;
+  // occasional power-up once the run has warmed up
+  if(g.t>10 && rng()<0.055){
+    const key=rng()<0.5?"slow":"magnet",pu=POWERUPS[key];
+    g.ents.push({kind:"p",pk:key,label:pu.label,x:20+rng()*(W-40),y:-60,r:16,
+      spin:0,spinV:.03,vy:1.7+rng()*.5,wob:0,wp:0,pulse:rng()*Math.PI*2,minD2:1e9});
+    return;
+  }
+  const isThreat=rng()<0.62;
+  const lane=20+rng()*(W-40);
+  if(isThreat){
+    const big=rng()<.25;
+    g.ents.push({kind:"t",label:THREATS[Math.floor(rng()*THREATS.length)],
+      x:lane,y:-60,r:big?26:17,spin:rng()*Math.PI*2,spinV:(rng()-.5)*.06,
+      vy:(big?1.5:2.2)+rng()*.8,wob:rng()<.4?(1+rng()*1.5):0,wp:rng()*Math.PI*2,minD2:1e9});
+  }else{
+    g.ents.push({kind:"d",label:DEFENSES[Math.floor(rng()*DEFENSES.length)],
+      x:lane,y:-60,r:17,spin:0,spinV:.02,vy:1.8+rng()*.7,wob:0,wp:0,pulse:rng()*Math.PI*2,minD2:1e9});
+  }
+}
+function spawnBoss(){
+  const g=game;
+  g.bossName=BOSSES[Math.floor(rng()*BOSSES.length)];
+  g.ents.push({kind:"t",boss:true,label:g.bossName,x:W/2,y:-120,r:46,
+    spin:rng()*Math.PI*2,spinV:.015,vy:1.05,wob:2.6+rng()*1.2,wp:rng()*Math.PI*2,minD2:1e9,pulseB:0});
+  g.bossWarn=3.2; sfx.boss();
+  toast("⚠ BOSS INBOUND — "+g.bossName,"#ff3b4d");
+}
+
+/* ---------- effects ---------- */
+function boom(x,y,col,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2,v=1+Math.random()*4.5;
+    game.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,col});
+  }
+}
+function pop(x,y,txt,col){ game.pops.push({x,y,txt,col,life:1}); }
+
+/* ---------- update ---------- */
+function update(dt){
+  const g=game;if(g.paused||g.over)return;
+  if(g.docked)return updateDocked(dt);
+  g.t+=dt;
+  g.speed=(1+g.t*0.012)*g.speedMul;          // relentless ramp × pilot's chosen pace
+  g.score+=dt*10*g.speed;
+  // power-up timers
+  if(g.slowT>0)g.slowT=Math.max(0,g.slowT-dt);
+  if(g.magnetT>0)g.magnetT=Math.max(0,g.magnetT-dt);
+  const tf=g.slowT>0?0.5:1;                   // slow-mo scales incoming motion
+  if(g.bossWarn>0)g.bossWarn-=dt;
+  if(g.stationHint>0)g.stationHint-=dt;
+  // sector progression + docking station arrival
+  g.sectorTimer+=dt;
+  if(g.sectorTimer>=20){
+    g.sectorTimer=0; g.sector++; g.sectorFlash=2.2; sfx.sector();
+    if(!g.station){
+      g.station={x:60+rng()*(W-120),y:-90,r:46,spin:0};
+      if(!seen("hint_dock")){ g.stationHint=7; }
+    }
+    if(g.sector>=8) awardEvent("core");
+    // boss appears when diving into deep sectors (once per sector)
+    if(g.sector>=DEEP_SECTOR && !g.bossOn && !g.bossedSectors.has(g.sector)){
+      g.bossedSectors.add(g.sector); spawnBoss();
+    }
+  }
+  // station drift + dock detection
+  if(g.station){
+    const st=g.station;
+    st.y+=26*dt*g.speed*tf; st.spin+=dt*.5;
+    if(st.y>H+110)g.station=null;
+    else{
+      const dx=st.x-g.ship.x,dy=st.y-g.ship.y;
+      if(dx*dx+dy*dy<(st.r+g.ship.r)**2){
+        g.docked=true;dragging=false;
+        if(!seen("hint_dock"))markSeen("hint_dock");
+        pop(st.x,st.y-st.r-14,"⬢ DOCKED — TAP OBJECTS TO IDENTIFY","#ffb347");
+        sfx.shield();
+      }
+    }
+  }
+  // spawn
+  g.spawnT-=dt;
+  if(g.spawnT<=0){ spawn(); g.spawnT=Math.max(.28,.95-g.t*.008)+rng()*.25; }
+  // ship control
+  const s=g.ship,kv=340*dt;
+  if(keys.ArrowLeft||keys.a)s.tx-=kv; if(keys.ArrowRight||keys.d)s.tx+=kv;
+  if(keys.ArrowUp||keys.w)s.ty-=kv;  if(keys.ArrowDown||keys.s)s.ty+=kv;
+  s.tx=Math.max(18,Math.min(W-18,s.tx));
+  s.ty=Math.max(H*.35,Math.min(H-40,s.ty));
+  const ox=s.x;
+  s.x+=(s.tx-s.x)*Math.min(1,dt*10);
+  s.y+=(s.ty-s.y)*Math.min(1,dt*10);
+  s.tilt=Math.max(-.45,Math.min(.45,(s.x-ox)*.04));
+  if(s.inv>0)s.inv-=dt;
+  // stars
+  for(const st of g.stars){ st.y+=st.z*60*g.speed*dt*tf; st.tw+=dt*3; if(st.y>H){st.y=-4;st.x=Math.random()*W;} }
+  // entities
+  g.bossOn=false;
+  for(let i=g.ents.length-1;i>=0;i--){
+    const e=g.ents[i];
+    e.y+=e.vy*60*g.speed*dt*.55*tf;
+    e.spin+=e.spinV;
+    if(e.wob){e.wp+=dt*2;e.x+=Math.sin(e.wp)*e.wob;}
+    if(e.pulse!==undefined)e.pulse+=dt*4;
+    if(e.boss){ e.pulseB+=dt*5; g.bossOn=true; e.x=Math.max(e.r,Math.min(W-e.r,e.x)); }
+    // magnet pulls loose defenses toward the ship
+    if(e.kind==="d"&&g.magnetT>0){
+      const mdx=s.x-e.x,mdy=s.y-e.y,md=Math.hypot(mdx,mdy)||1;
+      if(md<280){ e.x+=mdx/md*200*dt; e.y+=mdy/md*200*dt; }
+    }
+    if(e.y>H+70){
+      if(e.boss){ g.score+=200; pop(e.x,H-70,"☠ BOSS EVADED +200","#ffb347"); toast("⚔ "+e.label+" EVADED","#37ff8b"); awardEvent("boss"); }
+      else if(e.kind==="t")g.dodged++;
+      g.ents.splice(i,1); continue;
+    }
+    // collision
+    const dx=e.x-s.x,dy=e.y-s.y,rr=e.r+s.r-4;
+    const collided=dx*dx+dy*dy<rr*rr;
+    if(collided){
+      if(e.kind==="d"){
+        g.ents.splice(i,1);
+        g.score+=50;g.collected++;g.defCount++;
+        boom(e.x,e.y,"55,255,139",10);pop(e.x,e.y,"+50 "+e.label,"#37ff8b");
+        sfx.pick();
+        if(g.defCount>=5){ g.defCount=0;
+          if(g.shields<3){g.shields++;pop(s.x,s.y-30,"⬡ SHIELD ONLINE","#29e6ff");sfx.shield();}
+          else {g.score+=150;pop(s.x,s.y-30,"+150 MAX SHIELDS","#29e6ff");}
+        }
+        continue;
+      }else if(e.kind==="p"){
+        g.ents.splice(i,1);
+        const pu=POWERUPS[e.pk];
+        if(e.pk==="slow")g.slowT=pu.dur; else g.magnetT=pu.dur;
+        boom(e.x,e.y,pu.col,14);pop(s.x,s.y-30,pu.msg,"rgb("+pu.col+")");
+        sfx.power();
+        continue;
+      }else if(s.inv<=0){
+        g.ents.splice(i,1);
+        g.shake=.5;
+        if(g.shields>0){
+          g.shields--;s.inv=1.2;g.flash=.25;g.flashCol="41,230,255";
+          boom(e.x,e.y,"41,230,255",14);pop(s.x,s.y-30,"SHIELD ABSORBED "+e.label,"#29e6ff");
+          sfx.shieldHit();
+        }else{
+          g.lives--;s.inv=1.6;g.flash=.35;g.flashCol="255,59,77";
+          boom(s.x,s.y,"255,59,77",26);pop(s.x,s.y-30,"✘ HIT BY "+e.label,"#ff3b4d");
+          sfx.hit();
+          if(g.lives<=0){ endGame(); return; }
+        }
+        continue;
+      }
+    }
+    // near-miss: a threat that slips past close (but never hit) rewards nerve
+    if(e.kind==="t"&&!e.nm){
+      const d2=dx*dx+dy*dy; if(d2<e.minD2)e.minD2=d2;
+      if(e.y>s.y){ e.nm=true;
+        const nb=s.r+e.r+24;
+        if(e.minD2<=nb*nb){ const b=e.boss?40:15; g.score+=b;g.nearMiss++;
+          pop(e.x,e.y,"◇ NEAR MISS +"+b,"#29e6ff");sfx.near(); }
+      }
+    }
+  }
+  // particles, popups & toasts
+  for(let i=g.parts.length-1;i>=0;i--){const p=g.parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.06;p.life-=dt*1.6;if(p.life<=0)g.parts.splice(i,1);}
+  for(let i=g.pops.length-1;i>=0;i--){const p=g.pops[i];p.y-=dt*36;p.life-=dt*.8;if(p.life<=0)g.pops.splice(i,1);}
+  for(let i=g.toasts.length-1;i>=0;i--){const tsx=g.toasts[i];tsx.life-=dt;if(tsx.life<=0)g.toasts.splice(i,1);}
+  if(g.shake>0)g.shake-=dt;
+  if(g.flash>0)g.flash-=dt;
+  if(g.sectorFlash>0)g.sectorFlash-=dt;
+}
+
+/* docked: safe harbor — no score, no damage, objects drift by for study */
+function updateDocked(dt){
+  const g=game,s=g.ship,st=g.station;
+  // ship holds position alongside the station
+  if(st){ s.x+=(st.x-s.x)*Math.min(1,dt*4); s.y+=(st.y+st.r+26-s.y)*Math.min(1,dt*4); s.tilt*=.9; st.spin+=dt*.5; }
+  // objects float past slowly — study them
+  for(let i=g.ents.length-1;i>=0;i--){
+    const e=g.ents[i];
+    e.y+=e.vy*60*.3*dt; e.spin+=e.spinV*.5;
+    if(e.wob){e.wp+=dt;e.x+=Math.sin(e.wp)*e.wob*.5;}
+    if(e.pulse!==undefined)e.pulse+=dt*4;
+    if(e.boss)e.pulseB+=dt*5;
+    if(e.y>H+70)g.ents.splice(i,1);
+  }
+  // keep a gentle stream of specimens coming
+  g.spawnT-=dt*.45;
+  if(g.spawnT<=0){ spawn(); g.spawnT=1.1+Math.random()*.5; }
+  for(const stx of g.stars){ stx.y+=stx.z*18*dt; stx.tw+=dt*3; if(stx.y>H){stx.y=-4;stx.x=Math.random()*W;} }
+  for(let i=g.parts.length-1;i>=0;i--){const p=g.parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.06;p.life-=dt*1.6;if(p.life<=0)g.parts.splice(i,1);}
+  for(let i=g.pops.length-1;i>=0;i--){const p=g.pops[i];p.y-=dt*36;p.life-=dt*.5;if(p.life<=0)g.pops.splice(i,1);}
+  for(let i=g.toasts.length-1;i>=0;i--){const tsx=g.toasts[i];tsx.life-=dt;if(tsx.life<=0)g.toasts.splice(i,1);}
+}
+
+/* ---------- draw ---------- */
+function sectorName(n){ return n<=SECTORS.length?SECTORS[n-1]:"CORE +"+(n-SECTORS.length); }
+
+function draw(){
+  const g=game;
+  ctx.save();
+  if(g&&g.shake>0)ctx.translate((Math.random()-.5)*10*g.shake,(Math.random()-.5)*10*g.shake);
+  // background
+  ctx.fillStyle="#04060e";ctx.fillRect(-20,-20,W+40,H+40);
+  // depth grid
+  ctx.strokeStyle="rgba(41,120,190,0.07)";ctx.lineWidth=1;
+  const gy=(g?g.t*80:0)%56;
+  for(let y=-56+gy;y<H;y+=56){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  for(let x=0;x<W;x+=56){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  if(!g){ctx.restore();return;}
+  // slow-mo tint
+  if(g.slowT>0){ ctx.fillStyle="rgba(41,230,255,"+Math.min(.10,g.slowT*.04)+")"; ctx.fillRect(0,0,W,H); }
+  // stars
+  for(const st of g.stars){
+    const a=.3+.5*Math.abs(Math.sin(st.tw));
+    ctx.fillStyle=`rgba(160,220,255,${a*st.z*.5})`;
+    ctx.fillRect(st.x,st.y,st.z,st.z*3);
+  }
+  // entities
+  ctx.textAlign="center";
+  for(const e of g.ents){
+    if(e.kind==="t")drawThreat(e);
+    else if(e.kind==="p")drawPowerup(e);
+    else drawDefense(e);
+  }
+  // docking station
+  if(g.station)drawStation(g.station);
+  // particles
+  for(const p of g.parts){ ctx.fillStyle=`rgba(${p.col},${p.life})`; ctx.fillRect(p.x-2,p.y-2,4,4); }
+  // ship
+  drawShip(g.ship);
+  // popups
+  ctx.font="bold 12px Consolas,monospace";
+  for(const p of g.pops){ ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.col;ctx.fillText(p.txt,p.x,p.y);ctx.globalAlpha=1; }
+  drawHud();
+  drawToasts();
+  if(g.docked)drawDockUI();
+  else if(g.stationHint>0&&g.station)drawStationHint(g.station);
+  ctx.restore();
+  // flash overlay
+  if(g.flash>0){ ctx.fillStyle=`rgba(${g.flashCol},${g.flash*.9})`; ctx.fillRect(0,0,W,H); }
+  if(g.paused&&!g.over){
+    ctx.fillStyle="rgba(4,6,14,.72)";ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#29e6ff";ctx.font="bold 26px Consolas,monospace";ctx.textAlign="center";
+    ctx.fillText("⏸ PAUSED",W/2,H/2-10);
+    ctx.font="14px Consolas,monospace";ctx.fillStyle="#7fa3bd";
+    ctx.fillText("tap / press any key to resume",W/2,H/2+22);
+  }
+}
+function drawThreat(e){
+  ctx.save();ctx.translate(e.x,e.y);
+  if(e.boss){
+    const g=1+Math.sin(e.pulseB)*.06;ctx.scale(g,g);
+    ctx.strokeStyle="rgba(255,59,77,"+(.3+.2*Math.abs(Math.sin(e.pulseB)))+")";ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(0,0,e.r+12,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.rotate(e.spin);
+  ctx.shadowColor="#ff3b4d";ctx.shadowBlur=e.boss?26:14;
+  ctx.beginPath();
+  const spikes=e.boss?12:8;
+  for(let i=0;i<spikes*2;i++){
+    const r=i%2?e.r*.55:e.r, a=i*Math.PI/spikes;
+    i?ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r):ctx.moveTo(r,0);
+  }
+  ctx.closePath();
+  ctx.fillStyle=e.boss?"rgba(120,8,20,.95)":"rgba(90,10,20,.9)";ctx.fill();
+  ctx.strokeStyle="#ff3b4d";ctx.lineWidth=e.boss?3:2;ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#ff8a94";ctx.font=`bold ${e.boss?22:(e.r>20?13:11)}px Consolas,monospace`;ctx.textAlign="center";
+  ctx.rotate(-e.spin);
+  ctx.fillText("☠",0,e.boss?7:4);
+  ctx.restore();
+  ctx.fillStyle=e.boss?"#ff5566":"rgba(255,120,130,.95)";
+  ctx.font=`bold ${e.boss?13:10}px Consolas,monospace`;ctx.textAlign="center";
+  ctx.fillText((e.boss?"BOSS · ":"")+e.label,e.x,e.y+e.r+(e.boss?18:13));
+}
+function drawDefense(e){
+  const pu=1+Math.sin(e.pulse)*.08;
+  ctx.save();ctx.translate(e.x,e.y);ctx.scale(pu,pu);ctx.rotate(e.spin);
+  ctx.shadowColor="#37ff8b";ctx.shadowBlur=16;
+  ctx.beginPath();
+  for(let i=0;i<6;i++){const a=i*Math.PI/3+Math.PI/6;i?ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r):ctx.moveTo(Math.cos(a)*e.r,Math.sin(a)*e.r);}
+  ctx.closePath();
+  ctx.fillStyle="rgba(10,60,40,.9)";ctx.fill();
+  ctx.strokeStyle="#37ff8b";ctx.lineWidth=2;ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.rotate(-e.spin);
+  ctx.fillStyle="#b9ffd9";ctx.font="bold 12px Consolas,monospace";ctx.textAlign="center";
+  ctx.fillText("⛨",0,4);
+  ctx.restore();
+  ctx.fillStyle="rgba(150,255,200,.95)";ctx.font="bold 10px Consolas,monospace";
+  ctx.fillText(e.label,e.x,e.y+e.r+13);
+}
+function drawPowerup(e){
+  const pu=POWERUPS[e.pk],sc=1+Math.sin(e.pulse)*.12;
+  ctx.save();ctx.translate(e.x,e.y);ctx.scale(sc,sc);
+  ctx.shadowColor="rgb("+pu.col+")";ctx.shadowBlur=18;
+  ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);
+  ctx.fillStyle="rgba(20,14,34,.9)";ctx.fill();
+  ctx.strokeStyle="rgb("+pu.col+")";ctx.lineWidth=2;ctx.stroke();
+  // orbiting ring
+  ctx.rotate(e.spin*6);
+  ctx.strokeStyle="rgba("+pu.col+",.5)";ctx.beginPath();ctx.arc(0,0,e.r+6,0.6,3.8);ctx.stroke();
+  ctx.shadowBlur=0;ctx.rotate(-e.spin*6);
+  ctx.font="14px Consolas,monospace";ctx.textAlign="center";ctx.fillText(pu.icon,0,5);
+  ctx.restore();
+  ctx.fillStyle="rgb("+pu.col+")";ctx.font="bold 10px Consolas,monospace";ctx.textAlign="center";
+  ctx.fillText(pu.label,e.x,e.y+e.r+13);
+}
+function drawStation(st){
+  ctx.save();ctx.translate(st.x,st.y);
+  // outer ring
+  ctx.rotate(st.spin);
+  ctx.shadowColor="#ffb347";ctx.shadowBlur=18;
+  ctx.beginPath();ctx.arc(0,0,st.r,0,Math.PI*2);
+  ctx.strokeStyle="rgba(255,179,71,.9)";ctx.lineWidth=3;ctx.stroke();
+  ctx.shadowBlur=0;
+  // spokes
+  ctx.strokeStyle="rgba(255,179,71,.45)";ctx.lineWidth=2;
+  for(let i=0;i<4;i++){const a=i*Math.PI/2;ctx.beginPath();ctx.moveTo(Math.cos(a)*22,Math.sin(a)*22);ctx.lineTo(Math.cos(a)*st.r,Math.sin(a)*st.r);ctx.stroke();}
+  // ring lights
+  for(let i=0;i<8;i++){
+    const a=i*Math.PI/4;
+    ctx.fillStyle=(i%2===Math.floor(st.spin*2)%2)?"#ffb347":"rgba(255,179,71,.25)";
+    ctx.beginPath();ctx.arc(Math.cos(a)*st.r,Math.sin(a)*st.r,3,0,Math.PI*2);ctx.fill();
+  }
+  // core hexagon
+  ctx.rotate(-st.spin*1.6);
+  ctx.beginPath();
+  for(let i=0;i<6;i++){const a=i*Math.PI/3;i?ctx.lineTo(Math.cos(a)*20,Math.sin(a)*20):ctx.moveTo(20,0);}
+  ctx.closePath();
+  ctx.fillStyle="rgba(40,30,10,.92)";ctx.fill();
+  ctx.strokeStyle="#ffb347";ctx.lineWidth=2;ctx.stroke();
+  ctx.rotate(st.spin*1.6-st.spin);
+  ctx.fillStyle="#ffd9a0";ctx.font="bold 14px Consolas,monospace";ctx.textAlign="center";ctx.fillText("⬢",0,5);
+  ctx.restore();
+  ctx.fillStyle="rgba(255,200,120,.95)";ctx.font="bold 10px Consolas,monospace";ctx.textAlign="center";
+  ctx.fillText(game.docked?"STATION · SAFE HARBOR":"DOCKING STATION — FLY IN",st.x,st.y+st.r+15);
+}
+/* first-time coach mark pointing the pilot at the station */
+function drawStationHint(st){
+  const a=.55+.45*Math.sin(performance.now()/220);
+  ctx.save();ctx.textAlign="center";
+  ctx.fillStyle="rgba(4,6,14,.62)";
+  const w=Math.min(W-24,320),bx=st.x-w/2,by=st.y+st.r+22;
+  ctx.fillRect(Math.max(6,Math.min(W-w-6,bx)),by,w,50);
+  ctx.fillStyle=`rgba(255,179,71,${a})`;ctx.font="bold 12px Consolas,monospace";
+  ctx.fillText("⬢ NEW: FLY INTO THE STATION",st.x,by+20);
+  ctx.fillStyle="#cfe8f5";ctx.font="10px Consolas,monospace";
+  ctx.fillText("dock to pause safely & learn every object",st.x,by+38);
+  ctx.restore();
+}
+function drawDockUI(){
+  const g=game;
+  ctx.textAlign="center";
+  ctx.fillStyle="rgba(4,6,14,.55)";ctx.fillRect(0,H*.10,W,44);
+  ctx.fillStyle="#ffb347";ctx.font="bold 14px Consolas,monospace";
+  ctx.fillText("⬢ DOCKED — CLOCK & SCORE FROZEN",W/2,H*.10+18);
+  ctx.fillStyle="#9fc3d8";ctx.font="11px Consolas,monospace";
+  ctx.fillText("tap any passing object to identify it",W/2,H*.10+35);
+  // first-time tutorial: pulsing prompt until the pilot taps something
+  if(!g.tapHintDone){
+    const a=.5+.5*Math.sin(performance.now()/200);
+    ctx.fillStyle=`rgba(41,230,255,${a})`;ctx.font="bold 15px Consolas,monospace";
+    ctx.fillText("👆 TAP A FLOATING OBJECT TO LEARN WHAT IT IS",W/2,H*.10+68);
+    ctx.font="11px Consolas,monospace";ctx.fillStyle="#9fc3d8";
+    ctx.fillText("every threat & defense has a real-world story",W/2,H*.10+86);
+  }
+  // undock button
+  const bx=W/2-90,by=H-104,bw=180,bh=48;
+  ctx.fillStyle="rgba(18,49,71,.92)";ctx.strokeStyle="#29e6ff";ctx.lineWidth=2;
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(bx,by,bw,bh,6):ctx.rect(bx,by,bw,bh);ctx.fill();ctx.stroke();
+  ctx.fillStyle="#29e6ff";ctx.font="bold 16px Consolas,monospace";
+  ctx.fillText("▶ UNDOCK",W/2,by+30);
+}
+function drawShip(s){
+  const blink=s.inv>0&&Math.floor(s.inv*10)%2===0;
+  if(blink)return;
+  ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.tilt);
+  // engine flame
+  const fl=8+Math.random()*8;
+  ctx.beginPath();ctx.moveTo(-5,14);ctx.lineTo(0,14+fl);ctx.lineTo(5,14);ctx.closePath();
+  ctx.fillStyle="rgba(255,179,71,.85)";ctx.fill();
+  // hull
+  ctx.shadowColor="#29e6ff";ctx.shadowBlur=18;
+  ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(13,12);ctx.lineTo(0,6);ctx.lineTo(-13,12);ctx.closePath();
+  ctx.fillStyle="#0d2f44";ctx.fill();
+  ctx.strokeStyle="#29e6ff";ctx.lineWidth=2;ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#bff2ff";ctx.fillRect(-2,-8,4,7); // cockpit
+  ctx.restore();
+  // magnet aura
+  if(game.magnetT>0){
+    ctx.strokeStyle=`rgba(179,102,255,${.35+.25*Math.sin(performance.now()/120)})`;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(s.x,s.y,34,0,Math.PI*2);ctx.stroke();
+  }
+  // shield rings
+  for(let i=0;i<game.shields;i++){
+    ctx.beginPath();ctx.arc(s.x,s.y,24+i*5,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(41,230,255,${.55-i*.12})`;ctx.lineWidth=1.5;ctx.stroke();
+  }
+}
+function drawHud(){
+  const g=game;
+  ctx.textAlign="left";
+  ctx.fillStyle="#29e6ff";ctx.font="bold 18px Consolas,monospace";
+  ctx.fillText(String(Math.floor(g.score)).padStart(6,"0"),12,26);
+  ctx.font="10px Consolas,monospace";ctx.fillStyle="#7fa3bd";
+  ctx.fillText("BEST "+String(Math.max(best,Math.floor(g.score))).padStart(6,"0"),12,40);
+  // hulls + shields
+  let hx=12;
+  for(let i=0;i<3;i++){ ctx.fillStyle=i<g.lives?"#ff3b4d":"rgba(255,59,77,.18)"; ctx.font="14px Consolas,monospace"; ctx.fillText("♥",hx,58); hx+=17; }
+  for(let i=0;i<g.shields;i++){ ctx.fillStyle="#29e6ff"; ctx.fillText("⬡",hx,58); hx+=17; }
+  // defense progress to next shield
+  ctx.fillStyle="rgba(55,255,139,.25)";ctx.fillRect(12,64,60,4);
+  ctx.fillStyle="#37ff8b";ctx.fillRect(12,64,60*(g.defCount/5),4);
+  // active power-up timers (below the bar)
+  let py=84;ctx.font="bold 11px Consolas,monospace";
+  if(g.slowT>0){ ctx.fillStyle="#29e6ff";ctx.fillText("⏱ SLOW "+g.slowT.toFixed(1)+"s",12,py);py+=15; }
+  if(g.magnetT>0){ ctx.fillStyle="#b366ff";ctx.fillText("🧲 MAGNET "+g.magnetT.toFixed(1)+"s",12,py);py+=15; }
+  // sector center-top
+  ctx.textAlign="center";
+  ctx.fillStyle=g.sectorFlash>0?"#ffb347":"rgba(127,163,189,.8)";
+  ctx.font=g.sectorFlash>0?"bold 15px Consolas,monospace":"11px Consolas,monospace";
+  ctx.fillText("SECTOR "+g.sector+" · "+sectorName(g.sector)+(dailyMode?"  📅":""),W/2,24);
+  if(g.sectorFlash>1.2){ ctx.font="bold 22px Consolas,monospace";ctx.fillStyle=`rgba(255,179,71,${Math.min(1,g.sectorFlash-1)})`; ctx.fillText("⚠ ENTERING "+sectorName(g.sector),W/2,H*.3); }
+  // boss warning banner
+  if(g.bossWarn>0){ ctx.font="bold 18px Consolas,monospace";ctx.fillStyle=`rgba(255,59,77,${Math.min(1,g.bossWarn/1.5)})`; ctx.fillText("⚠ BOSS INBOUND — "+g.bossName,W/2,H*.22); }
+  // mute icon
+  ctx.textAlign="right";ctx.font="16px Consolas,monospace";ctx.fillStyle="rgba(127,163,189,.9)";
+  ctx.fillText(muted?"🔇":"🔊",W-14,28);
+}
+function drawToasts(){
+  const g=game;if(!g.toasts.length)return;
+  ctx.textAlign="center";ctx.font="bold 13px Consolas,monospace";
+  let y=H*.16;
+  for(const t of g.toasts){
+    const a=Math.min(1,t.life);
+    ctx.globalAlpha=a;
+    ctx.fillStyle="rgba(4,6,14,.6)";const w=ctx.measureText(t.txt).width+24;
+    ctx.fillRect(W/2-w/2,y-15,w,22);
+    ctx.fillStyle=t.col;ctx.fillText(t.txt,W/2,y);
+    ctx.globalAlpha=1;y+=28;
+  }
+}
+
+/* ---------- loop ---------- */
+let last=0;
+function loop(ts){
+  const dt=Math.min(.05,(ts-last)/1000)||0;last=ts;
+  if(game)update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---------- start / end screen helpers ---------- */
+function renderBadges(wrapEl){
+  if(!wrapEl)return;
+  wrapEl.innerHTML="";
+  for(const b of BADGES){
+    const d=document.createElement("div");
+    d.className="b"+(unlocked.has(b.id)?" got":"");
+    d.textContent=(unlocked.has(b.id)?b.t:"🔒 "+b.d);
+    wrapEl.appendChild(d);
+  }
+}
+function refreshStartUI(){
+  document.getElementById("codexLabel").textContent="CODEX "+codex.size+" / "+CODEX_TOTAL+" IDENTIFIED";
+  document.getElementById("codexFill").style.width=Math.round(codex.size/CODEX_TOTAL*100)+"%";
+  renderBadges(document.getElementById("badgeWrap"));
+}
+
+/* ---------- flow ---------- */
+function endGame(){
+  const g=game;g.over=true;sfx.over();
+  const sc=Math.floor(g.score),nb=sc>best;
+  if(nb){best=sc;try{localStorage.setItem("cyberflight_best",best);}catch(e){}}
+  if(sc>=5000)awardEvent("score5k");
+  let rank="";for(const[min,r]of RANKS){if(sc>=min){rank=r;break;}}
+  document.getElementById("finalStats").innerHTML=
+    `<div class="big">${sc.toLocaleString()}</div>`+
+    (nb?`<div style="color:var(--green)">★ NEW BEST ★</div>`:`<div style="color:#7fa3bd">BEST ${best.toLocaleString()}</div>`)+
+    `<div class="rank">${rank}</div>`+
+    `<div style="margin-top:8px;color:#9fc3d8">⬡ ${g.collected} defenses · ☠ ${g.dodged} evaded · ◇ ${g.nearMiss} near-miss · 📖 ${g.learned} identified${g.newCodex?` (${g.newCodex} new)`:""}<br>` +
+    `SECTOR ${g.sector} · ${sectorName(g.sector)} · ${Math.floor(g.t)}s in cyberspace${dailyMode?" · 📅 DAILY "+todaySeed():""} · v${VERSION}</div>`;
+  document.getElementById("codexLabel2").textContent="CODEX "+codex.size+" / "+CODEX_TOTAL;
+  document.getElementById("codexFill2").style.width=Math.round(codex.size/CODEX_TOTAL*100)+"%";
+  renderBadges(document.getElementById("badgeWrap2"));
+  hideInfo();
+  submitScore(sc);
+  setTimeout(()=>document.getElementById("overScreen").classList.remove("hidden"),700);
+}
+/* website integration — parent OT CyberArena page can listen for this */
+function submitScore(sc){
+  try{
+    const payload={type:"cyberflight_score",game:"CYBERFLIGHT",version:VERSION,
+      score:sc,best:best,sector:game.sector,seconds:Math.floor(game.t),
+      collected:game.collected,dodged:game.dodged,nearMiss:game.nearMiss,
+      identified:game.learned,codex:codex.size,codexTotal:CODEX_TOTAL,
+      badges:[...unlocked],daily:dailyMode,seed:dailyMode?todaySeed():null};
+    if(window.parent&&window.parent!==window)window.parent.postMessage(payload,"*");
+  }catch(e){}
+}
+function begin(){
+  initAudio();hideInfo();
+  rng = dailyMode ? mulberry32(todaySeed()) : Math.random;
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("overScreen").classList.add("hidden");
+  game=newGame();
+}
+document.getElementById("startBtn").addEventListener("click",begin);
+document.getElementById("againBtn").addEventListener("click",()=>{
+  refreshStartUI();
+  document.getElementById("overScreen").classList.add("hidden");
+  document.getElementById("startScreen").classList.remove("hidden");
+});
+// initial UI paint
+refreshStartUI();
+</script>
+</body>
+</html>

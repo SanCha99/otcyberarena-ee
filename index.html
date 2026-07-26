@@ -920,6 +920,68 @@ html { overflow-x: clip; }
   border-top: 1px solid var(--border);
 }
 
+/* ─── CYBERFLIGHT PROMO CARD (v2.1.0) ─── */
+.game-promo-section {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+@media (min-width: 900px) {
+  .main .game-promo-section { max-width: 1200px; }
+}
+.game-promo-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-decoration: none;
+  transition: border-color .15s, transform .1s;
+}
+.game-promo-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.game-promo-art {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--accent-dim), var(--surface2));
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+}
+.game-promo-body { flex: 1; min-width: 0; }
+.game-promo-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.game-promo-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.game-promo-cta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+@media (max-width: 480px) {
+  .game-promo-card { flex-direction: column; text-align: center; }
+  .game-promo-art { width: 56px; height: 56px; font-size: 26px; }
+}
+
 .leaderboard-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1604,7 +1666,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.0.9 · 2026-07-22 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.0 · 2026-07-26 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1753,6 +1815,25 @@ footer {
        skin-toggle button that lived in this card is now in the footer,
        next to Join Arena — see footer-right below. Desktop is unaffected;
        desktop players still use the topbar's #themeToggle. -->
+
+  <!-- CYBERFLIGHT PROMO CARD (v2.1.0): standalone arcade game embedded via
+       cyberflight-play.html (iframe). That page listens for the game's
+       postMessage score event and credits it to the signed-in player,
+       capped at 3 credited runs/day; credited amount = the run's raw
+       final score (Sandip's call: rank tiers already scale the score,
+       no separate lookup table). Not signed in? The page still lets them
+       play and prompts sign-in to bank the score afterward. -->
+  <section class="game-promo-section" aria-label="CyberFlight game">
+    <div class="section-label">Bonus Game</div>
+    <a class="game-promo-card" href="cyberflight-play.html">
+      <div class="game-promo-art" aria-hidden="true">🚀</div>
+      <div class="game-promo-body">
+        <div class="game-promo-title">CYBERFLIGHT</div>
+        <div class="game-promo-desc">Dodge live OT/ICS threats, collect real defenses, and climb the sectors in this arcade flyer — every run's score banks straight to your leaderboard credits.</div>
+        <div class="game-promo-cta">▶ Play CyberFlight</div>
+      </div>
+    </a>
+  </section>
 
   <!-- SECTIONS 7 & 8: PAST MCQs / PAST CYWORDLES -->
   <section class="archive-cta-section" id="archiveCtaSection" aria-label="Past challenges" style="display:none">
@@ -2030,7 +2111,7 @@ footer {
     <a class="footer-link mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.0.9</span>
+    <span class="version-stamp" id="versionStamp">EC v2.1.0</span>
   </div>
 </footer>
 
@@ -2043,7 +2124,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.0.9';
+const EC_VERSION = '2.1.0';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3348,6 +3429,39 @@ async function recordSolve(gameType, challengeId, outcome, creditsEarned) {
   }
 }
 
+// ── CYBERFLIGHT: claim a score stashed by cyberflight-play.html before ──
+// the player signed in. cyberflight-play.html stashes { score, ts } in
+// localStorage under CF_PENDING_KEY when a run finishes with no logged-in
+// player; call claimPendingCyberflightScore() any time currentPlayer just
+// became set (after registration, after login, and on page load in case
+// a session already existed) to bank it. Same 3/day cap as the play page.
+const CF_PENDING_KEY = 'ec_pending_cyberflight_score';
+const CF_DAILY_CAP = 3;
+
+async function cyberflightRunsToday(playerId) {
+  if (IS_LOCAL || !sb) return 0;
+  const start = new Date(); start.setHours(0,0,0,0);
+  const { count, error } = await sb.from('solves')
+    .select('id', { count: 'exact', head: true })
+    .eq('player_id', playerId)
+    .eq('game_type', 'cyberflight')
+    .gte('created_at', start.toISOString());
+  if (error) { console.warn('cyberflightRunsToday error:', error.message); return 0; }
+  return count || 0;
+}
+
+async function claimPendingCyberflightScore() {
+  if (!currentPlayer) return;
+  let pending;
+  try { pending = JSON.parse(localStorage.getItem(CF_PENDING_KEY)); } catch { pending = null; }
+  if (!pending || typeof pending.score !== 'number') return;
+  localStorage.removeItem(CF_PENDING_KEY); // claim once regardless of cap outcome below
+  const runsToday = await cyberflightRunsToday(currentPlayer.id);
+  if (runsToday >= CF_DAILY_CAP) return;
+  await applyCredits(pending.score);
+  await recordSolve('cyberflight', 'cyberflight_' + Date.now(), null, pending.score);
+}
+
 async function logEvent(eventType, metadata) {
   if (!IS_LOCAL) {
     await sb.from('events').insert({
@@ -3520,6 +3634,7 @@ async function finaliseRegistration() {
   savePlayer(newPlayer);
   currentPlayer = newPlayer;
   updatePlayerUI();
+  claimPendingCyberflightScore();
   closeModal('register');
   logEvent('registration_complete', { track: newPlayer.track, country: newPlayer.country });
 }
@@ -3604,6 +3719,7 @@ async function loginWithPIN() {
   savePlayer(p);
   currentPlayer = p;
   updatePlayerUI();
+  claimPendingCyberflightScore();
   closeModal('login');
   logEvent('login', { callsign: p.callsign });
 }
@@ -3753,6 +3869,7 @@ let currentWordData = null; // this week's Cywordle word data
 document.addEventListener('DOMContentLoaded', () => {
   initHexBg();
   updatePlayerUI();
+  claimPendingCyberflightScore();
   loadWeeklyQueue();
   loadIntelFeed();
   loadLeaderboard();
