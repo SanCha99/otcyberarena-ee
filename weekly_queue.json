@@ -7,7 +7,7 @@
     ],
     "cywordle": {
       "word": "CERT",
-      "clue": "Computer Emergency Response Team — the coordination group you notify when an ICS incident hits."
+      "clue": "Computer Emergency Response Team \u2014 the coordination group you notify when an ICS incident hits."
     }
   },
   {
@@ -17,7 +17,7 @@
     ],
     "cywordle": {
       "word": "PATCH",
-      "clue": "The fix a vendor ships for a known vulnerability — applying it in OT usually needs a planned maintenance window."
+      "clue": "The fix a vendor ships for a known vulnerability \u2014 applying it in OT usually needs a planned maintenance window."
     }
   },
   {
@@ -47,7 +47,7 @@
     ],
     "cywordle": {
       "word": "WIPER",
-      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it — used in some of the most destructive attacks on OT networks."
+      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it \u2014 used in some of the most destructive attacks on OT networks."
     }
   },
   {
@@ -118,6 +118,16 @@
     "cywordle": {
       "word": "SENSOR",
       "clue": "A device that measures physical conditions like temperature or pressure and reports them to controllers."
+    }
+  },
+  {
+    "week_start": "2026-07-27",
+    "mcq_ids": [
+      "EC-00014"
+    ],
+    "cywordle": {
+      "word": "PURDUE",
+      "clue": "A hierarchical reference model that segments industrial networks into levels, separating OT control systems from the corporate IT network."
     }
   }
 ]
