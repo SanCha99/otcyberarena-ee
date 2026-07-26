@@ -35,18 +35,43 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); min-hei
 .page-sub { font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:18px; line-height:1.6; }
 
 .status-bar {
-  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
   padding:12px 16px; margin-bottom:16px; font-family:var(--mono); font-size:11px;
 }
-.status-bar .status-text { color:var(--muted); line-height:1.5; }
+.status-bar .status-text {
+  color:var(--muted); line-height:1.5;
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+}
 .status-bar .status-text strong { color:var(--text); }
 .status-bar a.status-cta {
   color:var(--bg); background:var(--accent); text-decoration:none; padding:8px 14px;
   border-radius:var(--radius); font-weight:700; letter-spacing:.04em; white-space:nowrap;
 }
-.status-bar.warn { border-color: rgba(255,68,68,0.4); }
-.status-bar.warn .status-text strong { color: var(--red); }
+
+/* Escalated styling for "not signed in" — this is the moment that decides
+   whether the run even counts, so it needs to stand out far more than the
+   calm "flying as X" status line does. Bigger headline, its own line,
+   full-width glowing CTA button (not a small inline pill). */
+.status-bar.warn {
+  padding:16px;
+  border:1px solid rgba(255,68,68,0.5);
+  background:linear-gradient(180deg, rgba(255,68,68,0.12), var(--surface));
+  box-shadow:0 0 0 1px rgba(255,68,68,0.15), 0 0 24px rgba(255,68,68,0.12);
+}
+.status-bar.warn .status-text { display:block; }
+.status-bar.warn .warn-headline {
+  font-family:var(--display); font-weight:800; font-size:17px; letter-spacing:.02em;
+  color:var(--red); text-transform:uppercase; margin-bottom:5px;
+}
+.status-bar.warn .warn-sub { color:var(--text); opacity:.85; font-size:11.5px; margin-bottom:12px; }
+.status-bar.warn .status-cta {
+  display:block; text-align:center; font-size:13px; padding:13px 22px;
+  animation: cfPulse 1.8s ease-in-out infinite;
+}
+@keyframes cfPulse {
+  0%, 100% { box-shadow:0 0 10px rgba(34,197,94,0.35); }
+  50% { box-shadow:0 0 22px rgba(34,197,94,0.7); }
+}
 
 .frame-wrap {
   position:relative; width:100%; aspect-ratio:9/16; max-height:80vh;
@@ -54,6 +79,19 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); min-hei
 }
 @media (min-width:700px) { .frame-wrap { aspect-ratio:16/10; max-height:720px; } }
 .frame-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+/* Separate, real "Back to Arena" button directly below the game frame —
+   sits right under the game's own LAUNCH / RECONNECT buttons so it's the
+   natural next tap after a run, not just a small link up in the topbar
+   (Sandip: wanted it as its own button there, not only the header link). */
+.back-arena-btn {
+  display:block; width:100%; margin-top:14px;
+  background:transparent; border:1px solid var(--border); color:var(--text);
+  font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  padding:13px; border-radius:var(--radius); cursor:pointer;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.back-arena-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
 
 .toast {
   position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
@@ -89,6 +127,8 @@ footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(-
   <div class="frame-wrap">
     <iframe id="gameFrame" src="games/cyberflight.html" title="CyberFlight" allow="autoplay"></iframe>
   </div>
+
+  <button class="back-arena-btn" onclick="location.href='index.html'">← Back to Arena</button>
 </div>
 
 <footer>OT CyberArena · Vendor-Neutral</footer>
@@ -125,6 +165,7 @@ function renderStatus() {
   const bar = document.getElementById('statusBar');
   const txt = document.getElementById('statusText');
   if (IS_LOCAL) {
+    bar.classList.remove('warn');
     txt.innerHTML = 'ARIA // Local file preview — scores will not save. Open via the live site to save runs.';
     return;
   }
@@ -133,7 +174,10 @@ function renderStatus() {
     txt.innerHTML = `ARIA // Flying as <strong>${currentPlayer.callsign}</strong> — final score of each run banks straight to your credits (up to ${DAILY_CREDIT_CAP}/day).`;
   } else {
     bar.classList.add('warn');
-    txt.innerHTML = `ARIA // <strong>Not signed in</strong> — your run will still play, but sign in to bank the score to the leaderboard. <a class="status-cta" href="index.html#register">Save My Score →</a>`;
+    txt.innerHTML = `
+      <div class="warn-headline">🔒 Sign In To Save Your Score</div>
+      <div class="warn-sub">ARIA // You can play right now — but this run only counts on the leaderboard once you're signed in.</div>
+      <a class="status-cta" href="index.html#register">Sign In / Join Free →</a>`;
   }
 }
 
@@ -186,6 +230,9 @@ window.addEventListener('message', (e) => {
   if (!currentPlayer) {
     try { localStorage.setItem(PENDING_KEY, JSON.stringify({ score, ts: Date.now() })); } catch {}
     showToast(`ARIA // Run complete — score ${score.toLocaleString()}. Sign in to bank it to your leaderboard credits.`, 6000);
+    // Pull the sign-in callout into view — the run just ended inside the
+    // iframe below it, and this is the highest-value moment to catch it.
+    document.getElementById('statusBar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
   creditRun(score);
