@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<!--
+  OT CyberArena — EC Admin / Behavior Dashboard
+  Version: 1.0
+  Date:    26-Jul-2026
+  Not linked from public nav. Read-only, anon-key, client-side queries
+  against players/credits/solves/sessions (all public-read RLS by design —
+  see PROJECT.md §4, ops/HANDOFF_admin_dashboard.md).
+  Deliberately NEVER selects players.email or players.pin.
+  Pattern adapted from the ISE admin dashboard (archive/admin_dashboard_v1_5_1_20260517.html)
+  per Sandip's direction, remapped onto EC's schema (game_type-based, not FA/CP track-based).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>OT CyberArena — EC Admin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e29;
+    --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+    --text:#e8eaf0;--muted:#7a8099;
+    --accent:#22c55e;--accent2:#4d9fff;
+    --warn:#f5a623;--danger:#e05c5c;--success:#3ecf8e;
+    --font:'SF Pro Display','Segoe UI',system-ui,sans-serif;
+    --mono:'SF Mono','Cascadia Code',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh;}
+  .topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:12px;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#000;}
+  .logo-text{font-size:15px;font-weight:600;letter-spacing:-0.3px;}
+  .logo-text .cy{color:var(--accent);}
+  .logo-sub{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+  .logo-ver{font-size:10px;color:var(--accent);letter-spacing:0.5px;margin-top:1px;}
+  .topbar-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .range-switch{display:flex;gap:3px;background:var(--bg3);border-radius:8px;padding:3px;}
+  .range-btn{padding:4px 10px;border-radius:5px;border:none;cursor:pointer;font-size:11px;font-weight:600;background:transparent;color:var(--muted);transition:all 0.15s;}
+  .range-btn.active{background:var(--bg2);color:var(--text);border:1px solid var(--border2);}
+  .refresh-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
+  .refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .refresh-btn.loading{opacity:0.5;pointer-events:none;}
+  .last-refreshed{font-size:11px;color:var(--muted);}
+  .home-link{font-size:11px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;}
+  .home-link:hover{color:var(--text);border-color:var(--border2);}
+  .main{padding:28px 32px;max-width:1440px;margin:0 auto;}
+  .section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;margin-top:28px;}
+  .section-label:first-child{margin-top:0;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;}
+  .kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-line,var(--accent));}
+  .kpi-label{font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .kpi-val{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1;}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:6px;}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .chart-grid.wide{grid-template-columns:2fr 1fr;}
+  @media(max-width:900px){.chart-grid,.chart-grid.wide{grid-template-columns:1fr;}}
+  .panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .panel-full{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:0;}
+  .panel-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+  .panel-sub{font-size:11px;color:var(--muted);margin-bottom:16px;}
+  .outcome-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;margin-bottom:6px;}
+  .outcome-seg{height:100%;border-radius:3px;}
+  .ctable{width:100%;border-collapse:collapse;}
+  .ctable th{font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);padding:0 8px 8px 0;text-align:left;border-bottom:1px solid var(--border);}
+  .ctable td{padding:9px 8px 9px 0;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  .ctable tr:last-child td{border-bottom:none;}
+  .ctable .num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);}
+  .ctable .bar-cell{padding:9px 8px;}
+  .mini-bar{height:6px;border-radius:3px;background:var(--accent);opacity:0.7;min-width:3px;}
+  .tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.3px;background:rgba(77,159,255,0.15);color:var(--accent2);text-transform:uppercase;}
+  .callout-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .callout-card{border-radius:10px;padding:14px 16px;border:1px solid var(--border);}
+  .callout-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .callout-ch{font-size:13px;font-weight:600;font-family:var(--mono);margin-bottom:4px;}
+  .callout-stat{font-size:12px;color:var(--muted);}
+  .insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+  .insight-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;border-left:3px solid var(--accent-line,var(--accent));}
+  .insight-icon{font-size:18px;margin-bottom:8px;}
+  .insight-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+  .insight-body{font-size:12px;color:var(--muted);line-height:1.6;}
+  .insight-hl{color:var(--text);font-weight:500;}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:12px;}
+  .empty-icon{font-size:32px;margin-bottom:10px;}
+  .spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .no-data-note{font-size:11px;color:var(--warn);background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:6px;padding:8px 12px;margin-bottom:12px;}
+  .pending-note{font-size:11px;color:var(--muted);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:12px;}
+  .flag{font-size:15px;}
+  /* Sortable tables */
+  .ctable th.sortable{cursor:pointer;user-select:none;white-space:nowrap;}
+  .ctable th.sortable:hover{color:var(--text);}
+  .ctable th.sortable.asc::after{content:' ↑';color:var(--accent);}
+  .ctable th.sortable.desc::after{content:' ↓';color:var(--accent);}
+  .ctable th.sortable:not(.asc):not(.desc)::after{content:' ↕';opacity:0.3;font-size:10px;}
+  .table-scroll{overflow-y:auto;max-height:400px;margin-top:8px;}
+  .table-scroll .ctable thead th{position:sticky;top:0;background:var(--bg2);z-index:2;}
+  .table-scroll::-webkit-scrollbar{width:6px;}
+  .table-scroll::-webkit-scrollbar-track{background:#1a1e29;border-radius:3px;}
+  .table-scroll::-webkit-scrollbar-thumb{background:#3a3e4a;border-radius:3px;}
+  .table-scroll::-webkit-scrollbar-thumb:hover{background:#4a5060;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">OT</div>
+    <div>
+      <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
+      <div class="logo-sub">Admin Intelligence · EC</div>
+      <div class="logo-ver">Dashboard v1.0 · 26-Jul-2026</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="range-switch">
+      <button class="range-btn active" onclick="setRange(7,this)">7D</button>
+      <button class="range-btn" onclick="setRange(30,this)">1M</button>
+      <button class="range-btn" onclick="setRange(90,this)">3M</button>
+      <button class="range-btn" onclick="setRange(180,this)">6M</button>
+      <button class="range-btn" onclick="setRange(365,this)">1Y</button>
+      <button class="range-btn" onclick="setRange(0,this)">Max</button>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
+      <span id="refreshIcon">↻</span> Refresh
+    </button>
+    <div class="last-refreshed" id="lastRefreshed">Not loaded yet</div>
+    <a class="home-link" href="./index.html">← Site</a>
+  </div>
+</div>
+
+<div class="main" id="main">
+  <div class="empty"><div class="empty-icon">◎</div><div>Loading operational data...</div></div>
+</div>
+
+<script>
+// Read-only anon-key access. Matches engine/index.html's own SUPABASE_URL/ANON.
+// RLS on players/credits/solves/sessions is public-read by design (client-authoritative
+// trust model — see ops/HANDOFF_admin_dashboard.md). This file must never select
+// players.email or players.pin, even though the anon key technically could reach them.
+const SB_URL='https://obqqbfvrnkwkgucqdqad.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icXFiZnZybmt3a2d1Y3FkcWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MjU2NDUsImV4cCI6MjA5NjMwMTY0NX0.I5KjNSrEgF4fZ3jlYqgGj-TVIeQo5XKCQAcK8RHPnzs';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+
+let charts=[],currentDays=7;
+
+// Outcome semantics (solves.outcome CHECK constraint — 5 values, no hint_wrong):
+// solved  = correct_1st | correct_2nd | hint_used
+// unsolved= gave_up | wrong
+const SOLVED_OUTCOMES=['correct_1st','correct_2nd','hint_used'];
+const UNSOLVED_OUTCOMES=['gave_up','wrong'];
+const OUTCOME_COLORS={correct_1st:'#3ecf8e',correct_2nd:'#4d9fff',hint_used:'#a78bfa',gave_up:'#e05c5c',wrong:'#3a3e4a'};
+const OUTCOME_LABELS={correct_1st:'1st try',correct_2nd:'2nd try',hint_used:'hint used',gave_up:'gave up',wrong:'wrong'};
+// game_type CHECK constraint: quiz-style (has meaningful outcome) vs score-based
+const QUIZ_TYPES=['mcq_daily','mcq_episode','cywordle','word_search','true_false','drag_match','drill_60sec'];
+const SCORE_TYPES=['cyberflight','red_shift','scada_siege'];
+
+const FLAGS={'Australia':'🇦🇺','China':'🇨🇳','India':'🇮🇳','Indonesia':'🇮🇩','Japan':'🇯🇵','Korea':'🇰🇷','Malaysia':'🇲🇾','New Zealand':'🇳🇿','Philippines':'🇵🇭','Singapore':'🇸🇬','Taiwan':'🇹🇼','Thailand':'🇹🇭','Vietnam':'🇻🇳','Argentina':'🇦🇷','Canada':'🇨🇦','Chile':'🇨🇱','Germany':'🇩🇪','Israel':'🇮🇱','Mexico':'🇲🇽','Poland':'🇵🇱','Portugal':'🇵🇹','Spain':'🇪🇸','United Kingdom':'🇬🇧','United States':'🇺🇸','Venezuela':'🇻🇪','LA Region':'🌎','EMEA Region':'🌍','Others':'🌐'};
+
+function setRange(d,el){currentDays=d;document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadAll();}
+function destroyCharts(){charts.forEach(c=>{try{c.destroy();}catch(e){}});charts=[];}
+
+const sortState={player:{col:'credits',dir:'desc'},challenge:{col:'total',dir:'desc'},country:{col:'players',dir:'desc'}};
+
+function sortTable(tableId,col,type='num'){
+  const st=sortState[tableId];
+  if(st.col===col)st.dir=st.dir==='asc'?'desc':'asc';
+  else{st.col=col;st.dir=col==='name'||col==='title'?'asc':'desc';}
+  document.querySelectorAll(`#${tableId}-table th.sortable`).forEach(th=>{
+    th.classList.remove('asc','desc');
+    if(th.dataset.col===col)th.classList.add(st.dir);
+  });
+  const tbody=document.querySelector(`#${tableId}-table tbody`);
+  if(!tbody)return;
+  const rows=[...tbody.querySelectorAll('tr')];
+  rows.sort((a,b)=>{
+    const av=a.dataset[col]||'';const bv=b.dataset[col]||'';
+    const cmp=type==='num'?(parseFloat(av)||0)-(parseFloat(bv)||0):av.localeCompare(bv);
+    return st.dir==='asc'?cmp:-cmp;
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+function pct(n,d){return d?Math.round(n/d*100):0;}
+function fmt(n){return(n||0).toLocaleString();}
+function fmtMins(secs){
+  if(!secs||secs<300)return'< 5m';
+  const floored=Math.floor(secs/300)*300;
+  const m=Math.round(floored/60);
+  if(m<60)return m+'m+';
+  return Math.floor(m/60)+'h '+(m%60?m%60+'m':'')+'+';}
+function fmtDate(d){if(!d)return'—';return d.toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'2-digit'});}
+function fmtAgo(d){if(!d)return'—';const diff=Date.now()-d.getTime();const mins=Math.round(diff/60000);if(mins<60)return mins+'m ago';const hrs=Math.round(diff/3600000);if(hrs<24)return hrs+'h ago';const days=Math.round(diff/86400000);if(days<30)return days+'d ago';return fmtDate(d);}
+function seg(p,c){if(!p)return'';return`<div class="outcome-seg" style="width:${p}%;background:${c}"></div>`;}
+function kpi(label,val,sub,color){return`<div class="kpi-card" style="--accent-line:${color}"><div class="kpi-label">${label}</div><div class="kpi-val">${val}</div><div class="kpi-sub">${sub}</div></div>`;}
+function ins(icon,title,body,accent){return`<div class="insight-card" style="--accent-line:${accent}"><div class="insight-icon">${icon}</div><div class="insight-title">${title}</div><div class="insight-body">${body}</div></div>`;}
+
+async function loadAll(){
+  const btn=document.getElementById('refreshBtn'),icon=document.getElementById('refreshIcon');
+  btn.classList.add('loading');icon.innerHTML='<span class="spinner"></span>';
+  destroyCharts();
+  try{
+    // Explicit column allowlist — never email, never pin.
+    const pr=await sb.from('players').select('id,callsign,track,country,type,current_streak,longest_streak,created_at,last_seen_at').eq('type','real');
+    const players=pr.data||[];
+    const ids=players.map(p=>p.id);
+    let solves=[],credits=[],sessions=[];
+    if(ids.length>0){
+      const [sr,cr,ser]=await Promise.all([
+        sb.from('solves').select('id,player_id,challenge_id,outcome,credits_earned,game_type,created_at').in('player_id',ids),
+        sb.from('credits').select('player_id,amount').in('player_id',ids),
+        sb.from('sessions').select('player_id,started_at,ended_at,duration_seconds,game_type').in('player_id',ids)
+      ]);
+      solves=sr.data||[];credits=cr.data||[];sessions=ser.data||[];
+    }
+    renderDashboard(players,solves,credits,sessions);
+    document.getElementById('lastRefreshed').textContent='Refreshed '+new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    document.getElementById('main').innerHTML=`<div class="empty"><div class="empty-icon">⚠</div><div style="color:#e05c5c">${e.message}</div></div>`;
+  }
+  btn.classList.remove('loading');icon.textContent='↻';
+}
+
+function renderDashboard(players,solves,credits,sessions){
+  const now=new Date();
+  const rangeMs=currentDays>0?currentDays*24*60*60*1000:null;
+  const rangeStart=rangeMs?new Date(now-rangeMs):null;
+  const rangeLabel=currentDays===7?'This Week':currentDays===30?'This Month':currentDays===90?'Last 3M':currentDays===180?'Last 6M':currentDays===365?'This Year':'All Time';
+  const inRange=d=>rangeStart?new Date(d)>rangeStart:true;
+
+  const newInRange=players.filter(p=>inRange(p.created_at));
+  const activeInRange=players.filter(p=>p.last_seen_at&&inRange(p.last_seen_at));
+
+  const quizSolves=solves.filter(s=>QUIZ_TYPES.includes(s.game_type));
+  const scoreSolves=solves.filter(s=>SCORE_TYPES.includes(s.game_type));
+  const totalSolves=solves.length;
+
+  const hasSessions=sessions.some(s=>s.duration_seconds);
+  const totalSecs=sessions.reduce((a,s)=>a+(s.duration_seconds||0),0);
+  const avgSecs=sessions.length?Math.round(totalSecs/sessions.length):0;
+
+  const totalCredits=credits.reduce((a,c)=>a+(c.amount||0),0);
+
+  // Country
+  const byC={};
+  players.forEach(p=>{const c=p.country||'Others';if(!byC[c])byC[c]={players:0,solves:0,giveups:0};byC[c].players++;});
+  quizSolves.forEach(s=>{const p=players.find(x=>x.id===s.player_id);if(p){const c=p.country||'Others';if(byC[c]){byC[c].solves++;if(UNSOLVED_OUTCOMES.includes(s.outcome))byC[c].giveups++;}}});
+  const cSorted=Object.entries(byC).sort((a,b)=>b[1].players-a[1].players);
+  const maxCP=cSorted[0]?.[1]?.players||1;
+
+  // Per-challenge (quiz types only — outcome is meaningful here)
+  const byChallenge={};
+  quizSolves.forEach(s=>{
+    const cid=s.challenge_id||'unknown';
+    if(!byChallenge[cid])byChallenge[cid]={total:0,correct_1st:0,correct_2nd:0,hint_used:0,gave_up:0,wrong:0};
+    byChallenge[cid].total++;
+    if(s.outcome&&byChallenge[cid][s.outcome]!==undefined)byChallenge[cid][s.outcome]++;
+  });
+  const chList=Object.entries(byChallenge).filter(([,d])=>d.total>=1);
+  const solvedOf=d=>d.correct_1st+d.correct_2nd+d.hint_used;
+  const unsolvedOf=d=>d.gave_up+d.wrong;
+  const easiest=chList.length?[...chList].sort((a,b)=>pct(solvedOf(b[1]),b[1].total)-pct(solvedOf(a[1]),a[1].total))[0]:null;
+  const hardest=chList.length?[...chList].sort((a,b)=>pct(unsolvedOf(b[1]),b[1].total)-pct(unsolvedOf(a[1]),a[1].total))[0]:null;
+
+  // Game-type mix (for "most played" insight)
+  const byGameType={};
+  solves.forEach(s=>{const gt=s.game_type||'unknown';byGameType[gt]=(byGameType[gt]||0)+1;});
+  const topGameType=Object.entries(byGameType).sort((a,b)=>b[1]-a[1])[0];
+
+  // Per-player
+  const pStats=players.map(p=>{
+    const cr=credits.find(c=>c.player_id===p.id);
+    const ps=solves.filter(s=>s.player_id===p.id);
+    const pq=ps.filter(s=>QUIZ_TYPES.includes(s.game_type));
+    const ss=sessions.filter(s=>s.player_id===p.id);
+    const dur=ss.reduce((a,s)=>a+(s.duration_seconds||0),0);
+    return{name:p.callsign,track:p.track,country:p.country||'—',credits:cr?.amount||0,
+      solved:pq.filter(s=>SOLVED_OUTCOMES.includes(s.outcome)).length,
+      unsolved:pq.filter(s=>UNSOLVED_OUTCOMES.includes(s.outcome)).length,
+      attempts:ps.length,sessions:ss.length,totalSecs:dur,
+      joined:p.created_at?new Date(p.created_at):null,
+      lastSeen:p.last_seen_at?new Date(p.last_seen_at):null
+    };
+  }).sort((a,b)=>b.credits-a.credits);
+
+  // Activity buckets
+  const useDaily=currentDays<=30;
+  const effDays=currentDays||365;
+  const buckets={};
+  if(useDaily){
+    for(let i=effDays-1;i>=0;i--){const d=new Date(now-i*24*60*60*1000);buckets[d.toLocaleDateString('en-SG',{weekday:'short',day:'numeric'})]=0;}
+    players.forEach(p=>{if(p.last_seen_at&&inRange(p.last_seen_at)){const k=new Date(p.last_seen_at).toLocaleDateString('en-SG',{weekday:'short',day:'numeric'});if(buckets[k]!==undefined)buckets[k]++;}});
+  }else{
+    const months=currentDays===0?12:Math.ceil(currentDays/30);
+    for(let i=months-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);buckets[d.toLocaleDateString('en-SG',{month:'short',year:'2-digit'})]=0;}
+    players.forEach(p=>{if(p.last_seen_at&&inRange(p.last_seen_at)){const d=new Date(p.last_seen_at);const k=new Date(d.getFullYear(),d.getMonth(),1).toLocaleDateString('en-SG',{month:'short',year:'2-digit'});if(buckets[k]!==undefined)buckets[k]++;}});
+  }
+
+  let h='';
+
+  // 1. PLATFORM OVERVIEW
+  h+=`<div class="section-label">Platform overview — EC · ${rangeLabel}</div><div class="kpi-grid">`;
+  h+=kpi('Total Operatives',fmt(players.length),`${fmt(newInRange.length)} joined in period`,'#22c55e');
+  h+=kpi(`Active (${rangeLabel})`,fmt(activeInRange.length),`${pct(activeInRange.length,players.length)}% of all players`,'#4d9fff');
+  h+=kpi('New Joiners',fmt(newInRange.length),rangeLabel,'#a78bfa');
+  h+=kpi('Total Attempts',fmt(totalSolves),`${fmt(Math.round(totalSolves/Math.max(players.length,1)))} avg per player`,'#3ecf8e');
+  h+=kpi('Avg Session',fmtMins(avgSecs),hasSessions?'per session (5m+ buckets)':'no session data yet','#f5a623');
+  h+=kpi('Credits Awarded',fmt(totalCredits),'across all players','#e05c5c');
+  h+=`</div>`;
+
+  // 1b. KEY INSIGHTS
+  h+=`<div class="section-label">Key insights</div><div class="insight-grid">`;
+  if(players.length>0){const er=pct(activeInRange.length,players.length);const ec=er>50?'#3ecf8e':er>25?'#f5a623':'#e05c5c';h+=ins('◎',`Engagement — ${rangeLabel}`,`<span class="insight-hl" style="color:${ec}">${er}%</span> of operatives active in the selected period. ${er<30?'Consider a flash challenge to re-engage.':'Healthy engagement — sustain with new content.'}`,ec);}
+  const unsolvedTotal=quizSolves.filter(s=>UNSOLVED_OUTCOMES.includes(s.outcome)).length;
+  const guRate=pct(unsolvedTotal,quizSolves.length);
+  if(quizSolves.length>3){const gc=guRate>35?'#e05c5c':guRate>20?'#f5a623':'#3ecf8e';h+=ins('⚠','Overall give-up / wrong rate',`<span class="insight-hl" style="color:${gc}">${guRate}%</span> of MCQ/Cywordle-type attempts ended in give-up or wrong. ${guRate>35?'Difficulty may be too high.':guRate>20?'Moderate — monitor specific challenges.':'Content difficulty is well-calibrated.'}`,gc);}
+  if(hardest)h+=ins('⚑','Hardest challenge',`<span class="insight-hl" style="font-family:var(--mono)">${hardest[0]}</span>: <span class="insight-hl" style="color:#e05c5c">${pct(unsolvedOf(hardest[1]),hardest[1].total)}% give-up/wrong rate</span> · ${hardest[1].total} attempts. Cross-reference the id in the Master Inventory.`,'#e05c5c');
+  if(easiest&&easiest[0]!==hardest?.[0])h+=ins('✓','Easiest challenge',`<span class="insight-hl" style="font-family:var(--mono)">${easiest[0]}</span>: <span class="insight-hl" style="color:#3ecf8e">${pct(solvedOf(easiest[1]),easiest[1].total)}% solve rate</span> · ${easiest[1].total} attempts.`,'#3ecf8e');
+  if(topGameType)h+=ins('▣','Most-played format',`<span class="insight-hl" style="font-family:var(--mono)">${topGameType[0]}</span> leads with <span class="insight-hl">${fmt(topGameType[1])}</span> attempts (${pct(topGameType[1],totalSolves)}% of all activity).`,'#4d9fff');
+  if(!players.length)h+=ins('◎','No data yet','Insights will appear once players start solving challenges — solves is currently empty (soft-live, no real traffic yet).','#3a3e4a');
+  h+=`</div>`;
+
+  // 2. GAME-TYPE PERFORMANCE (quiz types, dynamic — no hardcoded FA/CP split)
+  h+=`<div class="section-label">Game-type performance</div><div class="chart-grid">`;
+  h+=`<div class="panel"><div class="panel-title">Outcome breakdown by format</div><div class="panel-sub">How players resolve each quiz-style format — bars show % of each outcome</div>`;
+  const presentQuizTypes=[...new Set(quizSolves.map(s=>s.game_type))].sort();
+  if(!presentQuizTypes.length){
+    h+=`<div class="empty" style="padding:20px 0">No MCQ/Cywordle-type attempts recorded yet</div>`;
+  }else{
+    presentQuizTypes.forEach(gt=>{
+      const ts=quizSolves.filter(s=>s.game_type===gt);
+      const tot=ts.length;
+      const tc={correct_1st:0,correct_2nd:0,hint_used:0,gave_up:0,wrong:0};
+      ts.forEach(s=>{if(s.outcome&&tc[s.outcome]!==undefined)tc[s.outcome]++;});
+      h+=`<div style="margin-bottom:16px">`;
+      h+=`<div style="font-size:11px;font-weight:600;color:var(--accent2);margin-bottom:6px;letter-spacing:0.5px;text-transform:uppercase">${gt} — ${fmt(tot)} attempts</div>`;
+      h+=`<div class="outcome-bar" style="width:100%">${Object.keys(tc).map(k=>seg(pct(tc[k],tot),OUTCOME_COLORS[k])).join('')}</div>`;
+      h+=`<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:10px;font-family:var(--mono)">`;
+      Object.keys(tc).forEach(k=>{h+=`<span style="color:${OUTCOME_COLORS[k]}">${OUTCOME_LABELS[k]}:${pct(tc[k],tot)}%</span>`;});
+      h+=`</div></div>`;
+    });
+  }
+  h+=`</div>`;
+  h+=`<div class="panel"><div class="panel-title">Activity over time</div><div class="panel-sub">Players active ${useDaily?'per day (last '+effDays+'d)':'per month'}</div><div style="position:relative;width:100%;height:220px"><canvas id="actChart"></canvas></div></div>`;
+  h+=`</div>`;
+
+  // 2b. Score-based (bonus) games — no outcome/solve-rate concept
+  h+=`<div class="section-label">Bonus games (score-based)</div><div class="panel-full">`;
+  h+=`<div class="panel-title" style="margin-bottom:4px">CyberFlight / Red Shift / SCADA Siege</div>`;
+  h+=`<div class="panel-sub">Score-based runs — credited amount doubles as the run's raw score, not a solve/give-up outcome</div>`;
+  const presentScoreTypes=[...new Set(scoreSolves.map(s=>s.game_type))].sort();
+  if(!presentScoreTypes.length){
+    h+=`<div class="empty" style="padding:20px 0">No bonus-game runs recorded yet</div>`;
+  }else{
+    h+=`<div class="kpi-grid">`;
+    presentScoreTypes.forEach(gt=>{
+      const rs=scoreSolves.filter(s=>s.game_type===gt);
+      const scores=rs.map(s=>s.credits_earned||0);
+      const avgScore=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+      const maxScore=scores.length?Math.max(...scores):0;
+      h+=kpi(gt,fmt(rs.length)+' runs',`avg ${fmt(avgScore)} · best ${fmt(maxScore)}`,'#f5a623');
+    });
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+
+  // 3. CHALLENGE INTELLIGENCE
+  h+=`<div class="section-label">Challenge intelligence</div><div class="panel-full">`;
+  h+=`<div class="panel-title" style="margin-bottom:4px">Per-challenge breakdown (MCQ/Cywordle-type only)</div>`;
+  h+=`<div class="panel-sub">Solved = correct 1st/2nd/hint-used · Unsolved = gave-up/wrong · cross-reference id with ops/OT_CyberArena_MCQ_Cywordle_Master_Inventory.xlsx for question text</div>`;
+  if(chList.length){
+    h+=`<div class="callout-grid">`;
+    if(easiest)h+=`<div class="callout-card" style="background:rgba(62,207,142,0.06);border-color:rgba(62,207,142,0.25)"><div class="callout-label" style="color:#3ecf8e">Easiest Challenge</div><div class="callout-ch">${easiest[0]}</div><div class="callout-stat">${pct(solvedOf(easiest[1]),easiest[1].total)}% solve rate · ${easiest[1].total} attempts</div></div>`;
+    if(hardest)h+=`<div class="callout-card" style="background:rgba(224,92,92,0.06);border-color:rgba(224,92,92,0.25)"><div class="callout-label" style="color:#e05c5c">Hardest Challenge</div><div class="callout-ch">${hardest[0]}</div><div class="callout-stat">${pct(unsolvedOf(hardest[1]),hardest[1].total)}% give-up/wrong rate · ${hardest[1].total} attempts</div></div>`;
+    h+=`</div>`;
+    const chSorted=[...chList].sort((a,b)=>b[1].total-a[1].total);
+    const maxTot=chSorted[0]?.[1]?.total||1;
+    h+=`<div class="table-scroll"><table class="ctable" id="challenge-table"><thead><tr>
+      <th class="sortable desc" data-col="title" onclick="sortTable('challenge','title','str')">Challenge ID</th>
+      <th class="num sortable desc" data-col="total" onclick="sortTable('challenge','total','num')">Attempts</th>
+      <th class="num sortable" data-col="c1" onclick="sortTable('challenge','c1','num')">1st Try</th>
+      <th class="num sortable" data-col="c2" onclick="sortTable('challenge','c2','num')">2nd Try</th>
+      <th class="num sortable" data-col="hint" onclick="sortTable('challenge','hint','num')">Hint Used</th>
+      <th class="num sortable" data-col="giveup" onclick="sortTable('challenge','giveup','num')">Gave Up</th>
+      <th class="num sortable" data-col="wrong" onclick="sortTable('challenge','wrong','num')">Wrong</th>
+      <th class="num sortable" data-col="solvepct" onclick="sortTable('challenge','solvepct','num')">Solve %</th>
+      <th style="width:90px">Volume</th>
+    </tr></thead><tbody>`;
+    chSorted.forEach(([cid,d])=>{
+      const sp=pct(solvedOf(d),d.total);
+      const sc=sp>60?'#3ecf8e':sp>30?'#f5a623':'#e05c5c';
+      const bw=Math.round(d.total/maxTot*80);
+      h+=`<tr data-title="${cid}" data-total="${d.total}" data-c1="${d.correct_1st}" data-c2="${d.correct_2nd}" data-hint="${d.hint_used}" data-giveup="${d.gave_up}" data-wrong="${d.wrong}" data-solvepct="${sp}">
+        <td style="font-family:var(--mono)">${cid}</td>
+        <td class="num">${d.total}</td>
+        <td class="num" style="color:#3ecf8e">${d.correct_1st}</td>
+        <td class="num" style="color:#4d9fff">${d.correct_2nd}</td>
+        <td class="num" style="color:#a78bfa">${d.hint_used}</td>
+        <td class="num" style="color:#e05c5c">${d.gave_up}</td>
+        <td class="num" style="color:#7a8099">${d.wrong}</td>
+        <td class="num" style="color:${sc};font-weight:600">${sp}%</td>
+        <td class="bar-cell"><div class="mini-bar" style="width:${bw}px"></div></td>
+      </tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }else{
+    h+=`<div class="empty" style="padding:20px 0">No challenge attempts recorded yet</div>`;
+  }
+  h+=`</div>`;
+
+  // 4. PER-PLAYER
+  h+=`<div class="section-label">Operative performance</div><div class="panel-full">`;
+  h+=`<div class="panel-title" style="margin-bottom:4px">Per-player breakdown</div>`;
+  h+=`<div class="panel-sub">Sorted by credits · MCQ/Cywordle-type solved/unsolved only, attempts includes bonus games</div>`;
+  h+=`<div class="table-scroll"><table class="ctable" id="player-table"><thead><tr>
+    <th class="sortable" data-col="name" onclick="sortTable('player','name','str')">Callsign</th>
+    <th class="sortable" data-col="track" onclick="sortTable('player','track','str')">Track</th>
+    <th class="sortable" data-col="country" onclick="sortTable('player','country','str')">Country</th>
+    <th class="num sortable desc" data-col="credits" onclick="sortTable('player','credits','num')">Credits</th>
+    <th class="num sortable" data-col="solved" onclick="sortTable('player','solved','num')">Solved</th>
+    <th class="num sortable" data-col="unsolved" onclick="sortTable('player','unsolved','num')">Unsolved</th>
+    <th class="num sortable" data-col="attempts" onclick="sortTable('player','attempts','num')">Attempts</th>
+    <th class="num sortable" data-col="sessions" onclick="sortTable('player','sessions','num')">Sessions</th>
+    <th class="num sortable" data-col="time" onclick="sortTable('player','time','num')">Total Time</th>
+    <th class="num sortable" data-col="joined" onclick="sortTable('player','joined','num')">Joined</th>
+    <th class="num sortable" data-col="lastseen" onclick="sortTable('player','lastseen','num')">Last Seen</th>
+  </tr></thead><tbody>`;
+  pStats.forEach(p=>{
+    const flag=FLAGS[p.country]||'🌐';
+    const tt=`<span class="tag">${(p.track||'—').toUpperCase()}</span>`;
+    const tc2=p.totalSecs?fmtMins(p.totalSecs):`<span style="color:var(--muted)">—</span>`;
+    const joinedTs=p.joined?p.joined.getTime():0;
+    const lastTs=p.lastSeen?p.lastSeen.getTime():0;
+    h+=`<tr data-name="${p.name}" data-track="${p.track}" data-country="${p.country}" data-credits="${p.credits}" data-solved="${p.solved}" data-unsolved="${p.unsolved}" data-attempts="${p.attempts}" data-sessions="${p.sessions}" data-time="${p.totalSecs||0}" data-joined="${joinedTs}" data-lastseen="${lastTs}">
+      <td style="font-weight:500">${p.name}</td>
+      <td>${tt}</td>
+      <td><span class="flag">${flag}</span> ${p.country}</td>
+      <td class="num" style="color:#f59e0b;font-weight:600">${fmt(p.credits)}</td>
+      <td class="num" style="color:#3ecf8e">${p.solved}</td>
+      <td class="num" style="color:#e05c5c">${p.unsolved}</td>
+      <td class="num">${p.attempts}</td>
+      <td class="num">${p.sessions}</td>
+      <td class="num">${tc2}</td>
+      <td class="num" style="color:var(--muted);font-size:11px">${fmtDate(p.joined)}</td>
+      <td class="num" style="color:var(--muted);font-size:11px">${fmtAgo(p.lastSeen)}</td>
+    </tr>`;
+  });
+  if(!pStats.length)h+=`<tr><td colspan="11" class="empty" style="padding:20px">No players yet</td></tr>`;
+  h+=`</tbody></table></div></div>`;
+
+  // 5. GEOGRAPHIC + FUNNEL
+  h+=`<div class="section-label">Geographic breakdown</div><div class="chart-grid wide">`;
+  h+=`<div class="panel"><div class="panel-title">Players & give-up rate by country</div><div class="panel-sub">High give-up rate = knowledge gap in that market (MCQ/Cywordle-type only)</div>`;
+  h+=`<div class="table-scroll"><table class="ctable" id="country-table"><thead><tr>
+    <th class="sortable" data-col="country" onclick="sortTable('country','country','str')">Country</th>
+    <th class="num sortable desc" data-col="players" onclick="sortTable('country','players','num')">Players</th>
+    <th class="num sortable" data-col="solves" onclick="sortTable('country','solves','num')">Attempts</th>
+    <th class="num sortable" data-col="giveups" onclick="sortTable('country','giveups','num')">Give-ups/Wrong</th>
+    <th class="num sortable" data-col="giveupp" onclick="sortTable('country','giveupp','num')">Give-up %</th>
+    <th style="width:80px">Volume</th>
+  </tr></thead><tbody>`;
+  cSorted.forEach(([country,data])=>{
+    const gp=pct(data.giveups,data.solves);
+    const gc=gp>40?'#e05c5c':gp>20?'#f5a623':'#3ecf8e';
+    const bw=Math.round(data.players/maxCP*80);
+    const flag=FLAGS[country]||'🌐';
+    h+=`<tr data-country="${country}" data-players="${data.players}" data-solves="${data.solves}" data-giveups="${data.giveups}" data-giveupp="${gp}">
+      <td><span class="flag">${flag}</span> ${country}</td>
+      <td class="num">${fmt(data.players)}</td>
+      <td class="num">${fmt(data.solves)}</td>
+      <td class="num">${fmt(data.giveups)}</td>
+      <td class="num" style="color:${gc};font-weight:600">${data.solves?gp+'%':'—'}</td>
+      <td class="bar-cell"><div class="mini-bar" style="width:${bw}px"></div></td>
+    </tr>`;
+  });
+  if(!cSorted.length)h+=`<tr><td colspan="6" class="empty" style="padding:20px">No data yet</td></tr>`;
+  h+=`</tbody></table></div></div>`;
+
+  h+=`<div class="panel"><div class="panel-title">Visitor funnel</div><div class="panel-sub">Anonymous visits vs. registrations</div>`;
+  h+=`<div class="pending-note">⏳ Pending: <code>visits</code>/<code>page_visits</code> tables have no anon SELECT policy today (insert-only), so this dashboard can't read them yet. Add a public-read policy on one of them to light this panel up.</div>`;
+  h+=`</div></div>`;
+
+  document.getElementById('main').innerHTML=h;
+
+  const ctx=document.getElementById('actChart');
+  if(ctx){const c=new Chart(ctx,{type:'bar',data:{labels:Object.keys(buckets),datasets:[{label:'Active players',data:Object.values(buckets),backgroundColor:'rgba(34,197,94,0.6)',borderColor:'#22c55e',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7a8099',font:{size:10},autoSkip:true,maxTicksLimit:14},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#7a8099',font:{size:11},stepSize:1},grid:{color:'rgba(255,255,255,0.07)'},beginAtZero:true}}}});charts.push(c);}
+}
+
+loadAll();
+</script>
+</body>
+</html>
