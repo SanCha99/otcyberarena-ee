@@ -71,12 +71,17 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); min-hei
    (so the frame-wrap height above never has to change / never reflows the
    page), slides in, self-dismisses or closes on tap. */
 .sign-in-overlay {
-  position:fixed; left:0; right:0; top:96px; z-index:260;
+  /* top:0 + pure translateY (not top:96px + a %-of-self-height translate)
+     -- percentage transforms are relative to the element's OWN height,
+     which varies with text length, so "-140%" undershot on a taller box
+     and let the CTA button peek in at the very top. translateY(-120vh) is
+     always enough regardless of content height. */
+  position:fixed; left:0; right:0; top:0; z-index:260;
   padding:0 clamp(10px,3vw,20px);
-  transform:translateY(-140%); transition:transform .3s ease;
+  transform:translateY(-120vh); transition:transform .3s ease;
   pointer-events:none;
 }
-.sign-in-overlay.show { transform:translateY(0); pointer-events:auto; }
+.sign-in-overlay.show { transform:translateY(96px); pointer-events:auto; }
 .sign-in-overlay-inner {
   position:relative; max-width:480px; margin:0 auto;
   border:1px solid rgba(255,68,68,0.5); border-radius:var(--radius);
