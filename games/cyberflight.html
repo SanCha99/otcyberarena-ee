@@ -39,10 +39,12 @@ h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:#6f8ba3;font-weig
 /* unified card so the screen reads as tidy panels, not scattered lines */
 .panel{width:min(420px,92vw);background:rgba(9,20,34,.5);border:1px solid rgba(41,230,255,.16);border-radius:12px;padding:14px 16px}
 /* mission briefing — color lives ONLY in the small leading glyph */
-.brief{text-align:left;display:flex;flex-direction:column;gap:9px}
+.brief{text-align:left;display:flex;flex-direction:column;gap:8px}
 .brief .row{display:flex;gap:11px;align-items:baseline;font-size:clamp(12px,3.2vw,14px);line-height:1.45;color:#aebfce}
 .brief .row .g{flex:0 0 16px;text-align:center;font-size:14px}
 .brief .row strong{color:#e7f3fb;font-weight:600}
+.briefline{font-size:clamp(13px,3.4vw,15px);line-height:1.5;color:#e7f3fb}
+.scoreline{font-size:clamp(11px,3vw,12.5px);line-height:1.5;color:#8fa6ba}
 .g-t{color:var(--red)} .g-d{color:var(--green)} .g-a{color:var(--amber)} .g-c{color:var(--cyan)}
 .ctl{display:flex;flex-direction:column;gap:10px;align-items:center}
 .seclabel{font-size:10px;letter-spacing:.28em;color:#5f7488;text-transform:uppercase}
@@ -86,12 +88,8 @@ h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:#6f8ba3;font-weig
   <div class="tagline">Pilot your packet through hostile cyberspace.</div>
 
   <div class="panel brief">
-    <div class="row"><span class="g g-t">☠</span><span><strong>Avoid threats</strong> — Stuxnet, TRITON, LockBit &amp; friends</span></div>
-    <div class="row"><span class="g g-d">⬡</span><span><strong>Collect defenses</strong> — Firewall, EDR, MFA, Backups…</span></div>
-    <div class="row"><span class="g g-a">◆</span><span><strong>5 defenses = 1 shield</strong> · you fly with 3 hulls</span></div>
-    <div class="row"><span class="g g-a">🛰</span><span><strong>Dock at a station</strong> to pause safely &amp; tap objects to learn</span></div>
-    <div class="row"><span class="g g-c">✦</span><span>Near-misses, power-ups &amp; bosses reward deep runs</span></div>
-    <div class="row"><span class="g g-c">🎮</span><span>Drag anywhere to fly · arrow keys / mouse</span></div>
+    <div class="briefline">Defend your cyberspace. Avoid threats, collect defenses, dock at a station to refill and learn.</div>
+    <div class="scoreline">⚡ Score for surviving, collecting defenses, evading threats &amp; identifying objects at a station — lose points when hit (more for bigger threats).</div>
   </div>
 
   <div class="panel ctl">
@@ -103,8 +101,9 @@ h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:#6f8ba3;font-weig
         <button class="spdbtn" data-s="1.35">🔥 AFTERBURN</button>
       </div>
     </div>
-    <button class="toggle" id="dailyBtn">📅 DAILY CHALLENGE: OFF</button>
   </div>
+
+  <button class="btn" id="startBtn">▶ LAUNCH</button>
 
   <div class="panel prog">
     <div class="codexbar">
@@ -114,8 +113,7 @@ h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:#6f8ba3;font-weig
     <div class="badgewrap" id="badgeWrap"></div>
   </div>
 
-  <button class="btn" id="startBtn">▶ LAUNCH</button>
-  <div class="tag" id="versionTag">v1.2.1 · OTCYBERARENA.COM · COMMUNITY EDITION</div>
+  <div class="tag" id="versionTag">v1.2.1 · OTCYBERARENA.COM</div>
 </div>
 
 <div id="infoCard" hidden>
@@ -289,13 +287,6 @@ document.querySelectorAll(".spdbtn").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll(".spdbtn").forEach(x=>x.classList.remove("sel"));
   b.classList.add("sel"); speedSel=parseFloat(b.dataset.s);
 }));
-const dailyBtn=document.getElementById("dailyBtn"),spdGroup=document.getElementById("spdGroup");
-dailyBtn.addEventListener("click",()=>{
-  dailyMode=!dailyMode;
-  dailyBtn.classList.toggle("on",dailyMode);
-  dailyBtn.textContent="📅 DAILY CHALLENGE: "+(dailyMode?"ON (seed "+todaySeed()+")":"OFF");
-  spdGroup.classList.toggle("locked",dailyMode); // speed locked to STANDARD for a fair shared board
-});
 
 function newGame(){
   return{
@@ -348,7 +339,10 @@ function dockedTap(p){
 function identify(e){
   const g=game;
   const isNew=!codex.has(e.label);
-  if(isNew){ codex.add(e.label); saveCodex(); g.newCodex++; checkBadges(); }
+  const idPts=isNew?25:5;
+  g.score+=idPts;
+  if(isNew){ codex.add(e.label); saveCodex(); g.newCodex++; checkBadges(); pop(e.x,e.y,"+"+idPts+" IDENTIFIED","#7ef0ff"); }
+  else pop(e.x,e.y,"+"+idPts,"#7ef0ff");
   showInfo(e,isNew);
   g.learned++;
   if(!g.tapHintDone){ g.tapHintDone=true; markSeen("hint_tap"); }
@@ -546,11 +540,13 @@ function update(dt){
         g.shake=.5;
         if(g.shields>0){
           g.shields--;s.inv=1.2;g.flash=.25;g.flashCol="41,230,255";
-          boom(e.x,e.y,"41,230,255",14);pop(s.x,s.y-30,"SHIELD ABSORBED "+e.label,"#29e6ff");
+          const shieldPen=e.boss?30:15; g.score=Math.max(0,g.score-shieldPen);
+          boom(e.x,e.y,"41,230,255",14);pop(s.x,s.y-30,"SHIELD ABSORBED "+e.label+" -"+shieldPen,"#29e6ff");
           sfx.shieldHit();
         }else{
           g.lives--;s.inv=1.6;g.flash=.35;g.flashCol="255,59,77";
-          boom(s.x,s.y,"255,59,77",26);pop(s.x,s.y-30,"✘ HIT BY "+e.label,"#ff3b4d");
+          const hitPen=e.boss?80:40; g.score=Math.max(0,g.score-hitPen);
+          boom(s.x,s.y,"255,59,77",26);pop(s.x,s.y-30,"✘ HIT BY "+e.label+" -"+hitPen,"#ff3b4d");
           sfx.hit();
           if(g.lives<=0){ endGame(); return; }
         }
@@ -576,7 +572,7 @@ function update(dt){
   if(g.sectorFlash>0)g.sectorFlash-=dt;
 }
 
-/* docked: safe harbor — no score, no damage, objects drift by for study */
+/* docked: safe harbor -- no damage; identifying an object still scores (small, no risk) */
 function updateDocked(dt){
   const g=game,s=g.ship,st=g.station;
   // ship holds position alongside the station
@@ -761,9 +757,9 @@ function drawDockUI(){
   ctx.textAlign="center";
   ctx.fillStyle="rgba(4,6,14,.55)";ctx.fillRect(0,H*.10,W,44);
   ctx.fillStyle="#ffb347";ctx.font="bold 14px Consolas,monospace";
-  ctx.fillText("⬢ DOCKED — CLOCK & SCORE FROZEN",W/2,H*.10+18);
+  ctx.fillText("⬢ DOCKED — SAFE HARBOR",W/2,H*.10+18);
   ctx.fillStyle="#9fc3d8";ctx.font="11px Consolas,monospace";
-  ctx.fillText("tap any passing object to identify it",W/2,H*.10+35);
+  ctx.fillText("tap any passing object to identify it (+score)",W/2,H*.10+35);
   // first-time tutorial: pulsing prompt until the pilot taps something
   if(!g.tapHintDone){
     const a=.5+.5*Math.sin(performance.now()/200);
