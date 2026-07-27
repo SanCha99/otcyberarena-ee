@@ -1252,18 +1252,18 @@ html { overflow-x: clip; }
 /* OTP input */
 .otp-row {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   justify-content: center;
 }
 
 .otp-digit {
-  width: 48px;
-  height: 56px;
+  width: 32px;
+  height: 46px;
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--text);
   font-family: var(--mono);
-  font-size: 22px;
+  font-size: 18px;
   text-align: center;
   border-radius: var(--radius);
   outline: none;
@@ -1272,6 +1272,13 @@ html { overflow-x: clip; }
 }
 
 .otp-digit:focus { border-color: var(--accent); }
+
+/* v2.1.1: 8 boxes at the base size (291px) still overflow the modal's
+   ~248px content width on <=400px phones -- shrink further there. */
+@media (max-width: 400px) {
+  .otp-row { gap: 4px; }
+  .otp-digit { width: 26px; height: 42px; font-size: 16px; }
+}
 
 /* Progress steps */
 .reg-steps {
@@ -1666,7 +1673,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.0 · 2026-07-26 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.1 · 2026-07-26 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1882,7 +1889,7 @@ footer {
       <div id="regStepEmail">
         <div class="aria-modal-msg">
           <span class="aria-prefix">ARIA //</span> Enter your email to begin.
-          We'll send a 6-digit verification code — no password required.
+          We'll send an 8-digit verification code — no password required.
         </div>
         <div class="form-group">
           <label class="form-label" for="inputEmail">Email Address</label>
@@ -1896,7 +1903,7 @@ footer {
       <!-- STEP 1: OTP -->
       <div id="regStepOTP" class="hidden">
         <div class="aria-modal-msg">
-          <span class="aria-prefix">ARIA //</span> Enter the 6-digit code sent to <strong id="otpEmailDisplay"></strong>.
+          <span class="aria-prefix">ARIA //</span> Enter the 8-digit code sent to <strong id="otpEmailDisplay"></strong>.
           Code expires in 10 minutes.
         </div>
         <div class="otp-row" role="group" aria-label="One-time password input">
@@ -2111,7 +2118,7 @@ footer {
     <a class="footer-link mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.1.0</span>
+    <span class="version-stamp" id="versionStamp">EC v2.1.1</span>
   </div>
 </footer>
 
@@ -2124,7 +2131,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.0';
+const EC_VERSION = '2.1.1';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3496,7 +3503,7 @@ async function sendOTP() {
 async function verifyOTP() {
   const code = ['otp0','otp1','otp2','otp3','otp4','otp5','otp6','otp7'].map(id=>document.getElementById(id)?.value||'').join('');
   if (code.length !== 8 || !/^\d{8}$/.test(code)) {
-    showError('otpError', 'ARIA // Enter all 6 digits.');
+    showError('otpError', 'ARIA // Enter all 8 digits.');
     return;
   }
   regData.otp = code;
