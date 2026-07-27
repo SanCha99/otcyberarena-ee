@@ -1673,7 +1673,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.1 · 2026-07-26 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.2 · 2026-07-27 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2118,7 +2118,7 @@ footer {
     <a class="footer-link mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.1.1</span>
+    <span class="version-stamp" id="versionStamp">EC v2.1.2</span>
   </div>
 </footer>
 
@@ -2131,7 +2131,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.1';
+const EC_VERSION = '2.1.2';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2364,7 +2364,10 @@ const RANKS = [
 
 const STREAK_BONUS = { 3: 15, 7: 50 };
 const CREDITS_MCQ  = { first:40, second:32, hint:20, wrong:-8 };
-const CREDITS_WORDLE = { solve:40, fail:-8 };
+// v2.1.2: attempt-based schedule (Sandip: reward speed/mastery like real
+// knowledge games, not a flat 40 regardless of how many guesses it took).
+// Index 0 = solved on guess 1 ... index 5 = solved on guess 6.
+const CREDITS_WORDLE = { byAttempt:[100,50,30,20,15,10], fail:-8 };
 
 function getRank(credits) {
   return RANKS.find(r => credits >= r.min && credits <= r.max) || RANKS[0];
@@ -3029,7 +3032,7 @@ function submitWordleGuess() {
 
   if (solved) {
     wordleState.solved = true;
-    const earned = CREDITS_WORDLE.solve;
+    const earned = CREDITS_WORDLE.byAttempt[Math.min(rowIdx, CREDITS_WORDLE.byAttempt.length-1)];
     setWordleMessage(`ARIA // Correct — ${target}. Threat neutralised. +${earned} CR — ${wordleState.clue}`, 'var(--green)');
     scoreFlash(earned, true);
     applyCredits(earned);
@@ -3466,7 +3469,11 @@ async function claimPendingCyberflightScore() {
   localStorage.removeItem(CF_PENDING_KEY); // claim once regardless of cap outcome below
   const runsToday = await cyberflightRunsToday(currentPlayer.id);
   if (runsToday >= CF_DAILY_CAP) return;
-  await applyCredits(pending.score);
+  // v2.1.2: CyberFlight (and other score-based bonus games) no longer feed
+  // the main knowledge leaderboard's credits -- Sandip: serious MCQ/Cywordle
+  // players would feel cheated by arcade-skill scores (hundreds to 13,000+)
+  // dwarfing knowledge-game credits (8-100). Still logged to solves for
+  // stats/admin dashboard and the game's own client-side personal best.
   await recordSolve('cyberflight', 'cyberflight_' + Date.now(), null, pending.score);
 }
 

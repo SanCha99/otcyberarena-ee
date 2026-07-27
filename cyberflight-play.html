@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>CyberFlight — OT CyberArena</title>
-<meta name="description" content="Play CYBERFLIGHT — dodge live OT/ICS threats, collect real defenses, and bank credits on the OT CyberArena leaderboard.">
+<meta name="description" content="Play CYBERFLIGHT — dodge live OT/ICS threats and collect real defenses in an arcade run tracked separately from the OT CyberArena knowledge leaderboard.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -30,79 +30,96 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); min-hei
 .logo-text .cyber { color:var(--accent); }
 .back-link { font-family:var(--mono); font-size:11px; color:var(--muted); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; }
 .back-link:hover { color:var(--accent); }
-.wrap { max-width:900px; margin:0 auto; padding:clamp(16px,3vw,32px) clamp(12px,3vw,28px) 60px; }
-.page-title { font-family:var(--display); font-weight:800; font-size:clamp(22px,3.5vw,32px); text-transform:uppercase; margin-bottom:6px; }
-.page-sub { font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:18px; line-height:1.6; }
-
-.status-bar {
+/* v2.1.2: full rework per Sandip's playtest -- the old layout (big title +
+   description paragraph + full status box, all above a 9:16-capped frame)
+   pushed the actual game below the fold on phones, so how much of the
+   canvas -- including the ship and its own on-canvas score/HUD -- was
+   visible depended entirely on scroll position. New approach: a single
+   fixed-height compact header, then the game frame fills exactly the rest
+   of the viewport (calc(100dvh - topbar - header)), so the whole game is
+   always on-screen with zero scrolling needed. Everything non-essential
+   (back button, footer) lives below the frame, reachable by a deliberate
+   scroll -- that's fine, it's not needed while actually playing. */
+.cf-header {
+  height:44px; padding:0 clamp(12px,3vw,28px);
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.cf-title {
+  font-family:var(--display); font-weight:800; font-size:17px;
+  text-transform:uppercase; letter-spacing:.02em; white-space:nowrap;
+}
+.cf-status-pill {
+  font-family:var(--mono); font-size:10.5px; color:var(--muted);
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-  padding:12px 16px; margin-bottom:16px; font-family:var(--mono); font-size:11px;
+  padding:5px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  max-width:62vw;
 }
-.status-bar .status-text {
-  color:var(--muted); line-height:1.5;
-  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
-}
-.status-bar .status-text strong { color:var(--text); }
-.status-bar a.status-cta {
-  color:var(--bg); background:var(--accent); text-decoration:none; padding:8px 14px;
-  border-radius:var(--radius); font-weight:700; letter-spacing:.04em; white-space:nowrap;
-}
+.cf-status-pill a { color:var(--accent); text-decoration:none; font-weight:700; }
+.cf-status-pill a:hover { text-decoration:underline; }
+.cf-status-pill.signed-in { color:var(--accent); border-color:var(--accent-dim); }
 
-/* Escalated styling for "not signed in" — this is the moment that decides
-   whether the run even counts, so it needs to stand out far more than the
-   calm "flying as X" status line does. Bigger headline, its own line,
-   full-width glowing CTA button (not a small inline pill). */
-.status-bar.warn {
-  padding:16px;
-  border:1px solid rgba(255,68,68,0.5);
-  background:linear-gradient(180deg, rgba(255,68,68,0.12), var(--surface));
-  box-shadow:0 0 0 1px rgba(255,68,68,0.15), 0 0 24px rgba(255,68,68,0.12);
+.frame-wrap {
+  position:relative; width:100%;
+  height:calc(100dvh - 52px - 44px - env(safe-area-inset-bottom));
+  min-height:280px;
+  background:#000; overflow:hidden;
 }
-.status-bar.warn .status-text { display:block; }
-.status-bar.warn .warn-headline {
-  font-family:var(--display); font-weight:800; font-size:17px; letter-spacing:.02em;
-  color:var(--red); text-transform:uppercase; margin-bottom:5px;
+.frame-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+/* "Sign in to save it" escalation -- shown only once a run just ended while
+   signed out. Overlays the top of the game frame instead of pushing layout
+   (so the frame-wrap height above never has to change / never reflows the
+   page), slides in, self-dismisses or closes on tap. */
+.sign-in-overlay {
+  position:fixed; left:0; right:0; top:96px; z-index:260;
+  padding:0 clamp(10px,3vw,20px);
+  transform:translateY(-140%); transition:transform .3s ease;
+  pointer-events:none;
 }
-.status-bar.warn .warn-sub { color:var(--text); opacity:.85; font-size:11.5px; margin-bottom:12px; }
-.status-bar.warn .status-cta {
-  display:block; text-align:center; font-size:13px; padding:13px 22px;
+.sign-in-overlay.show { transform:translateY(0); pointer-events:auto; }
+.sign-in-overlay-inner {
+  position:relative; max-width:480px; margin:0 auto;
+  border:1px solid rgba(255,68,68,0.5); border-radius:var(--radius);
+  background:linear-gradient(180deg, rgba(255,68,68,0.16), var(--surface) 75%);
+  box-shadow:0 4px 24px rgba(0,0,0,0.5), 0 0 24px rgba(255,68,68,0.15);
+  padding:14px 38px 14px 14px;
+}
+.sign-in-overlay .warn-headline {
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.02em;
+  color:var(--red); text-transform:uppercase; margin-bottom:4px;
+}
+.sign-in-overlay .warn-sub { color:var(--text); opacity:.85; font-size:11px; margin-bottom:10px; }
+.sign-in-overlay .status-cta {
+  display:block; text-align:center; font-size:12.5px; padding:11px 18px;
+  color:var(--bg); background:var(--accent); text-decoration:none;
+  border-radius:var(--radius); font-weight:700; letter-spacing:.04em;
   animation: cfPulse 1.8s ease-in-out infinite;
 }
+.overlay-close {
+  position:absolute; top:8px; right:8px; width:26px; height:26px;
+  background:transparent; border:1px solid var(--border); color:var(--muted);
+  border-radius:var(--radius); cursor:pointer; font-size:14px; line-height:1;
+}
+.overlay-close:hover { border-color:var(--accent); color:var(--accent); }
 @keyframes cfPulse {
   0%, 100% { box-shadow:0 0 10px rgba(34,197,94,0.35); }
   50% { box-shadow:0 0 22px rgba(34,197,94,0.7); }
 }
 
-.frame-wrap {
-  position:relative; width:100%; aspect-ratio:9/16; max-height:80vh;
-  background:#000; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
-}
-@media (min-width:700px) { .frame-wrap { aspect-ratio:16/10; max-height:720px; } }
-.frame-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+.wrap-below { max-width:900px; margin:0 auto; padding:14px clamp(12px,3vw,28px) 8px; }
 
 /* Separate, real "Back to Arena" button directly below the game frame —
    sits right under the game's own LAUNCH / RECONNECT buttons so it's the
    natural next tap after a run, not just a small link up in the topbar
    (Sandip: wanted it as its own button there, not only the header link). */
 .back-arena-btn {
-  display:block; width:100%; margin-top:14px;
+  display:block; width:100%;
   background:transparent; border:1px solid var(--border); color:var(--text);
   font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
   padding:13px; border-radius:var(--radius); cursor:pointer;
   transition:border-color .15s, color .15s, background .15s;
 }
 .back-arena-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
-
-.live-score-badge {
-  position:fixed; top:64px; right:clamp(10px,3vw,24px); z-index:250;
-  background:rgba(5,10,5,0.92); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-  border:1px solid var(--accent); border-radius:var(--radius);
-  padding:7px 12px; font-family:var(--mono); font-size:12px; font-weight:700;
-  color:var(--accent); letter-spacing:.04em; display:none;
-  box-shadow:0 0 16px rgba(34,197,94,0.18);
-}
-.live-score-badge.show { display:block; }
-.live-score-badge .lbl { color:var(--muted); font-weight:400; margin-right:6px; }
 
 .toast {
   position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
@@ -118,8 +135,6 @@ footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(-
 </head>
 <body>
 
-<div class="live-score-badge" id="liveScoreBadge" aria-live="polite"><span class="lbl">SCORE</span><span id="liveScoreVal">0</span></div>
-
 <header class="topbar" role="banner">
   <a href="index.html" class="logo" aria-label="OT CyberArena Home">
     <div class="logo-mark" aria-hidden="true">OT</div>
@@ -128,19 +143,25 @@ footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(-
   <a class="back-link" href="index.html">← Back to Arena</a>
 </header>
 
-<div class="wrap">
-  <h1 class="page-title">CyberFlight</h1>
-  <p class="page-sub">ARIA // Arcade defense run — dodge named OT/ICS threats, collect real defenses, and bank your final score
-    as leaderboard credits. Up to 3 credited runs per day, any speed or mode.</p>
+<div class="cf-header">
+  <h1 class="cf-title">CyberFlight</h1>
+  <div class="cf-status-pill" id="statusPill">Checking session…</div>
+</div>
 
-  <div class="status-bar" id="statusBar">
-    <div class="status-text" id="statusText">ARIA // Checking your session...</div>
+<div class="sign-in-overlay" id="signInOverlay">
+  <div class="sign-in-overlay-inner">
+    <button class="overlay-close" id="overlayClose" aria-label="Dismiss">×</button>
+    <div class="warn-headline">🔒 Sign In To Save Your Score</div>
+    <div class="warn-sub" id="overlaySub">ARIA // Run complete — sign in to keep this in your CyberFlight history.</div>
+    <a class="status-cta" href="index.html#register">Sign In / Join Free →</a>
   </div>
+</div>
 
-  <div class="frame-wrap">
-    <iframe id="gameFrame" src="games/cyberflight.html" title="CyberFlight" allow="autoplay"></iframe>
-  </div>
+<div class="frame-wrap">
+  <iframe id="gameFrame" src="games/cyberflight.html" title="CyberFlight" allow="autoplay"></iframe>
+</div>
 
+<div class="wrap-below">
   <button class="back-arena-btn" onclick="location.href='index.html'">← Back to Arena</button>
 </div>
 
@@ -174,25 +195,36 @@ function showToast(msg, ms) {
   showToast._t = setTimeout(() => t.classList.remove('show'), ms || 4200);
 }
 
+// Compact, single-line status -- lives in the fixed-height header so the
+// frame below it never has to reflow. The old design put a full warning
+// box here before you'd even pressed play; now that only shows as the
+// sign-in overlay, and only once a run actually finishes signed out.
 function renderStatus() {
-  const bar = document.getElementById('statusBar');
-  const txt = document.getElementById('statusText');
+  const pill = document.getElementById('statusPill');
+  pill.classList.remove('signed-in');
   if (IS_LOCAL) {
-    bar.classList.remove('warn');
-    txt.innerHTML = 'ARIA // Local file preview — scores will not save. Open via the live site to save runs.';
+    pill.textContent = 'Local preview — runs won\'t save';
     return;
   }
   if (currentPlayer) {
-    bar.classList.remove('warn');
-    txt.innerHTML = `ARIA // Flying as <strong>${currentPlayer.callsign}</strong> — final score of each run banks straight to your credits (up to ${DAILY_CREDIT_CAP}/day).`;
+    pill.classList.add('signed-in');
+    pill.textContent = `Flying as ${currentPlayer.callsign}`;
   } else {
-    bar.classList.add('warn');
-    txt.innerHTML = `
-      <div class="warn-headline">🔒 Sign In To Save Your Score</div>
-      <div class="warn-sub">ARIA // You can play right now — but this run only counts on the leaderboard once you're signed in.</div>
-      <a class="status-cta" href="index.html#register">Sign In / Join Free →</a>`;
+    pill.innerHTML = '<a href="index.html#register">Sign in to save runs →</a>';
   }
 }
+
+function showSignInOverlay(score) {
+  const overlay = document.getElementById('signInOverlay');
+  const sub = document.getElementById('overlaySub');
+  sub.textContent = `ARIA // Run complete — score ${score.toLocaleString()}. Sign in to keep this in your CyberFlight history.`;
+  overlay.classList.add('show');
+  clearTimeout(showSignInOverlay._t);
+  showSignInOverlay._t = setTimeout(() => overlay.classList.remove('show'), 9000);
+}
+document.getElementById('overlayClose')?.addEventListener('click', () => {
+  document.getElementById('signInOverlay').classList.remove('show');
+});
 
 async function cyberflightRunsToday(playerId) {
   if (IS_LOCAL || !sb) return 0;
@@ -206,24 +238,22 @@ async function cyberflightRunsToday(playerId) {
   return count || 0;
 }
 
-// Mirrors index.html's applyCredits()/recordSolve() — kept local to this
-// self-contained page rather than shared, per the site's single-file
-// page convention (no shared JS include exists between pages).
-async function creditRun(score) {
+// v2.1.2: CyberFlight is an arcade skill game, not a knowledge check --
+// Sandip's call: crediting its raw score (hundreds to 13,000+) straight to
+// the same leaderboard as MCQ/Cywordle (8-100 credits) would let a good
+// mobile-game player outrank serious learners without knowing any OT
+// security. Runs are still logged (stats, admin dashboard, daily-run cap)
+// but no longer touch the credits table or currentPlayer.credits. Easy to
+// combine back into one leaderboard later if wanted; hard to undo the
+// other direction once players have gotten used to it.
+async function logRun(score) {
   if (!currentPlayer || !currentPlayer.id) return;
   const runsToday = await cyberflightRunsToday(currentPlayer.id);
   if (runsToday >= DAILY_CREDIT_CAP) {
-    showToast(`ARIA // Nice run — daily CyberFlight credit cap (${DAILY_CREDIT_CAP}/day) already reached. Score not added this time.`);
+    showToast(`ARIA // Nice run — daily CyberFlight tracking cap (${DAILY_CREDIT_CAP}/day) already reached. Run not logged this time.`);
     return;
   }
-  const newAmount = Math.max(0, (currentPlayer.credits || 0) + score);
-  currentPlayer.credits = newAmount;
-  savePlayer(currentPlayer);
   if (!IS_LOCAL && !currentPlayer.id.startsWith('local_')) {
-    await sb.from('credits').upsert(
-      { player_id: currentPlayer.id, amount: newAmount, reason: 'game_score' },
-      { onConflict: 'player_id' }
-    );
     await sb.from('solves').insert({
       player_id:         currentPlayer.id,
       challenge_id:      'cyberflight_' + Date.now(),
@@ -233,31 +263,19 @@ async function creditRun(score) {
       game_type:         'cyberflight'
     });
   }
-  showToast(`ARIA // +${score.toLocaleString()} credits banked from CyberFlight. New balance: ${newAmount.toLocaleString()}.`);
+  showToast(`ARIA // Run logged — score ${score.toLocaleString()}. CyberFlight scores are tracked separately and don't affect your main leaderboard credits.`);
 }
 
 window.addEventListener('message', (e) => {
   const data = e.data;
-  if (data && data.type === 'cyberflight_live_score' && data.game === 'CYBERFLIGHT') {
-    const badge = document.getElementById('liveScoreBadge');
-    const val = document.getElementById('liveScoreVal');
-    if (badge && val) {
-      val.textContent = Math.max(0, Math.floor(Number(data.score) || 0)).toLocaleString();
-      badge.classList.add('show');
-    }
-    return;
-  }
   if (!data || data.type !== 'cyberflight_score' || data.game !== 'CYBERFLIGHT') return;
   const score = Math.max(0, Math.floor(Number(data.score) || 0));
   if (!currentPlayer) {
     try { localStorage.setItem(PENDING_KEY, JSON.stringify({ score, ts: Date.now() })); } catch {}
-    showToast(`ARIA // Run complete — score ${score.toLocaleString()}. Sign in to bank it to your leaderboard credits.`, 6000);
-    // Pull the sign-in callout into view — the run just ended inside the
-    // iframe below it, and this is the highest-value moment to catch it.
-    document.getElementById('statusBar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showSignInOverlay(score);
     return;
   }
-  creditRun(score);
+  logRun(score);
 });
 
 renderStatus();

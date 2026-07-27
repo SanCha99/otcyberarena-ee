@@ -850,33 +850,12 @@ function drawToasts(){
   }
 }
 
-/* website integration -- live score while playing, not just at game-over.
-   Sandip's playtest: no visible score during play (canvas HUD scrolls
-   under the sticky topbar on phones once the frame is tall enough to
-   need scrolling). Broadcast periodically so the wrapper page can show
-   an always-on-screen readout outside the iframe. Throttled to ~300ms,
-   only while a run is actually in progress. */
-let lastLiveScoreSend=0;
-function broadcastLiveScore(){
-  if(!game||game.over)return;
-  const now=performance.now();
-  if(now-lastLiveScoreSend<300)return;
-  lastLiveScoreSend=now;
-  try{
-    if(window.parent&&window.parent!==window){
-      window.parent.postMessage({type:"cyberflight_live_score",game:"CYBERFLIGHT",
-        score:Math.floor(game.score),docked:!!game.docked,paused:!!game.paused},"*");
-    }
-  }catch(e){}
-}
-
 /* ---------- loop ---------- */
 let last=0;
 function loop(ts){
   const dt=Math.min(.05,(ts-last)/1000)||0;last=ts;
   if(game)update(dt);
   draw();
-  broadcastLiveScore();
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
