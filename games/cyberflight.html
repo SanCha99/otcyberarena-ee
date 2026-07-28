@@ -9,6 +9,7 @@
 :root{
   --cyan:#29e6ff; --green:#37ff8b; --red:#ff3b4d; --amber:#ffb347; --purple:#b366ff;
   --bg:#04060e; --mono:'Consolas','Courier New',monospace;
+  --text:#e7f3fb; --dim:#8fa6ba; --faint:#5f7488;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);overflow:hidden;font-family:var(--mono);touch-action:none;overscroll-behavior:none}
@@ -25,8 +26,8 @@ canvas{display:block;background:var(--bg)}
 .screen.hidden{display:none}
 h1{font-size:clamp(24px,7.5vw,44px);letter-spacing:.16em;color:var(--cyan);margin-top:2px;font-weight:700;
   text-shadow:0 0 18px rgba(41,230,255,.7),0 0 50px rgba(41,230,255,.25)}
-h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:#6f8ba3;font-weight:normal;margin-top:-2px}
-.tagline{font-size:clamp(12px,3.2vw,14px);color:#8fa6ba;max-width:360px;line-height:1.5;margin-top:2px}
+h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:var(--faint);font-weight:normal;margin-top:-2px}
+.tagline{font-size:clamp(12px,3.2vw,14px);color:var(--dim);max-width:360px;line-height:1.5;margin-top:2px}
 .btn{margin-top:4px;background:linear-gradient(180deg,#123147,#0b1f30);border:1px solid var(--cyan);color:var(--cyan);
   font-family:var(--mono);font-size:clamp(15px,4vw,19px);letter-spacing:.2em;padding:15px 46px;cursor:pointer;border-radius:6px;
   animation:pulsebtn 1.6s ease-in-out infinite}
@@ -35,35 +36,31 @@ h2{font-size:clamp(10px,2.8vw,13px);letter-spacing:.34em;color:#6f8ba3;font-weig
 #finalStats{font-size:clamp(13px,3.6vw,17px);line-height:2}
 #finalStats .big{font-size:clamp(26px,8vw,44px);color:var(--green);text-shadow:0 0 16px rgba(55,255,139,.7)}
 #finalStats .rank{color:var(--amber);letter-spacing:.15em}
-.tag{font-size:clamp(10px,2.6vw,12px);color:#4d7691;letter-spacing:.12em;margin-top:6px}
+.tag{font-size:clamp(10px,2.6vw,12px);color:var(--faint);letter-spacing:.12em;margin-top:6px}
 /* unified card so the screen reads as tidy panels, not scattered lines */
 .panel{width:min(420px,92vw);background:rgba(9,20,34,.5);border:1px solid rgba(41,230,255,.16);border-radius:12px;padding:14px 16px}
-/* mission briefing — color lives ONLY in the small leading glyph */
+/* mission briefing */
 .brief{text-align:left;display:flex;flex-direction:column;gap:8px}
-.brief .row{display:flex;gap:11px;align-items:baseline;font-size:clamp(12px,3.2vw,14px);line-height:1.45;color:#aebfce}
-.brief .row .g{flex:0 0 16px;text-align:center;font-size:14px}
-.brief .row strong{color:#e7f3fb;font-weight:600}
-.briefline{font-size:clamp(13px,3.4vw,15px);line-height:1.5;color:#e7f3fb}
-.scoreline{font-size:clamp(11px,3vw,12.5px);line-height:1.5;color:#8fa6ba}
-.g-t{color:var(--red)} .g-d{color:var(--green)} .g-a{color:var(--amber)} .g-c{color:var(--cyan)}
+.briefline{font-size:clamp(13px,3.4vw,15px);line-height:1.5;color:var(--text)}
+.scoreline{font-size:clamp(11px,3vw,12.5px);line-height:1.5;color:var(--dim)}
 .ctl{display:flex;flex-direction:column;gap:10px;align-items:center}
-.seclabel{font-size:10px;letter-spacing:.28em;color:#5f7488;text-transform:uppercase}
-.spdrow{display:flex;gap:8px;justify-content:center;margin-top:6px}
-.spdbtn{background:#0b1c2b;border:1px solid #16324a;color:#8fa6ba;font-family:var(--mono);
-  font-size:clamp(11px,3vw,13px);letter-spacing:.06em;padding:9px 14px;cursor:pointer;border-radius:6px}
+.seclabel{font-size:10px;letter-spacing:.28em;color:var(--faint);text-transform:uppercase}
+.spdrow{display:flex;gap:6px;justify-content:center;margin-top:6px}
+.spdbtn{flex:1;background:#0b1c2b;border:1px solid #16324a;color:var(--dim);font-family:var(--mono);
+  font-size:clamp(10.5px,2.8vw,12px);letter-spacing:.03em;padding:6px 4px;cursor:pointer;border-radius:6px}
 .spdbtn.sel{border-color:var(--cyan);color:var(--cyan);background:rgba(41,230,255,.08);box-shadow:0 0 12px rgba(41,230,255,.25)}
 .spdgroup.locked{opacity:.4;pointer-events:none}
-.toggle{background:#0b1c2b;border:1px solid #16324a;color:#8fa6ba;font-family:var(--mono);
-  font-size:clamp(11px,3vw,13px);letter-spacing:.08em;padding:10px 16px;cursor:pointer;border-radius:6px;width:100%}
-.toggle.on{border-color:var(--cyan);color:var(--cyan);background:rgba(41,230,255,.08)}
 .prog{display:flex;flex-direction:column;gap:9px}
-.codexbar{font-size:11px;letter-spacing:.06em;color:#8fa6ba;text-align:left}
+.codexbar{font-size:11px;letter-spacing:.06em;color:var(--dim);text-align:left}
 .codexbar .track{height:6px;background:rgba(41,230,255,.12);border-radius:3px;margin-top:6px;overflow:hidden}
 .codexbar .fill{height:100%;background:linear-gradient(90deg,var(--cyan),#7ef0ff);box-shadow:0 0 10px rgba(41,230,255,.5)}
-.badgewrap{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start}
-.badgewrap .b{font-size:11px;letter-spacing:.03em;border:1px solid #16324a;border-radius:20px;
-  padding:5px 11px;color:#5f7488;background:rgba(11,28,43,.5)}
-.badgewrap .b.got{border-color:rgba(255,179,71,.6);color:var(--amber);background:rgba(255,179,71,.06)}
+.badgewrap{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;position:relative}
+.badge{width:34px;height:34px;border-radius:50%;border:1px solid #16324a;background:rgba(11,28,43,.6);
+  display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;color:var(--faint)}
+.badge.got{border-color:rgba(255,179,71,.6);color:var(--amber);background:rgba(255,179,71,.1)}
+.badge-tip{position:absolute;bottom:40px;transform:translateX(-50%);background:#0b1826;border:1px solid var(--amber);
+  color:var(--amber);font-size:10.5px;padding:4px 8px;border-radius:4px;white-space:nowrap;display:none;letter-spacing:.03em}
+.badge-tip.show{display:block}
 #infoCard{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:30;width:min(460px,90vw);
   background:linear-gradient(180deg,#0b1826,#070f18);border:1px solid var(--green);border-radius:6px;
   padding:20px 22px;color:#cfe8f5;box-shadow:0 0 40px rgba(55,255,139,.3);font-size:clamp(13px,3.5vw,15px);line-height:1.6}
@@ -758,14 +755,14 @@ function drawDockUI(){
   ctx.fillStyle="rgba(4,6,14,.55)";ctx.fillRect(0,H*.10,W,44);
   ctx.fillStyle="#ffb347";ctx.font="bold 14px Consolas,monospace";
   ctx.fillText("⬢ DOCKED — SAFE HARBOR",W/2,H*.10+18);
-  ctx.fillStyle="#9fc3d8";ctx.font="11px Consolas,monospace";
+  ctx.fillStyle="#8fa6ba";ctx.font="11px Consolas,monospace";
   ctx.fillText("tap any passing object to identify it (+score)",W/2,H*.10+35);
   // first-time tutorial: pulsing prompt until the pilot taps something
   if(!g.tapHintDone){
     const a=.5+.5*Math.sin(performance.now()/200);
     ctx.fillStyle=`rgba(41,230,255,${a})`;ctx.font="bold 15px Consolas,monospace";
     ctx.fillText("👆 TAP A FLOATING OBJECT TO LEARN WHAT IT IS",W/2,H*.10+68);
-    ctx.font="11px Consolas,monospace";ctx.fillStyle="#9fc3d8";
+    ctx.font="11px Consolas,monospace";ctx.fillStyle="#8fa6ba";
     ctx.fillText("every threat & defense has a real-world story",W/2,H*.10+86);
   }
   // undock button
@@ -860,13 +857,32 @@ requestAnimationFrame(loop);
 function renderBadges(wrapEl){
   if(!wrapEl)return;
   wrapEl.innerHTML="";
+  const tip=document.createElement("span");
+  tip.className="badge-tip";
   for(const b of BADGES){
-    const d=document.createElement("div");
-    d.className="b"+(unlocked.has(b.id)?" got":"");
-    d.textContent=(unlocked.has(b.id)?b.t:"🔒 "+b.d);
-    wrapEl.appendChild(d);
+    const got=unlocked.has(b.id);
+    const icon=got?b.t.split(" ")[0]:"🔒";
+    const name=got?b.t.split(" ").slice(1).join(" "):b.d;
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.className="badge"+(got?" got":"");
+    btn.textContent=icon;
+    btn.addEventListener("click",(ev)=>{
+      ev.stopPropagation();
+      const already=tip.classList.contains("show")&&tip.dataset.for===b.id;
+      if(already){ tip.classList.remove("show"); return; }
+      tip.textContent=name;
+      tip.dataset.for=b.id;
+      tip.style.left=(btn.offsetLeft+btn.offsetWidth/2)+"px";
+      tip.classList.add("show");
+    });
+    wrapEl.appendChild(btn);
   }
+  wrapEl.appendChild(tip);
 }
+document.addEventListener("click",()=>{
+  document.querySelectorAll(".badge-tip").forEach(t=>t.classList.remove("show"));
+});
 function refreshStartUI(){
   document.getElementById("codexLabel").textContent="CODEX "+codex.size+" / "+CODEX_TOTAL+" IDENTIFIED";
   document.getElementById("codexFill").style.width=Math.round(codex.size/CODEX_TOTAL*100)+"%";
@@ -884,7 +900,7 @@ function endGame(){
     `<div class="big">${sc.toLocaleString()}</div>`+
     (nb?`<div style="color:var(--green)">★ NEW BEST ★</div>`:`<div style="color:#7fa3bd">BEST ${best.toLocaleString()}</div>`)+
     `<div class="rank">${rank}</div>`+
-    `<div style="margin-top:8px;color:#9fc3d8">⬡ ${g.collected} defenses · ☠ ${g.dodged} evaded · ◇ ${g.nearMiss} near-miss · 📖 ${g.learned} identified${g.newCodex?` (${g.newCodex} new)`:""}<br>` +
+    `<div style="margin-top:8px;color:#8fa6ba">⬡ ${g.collected} defenses · ☠ ${g.dodged} evaded · ◇ ${g.nearMiss} near-miss · 📖 ${g.learned} identified${g.newCodex?` (${g.newCodex} new)`:""}<br>` +
     `SECTOR ${g.sector} · ${sectorName(g.sector)} · ${Math.floor(g.t)}s in cyberspace${dailyMode?" · 📅 DAILY "+todaySeed():""} · v${VERSION}</div>`;
   document.getElementById("codexLabel2").textContent="CODEX "+codex.size+" / "+CODEX_TOTAL;
   document.getElementById("codexFill2").style.width=Math.round(codex.size/CODEX_TOTAL*100)+"%";

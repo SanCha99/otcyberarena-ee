@@ -28,39 +28,27 @@ body { background:var(--bg); color:var(--text); font-family:var(--body); min-hei
   display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--accent); }
 .logo-text { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:0.04em; color:var(--text); }
 .logo-text .cyber { color:var(--accent); }
-.back-link { font-family:var(--mono); font-size:11px; color:var(--muted); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; }
-.back-link:hover { color:var(--accent); }
+.back-link { font-family:var(--mono); font-size:11px; color:var(--accent); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; font-weight:700; }
 /* v2.1.2: full rework per Sandip's playtest -- the old layout (big title +
    description paragraph + full status box, all above a 9:16-capped frame)
    pushed the actual game below the fold on phones, so how much of the
    canvas -- including the ship and its own on-canvas score/HUD -- was
-   visible depended entirely on scroll position. New approach: a single
-   fixed-height compact header, then the game frame fills exactly the rest
-   of the viewport (calc(100dvh - topbar - header)), so the whole game is
-   always on-screen with zero scrolling needed. Everything non-essential
+   visible depended entirely on scroll position. Fixed by making the game
+   frame fill exactly the rest of the viewport below the topbar
+   (calc(100dvh - topbar)), so the whole game is always on-screen with
+   zero scrolling needed.
+   v2.1.4: removed the compact "CyberFlight" + sign-in-status header row
+   that used to sit between the topbar and the frame -- the game's own
+   start screen already shows a large CYBERFLIGHT title, so the wrapper's
+   copy was purely redundant. Sign-in status pre-play is no longer shown
+   at all (it's still surfaced via the post-run sign-in overlay below);
+   the frame now starts right under the topbar. Everything non-essential
    (back button, footer) lives below the frame, reachable by a deliberate
    scroll -- that's fine, it's not needed while actually playing. */
-.cf-header {
-  height:44px; padding:0 clamp(12px,3vw,28px);
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-}
-.cf-title {
-  font-family:var(--display); font-weight:800; font-size:17px;
-  text-transform:uppercase; letter-spacing:.02em; white-space:nowrap;
-}
-.cf-status-pill {
-  font-family:var(--mono); font-size:10.5px; color:var(--muted);
-  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
-  padding:5px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  max-width:62vw;
-}
-.cf-status-pill a { color:var(--accent); text-decoration:none; font-weight:700; }
-.cf-status-pill a:hover { text-decoration:underline; }
-.cf-status-pill.signed-in { color:var(--accent); border-color:var(--accent-dim); }
 
 .frame-wrap {
   position:relative; width:100%;
-  height:calc(100dvh - 52px - 44px - env(safe-area-inset-bottom));
+  height:calc(100dvh - 52px - env(safe-area-inset-bottom));
   min-height:280px;
   background:#000; overflow:hidden;
 }
@@ -148,11 +136,6 @@ footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(-
   <a class="back-link" href="index.html">← Back to Arena</a>
 </header>
 
-<div class="cf-header">
-  <h1 class="cf-title">CyberFlight</h1>
-  <div class="cf-status-pill" id="statusPill">Checking session…</div>
-</div>
-
 <div class="sign-in-overlay" id="signInOverlay">
   <div class="sign-in-overlay-inner">
     <button class="overlay-close" id="overlayClose" aria-label="Dismiss">×</button>
@@ -198,25 +181,6 @@ function showToast(msg, ms) {
   t.classList.add('show');
   clearTimeout(showToast._t);
   showToast._t = setTimeout(() => t.classList.remove('show'), ms || 4200);
-}
-
-// Compact, single-line status -- lives in the fixed-height header so the
-// frame below it never has to reflow. The old design put a full warning
-// box here before you'd even pressed play; now that only shows as the
-// sign-in overlay, and only once a run actually finishes signed out.
-function renderStatus() {
-  const pill = document.getElementById('statusPill');
-  pill.classList.remove('signed-in');
-  if (IS_LOCAL) {
-    pill.textContent = 'Local preview — runs won\'t save';
-    return;
-  }
-  if (currentPlayer) {
-    pill.classList.add('signed-in');
-    pill.textContent = `Flying as ${currentPlayer.callsign}`;
-  } else {
-    pill.innerHTML = '<a href="index.html#register">Sign in to save runs →</a>';
-  }
 }
 
 function showSignInOverlay(score) {
@@ -282,8 +246,6 @@ window.addEventListener('message', (e) => {
   }
   logRun(score);
 });
-
-renderStatus();
 </script>
 </body>
 </html>
