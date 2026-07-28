@@ -1586,12 +1586,6 @@ footer {
 .footer-link.accent { color: var(--accent); font-weight: 700; }
 .footer-link.glow { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); font-weight: 700; }
 
-.version-stamp {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--border);
-}
-
 /* ═══════════════════════════════════════════════
    UTILITIES
    ═══════════════════════════════════════════════ */
@@ -2117,15 +2111,15 @@ footer {
          .mobile-only-footer-item's exact visibility rule (mobile-only) so it
          follows the same, already-fixed show/hide logic -- desktop keeps
          using its topbar Sign In only, no duplicate there. -->
-    <a class="footer-link mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
+    <a class="footer-link accent mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
     <!-- v2.1.5: wires up the clearPlayer() helper that already existed but
          was never called from anywhere -- there was no way to sign out at
          all before this. Hidden by default, shown only when signed in, so
          testers can switch between accounts without clearing browser data. -->
-    <a class="footer-link hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
-    <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
+    <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
+    <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.1.5</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.5</span>
   </div>
 </footer>
 
