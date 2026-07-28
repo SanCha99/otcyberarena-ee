@@ -1548,9 +1548,10 @@ footer {
   padding-left:  max(clamp(12px,3vw,28px), env(safe-area-inset-left));
   padding-right: max(clamp(12px,3vw,28px), env(safe-area-inset-right));
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
   gap: 10px;
   margin-top: 40px;
 }
@@ -1567,6 +1568,7 @@ footer {
 .footer-right {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
   flex-wrap: wrap;
 }
@@ -1576,11 +1578,13 @@ footer {
   font-size: 10px;
   color: var(--muted);
   text-decoration: none;
-  transition: color 0.15s;
+  transition: color 0.15s, text-shadow 0.3s;
   cursor: pointer;
 }
 
 .footer-link:hover { color: var(--accent); }
+.footer-link.accent { color: var(--accent); font-weight: 700; }
+.footer-link.glow { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); font-weight: 700; }
 
 .version-stamp {
   font-family: var(--mono);
@@ -1673,7 +1677,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.3 · 2026-07-28 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.5 · 2026-07-28 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1831,12 +1835,12 @@ footer {
        no separate lookup table). Not signed in? The page still lets them
        play and prompts sign-in to bank the score afterward. -->
   <section class="game-promo-section" aria-label="CyberFlight game">
-    <div class="section-label">Bonus Game</div>
+    <div class="section-label">More Learning Tools</div>
     <a class="game-promo-card" href="cyberflight-play.html">
       <div class="game-promo-art" aria-hidden="true">🚀</div>
       <div class="game-promo-body">
         <div class="game-promo-title">CYBERFLIGHT</div>
-        <div class="game-promo-desc">Dodge live OT/ICS threats, collect real defenses, and climb the sectors in this arcade flyer — every run's score banks straight to your leaderboard credits.</div>
+        <div class="game-promo-desc">Dodge live OT/ICS threats, collect real defenses, and climb the sectors in this arcade flyer — tracked on its own scoreboard, separate from your knowledge credits.</div>
         <div class="game-promo-cta">▶ Play CyberFlight</div>
       </div>
     </a>
@@ -2104,11 +2108,9 @@ footer {
     Sources: CISA · NIST SP 800-82 · IEC 62443 · MITRE ATT&CK · MITRE ATLAS · SANS ICS
   </div>
   <div class="footer-right">
-    <button class="btn-primary mobile-only-footer-item theme-toggle-btn" onclick="toggleThemePanel()"
-            aria-label="Change theme" title="Change theme"
-            style="font-size:10px;padding:6px 14px;min-height:0;letter-spacing:0.06em;">🎨 Skin</button>
-    <button class="btn-primary" style="font-size:10px;padding:6px 14px;min-height:0;letter-spacing:0.06em;"
-            onclick="openModal('register')">Join Arena</button>
+    <a class="footer-link accent mobile-only-footer-item theme-toggle-btn" onclick="toggleThemePanel()"
+       aria-label="Change theme" title="Change theme">Skin</a>
+    <a class="footer-link accent" onclick="openModal('register')">Sign Up</a>
     <!-- v2.0.9 follow-up (2026-07-22): mobile has no persistent nav, so the
          topbar's Sign In link (desktop-only) isn't reachable there. Without
          this, mobile visitors could sign up but never sign back in. Reuses
@@ -2116,9 +2118,14 @@ footer {
          follows the same, already-fixed show/hide logic -- desktop keeps
          using its topbar Sign In only, no duplicate there. -->
     <a class="footer-link mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
+    <!-- v2.1.5: wires up the clearPlayer() helper that already existed but
+         was never called from anywhere -- there was no way to sign out at
+         all before this. Hidden by default, shown only when signed in, so
+         testers can switch between accounts without clearing browser data. -->
+    <a class="footer-link hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link" href="mailto:support@otcyberarena.com">Contact</a>
-    <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Powered by AI</span>
-    <span class="version-stamp" id="versionStamp">EC v2.1.3</span>
+    <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
+    <span class="version-stamp" id="versionStamp">EC v2.1.5</span>
   </div>
 </footer>
 
@@ -2131,7 +2138,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.3';
+const EC_VERSION = '2.1.5';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2341,12 +2348,15 @@ function initLiveCount() {
 }
 
 // ── EASTER EGG ────────────────────────────────────
-let easterEggActive = false;
+// v2.1.5: was a permanent text-swap toggle ("Powered by AI" <->
+// "Imagined by Sandip - Built by ARIA"); replaced with a fixed label that
+// briefly glows accent-green on tap instead, self-reverting after 10s.
+let easterEggTimer = null;
 function toggleEasterEgg() {
-  easterEggActive = !easterEggActive;
-  document.getElementById('easterEgg').textContent = easterEggActive
-    ? 'Imagined by Sandip · Built by ARIA'
-    : 'Powered by AI';
+  const el = document.getElementById('easterEgg');
+  el.classList.add('glow');
+  clearTimeout(easterEggTimer);
+  easterEggTimer = setTimeout(() => el.classList.remove('glow'), 10000);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2396,6 +2406,17 @@ function clearPlayer() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+// v2.1.5: first real way to sign out -- clearPlayer() existed already but
+// nothing ever called it. Full reload is deliberate: simplest way to reset
+// every piece of signed-in UI (leaderboard highlight, hero CTA, player bar,
+// etc.) back to a clean guest state in one step, and this is a testing/
+// account-switching action, not a hot path that needs to avoid a reload.
+function signOutPlayer() {
+  clearPlayer();
+  currentPlayer = null;
+  location.reload();
+}
+
 let currentPlayer = loadPlayer();
 
 function updatePlayerUI() {
@@ -2404,6 +2425,7 @@ function updatePlayerUI() {
   document.getElementById('btnJoin').classList.toggle('hidden', loggedIn);
   document.getElementById('playerChip').classList.toggle('visible', loggedIn);
   document.getElementById('playerBar').classList.toggle('visible', loggedIn);
+  document.getElementById('footerSignOut').classList.toggle('hidden', !loggedIn);
   if (loggedIn) {
     const p = currentPlayer;
     const rank = getRank(p.credits || 0);

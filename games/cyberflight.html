@@ -19,9 +19,12 @@ canvas{display:block;background:var(--bg)}
 /* screens now scroll vertically so long content never clips on small phones */
 .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
   background:radial-gradient(ellipse at 50% 30%,rgba(10,30,55,.92),rgba(4,6,14,.97));z-index:10;color:#cfe8f5;
-  text-align:center;padding:max(18px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));gap:10px;
+  text-align:center;padding:max(6px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));gap:10px;
   overflow-y:auto;-webkit-overflow-scrolling:touch}
-.screen::before{content:"";flex:0 0 auto;height:8px}      /* small top breathing room, keeps title clear of browser chrome */
+/* v2.1.5: this screen always sits inside cyberflight-play.html's iframe now,
+   under the wrapper's own topbar -- the old 18px+8px top breathing room was
+   sized for when this page could be opened standalone, and just wasted
+   space above the title once always-embedded. */
 .screen>*{flex:0 0 auto}
 .screen.hidden{display:none}
 h1{font-size:clamp(24px,7.5vw,44px);letter-spacing:.16em;color:var(--cyan);margin-top:2px;font-weight:700;
