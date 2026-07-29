@@ -149,5 +149,15 @@
       "word": "GATEWAY",
       "clue": "A device that translates between protocols, often bridging OT and IT networks or connecting legacy equipment to modern systems."
     }
+  },
+  {
+    "week_start": "2026-07-30",
+    "mcq_ids": [
+      "EC-00017"
+    ],
+    "cywordle": {
+      "word": "AIRGAP",
+      "clue": "A network deliberately isolated with no physical or wireless connection to other networks, used to protect critical OT systems."
+    }
   }
 ]
