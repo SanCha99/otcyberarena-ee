@@ -2005,7 +2005,7 @@ footer {
         <div style="margin:16px 0;">
           <div class="consent-item" onclick="toggleConsent('consentPrivacy')">
             <div class="consent-check" id="consentPrivacy" role="checkbox" aria-checked="false" tabindex="0">✓</div>
-            <div class="consent-text">I agree to the <a href="#" onclick="return false">Privacy Policy</a>. Data used only for platform operation.</div>
+            <div class="consent-text">I agree to the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. Data used only for platform operation.</div>
           </div>
           <div class="consent-item" onclick="toggleConsent('consentAge')">
             <div class="consent-check" id="consentAge" role="checkbox" aria-checked="false" tabindex="0">✓</div>
@@ -2140,7 +2140,7 @@ document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 // there's ~8 weeks of real accumulated history. LAUNCH_DATE is a placeholder;
 // update it to the actual public-announcement date once golive_check passes
 // (see PROJECT.md §7). Until then this section stays hidden by design.
-const LAUNCH_DATE = new Date('2026-07-25T00:00:00Z');
+const LAUNCH_DATE = new Date('2026-08-04T00:00:00Z');
 const ARCHIVE_REVEAL_WEEKS = 8;
 function archiveLinksShouldShow() {
   const weeksSince = (Date.now() - LAUNCH_DATE.getTime()) / (7 * 24 * 3600 * 1000);
@@ -3347,7 +3347,7 @@ let lbFilter = 'all';
 // before real players exist. This must NOT ship to the live domain — flip
 // SHOW_STAGING_LEADERBOARD_PREVIEW to false (or delete this block down to
 // the ───── line) before promoting to otcyberarena.com.
-const SHOW_STAGING_LEADERBOARD_PREVIEW = true;
+const SHOW_STAGING_LEADERBOARD_PREVIEW = false;
 const STAGING_PREVIEW_PLAYERS = [
   { callsign:'GridWatch_AUS',  track:'CP', credits:1920, country:'AU', rank:'Ghost in the Machine' },
   { callsign:'NullVector_SGS', track:'CP', credits:1640, country:'SG', rank:'Ghost in the Machine' },

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="steel">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Privacy Policy — OT CyberArena</title>
+<meta name="description" content="What OT CyberArena collects, why, and how to control it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+[data-theme="steel"] {
+  --bg: #050a05; --surface: #0a120a; --surface2: #0f1a0f; --border: #1a2e1a;
+  --accent: #22c55e; --accent-dim: rgba(34,197,94,0.12); --text: #e8f5e8; --muted: #5a7a5a;
+  --red: #ff4444; --mono: 'Share Tech Mono', monospace; --display: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif; --radius: 2px;
+}
+* , *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; overflow-x:clip; }
+body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100dvh; padding-bottom:env(safe-area-inset-bottom); }
+.topbar {
+  position:sticky; top:0; z-index:200; height:52px; padding:0 clamp(12px,3vw,28px);
+  background:rgba(5,10,5,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-mark { width:30px; height:30px; border:2px solid var(--accent); border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--accent); }
+.logo-text { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:0.04em; color:var(--text); }
+.logo-text .cyber { color:var(--accent); }
+.back-link { font-family:var(--mono); font-size:11px; color:var(--accent); font-weight:700; text-decoration:none; letter-spacing:.08em; text-transform:uppercase; }
+.back-link:hover { text-decoration:underline; }
+.wrap { max-width:760px; margin:0 auto; padding:clamp(24px,4vw,48px) clamp(16px,3vw,28px) 60px; }
+.page-title { font-family:var(--display); font-weight:800; font-size:clamp(26px,3.5vw,38px); text-transform:uppercase; margin-bottom:6px; }
+.page-sub { font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:32px; line-height:1.6; }
+h2 { font-family:var(--display); font-weight:700; font-size:19px; text-transform:uppercase; letter-spacing:.02em; color:var(--accent); margin:30px 0 10px; }
+p, li { font-size:14px; line-height:1.7; color:var(--text); margin-bottom:10px; }
+ul { padding-left:20px; margin-bottom:10px; }
+strong { color:var(--text); font-weight:700; }
+a { color:var(--accent); }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; margin-bottom:8px; }
+.meta { font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:36px; padding-top:16px; border-top:1px solid var(--border); }
+footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(--muted); padding:24px; opacity:.7; }
+</style>
+</head>
+<body>
+
+<header class="topbar" role="banner">
+  <a href="index.html" class="logo" aria-label="OT CyberArena Home">
+    <div class="logo-mark" aria-hidden="true">OT</div>
+    <div class="logo-text">OT <span class="cyber">Cyber</span>Arena</div>
+  </a>
+  <a class="back-link" href="index.html">← Back to Arena</a>
+</header>
+
+<div class="wrap">
+  <h1 class="page-title">Privacy Policy</h1>
+  <p class="page-sub">Last updated: 4 August 2026. Plain language, no legal filler — this is everything we collect and why.</p>
+
+  <h2>What we collect</h2>
+  <p>When you create an operative profile, we ask for:</p>
+  <ul>
+    <li><strong>Email address</strong> — used only to send a one-time sign-in code and, occasionally, direct platform communications (e.g. a password-free login reminder). We do not sell, rent, or share it with advertisers.</li>
+    <li><strong>Callsign</strong> — the name you choose to appear on the public leaderboard. Don't use your real name if you'd rather stay pseudonymous.</li>
+    <li><strong>Country</strong> — shown only in aggregate on the country leaderboard.</li>
+    <li><strong>A 4-digit PIN</strong> — lets you log back in without re-verifying your email each time. It is not a password to any other account and is not used anywhere else.</li>
+  </ul>
+  <p>As you play, we store your credits, streak, badges, and challenge results so your progress and rank persist between visits. Some game preferences (like your chosen skin) are saved locally in your browser, not on our servers.</p>
+
+  <h2>What we don't collect</h2>
+  <p>No payment information (the platform is free), no government ID, no location tracking beyond the country you tell us, and no third-party advertising or analytics trackers.</p>
+
+  <h2>Who processes it</h2>
+  <p>Your data is stored with <strong>Supabase</strong> (database hosting) and your sign-in email is sent via <strong>Resend</strong> (transactional email delivery). Both act only on our instructions and don't use your data for their own purposes. We don't share data with any other third party.</p>
+
+  <h2>Your controls</h2>
+  <ul>
+    <li>You can play a single practice challenge with no account at all.</li>
+    <li>To update, export, or permanently delete your data, email <a href="mailto:support@otcyberarena.com">support@otcyberarena.com</a> from the address on your account — we'll act on it within a reasonable time.</li>
+  </ul>
+
+  <h2>Age requirement</h2>
+  <p>OT CyberArena is intended for users aged 16 and over. We don't knowingly collect data from anyone younger. If you believe a minor under 16 has registered, contact us and we'll remove the account.</p>
+
+  <h2>Cookies & local storage</h2>
+  <p>We use your browser's local storage to remember your login session and display preferences on this device. We don't use tracking cookies or cross-site advertising identifiers.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>If this policy changes materially, we'll update the date above and note it on the homepage.</p>
+
+  <div class="card">
+    <p style="margin-bottom:0;">Questions about your data? <a href="mailto:support@otcyberarena.com">support@otcyberarena.com</a></p>
+  </div>
+
+  <p class="meta">This policy is a plain-language summary drafted for a small, self-run community project — it has not been reviewed by a lawyer. If you have specific compliance requirements (e.g. GDPR/CCPA obligations for your userbase), have it reviewed before relying on it as your sole privacy documentation.</p>
+</div>
+
+<footer>OT CyberArena</footer>
+
+</body>
+</html>
