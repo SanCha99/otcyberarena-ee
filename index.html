@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.6 · 2026-07-30 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.7 · 2026-07-30 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2119,7 +2119,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.6</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.7</span>
   </div>
 </footer>
 
@@ -2132,7 +2132,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.6';
+const EC_VERSION = '2.1.7';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3523,7 +3523,24 @@ async function sendOTP() {
   }
   regData.email = email;
   showError('emailError', '');
+
   if (!IS_LOCAL) {
+    // Already have an account? OTP verification only needs to happen once,
+    // at account creation -- route straight to sign-in (email + PIN) instead
+    // of sending a fresh code every time someone hits "Save My Score".
+    const { data: existing } = await sb.from('players')
+      .select('id, callsign, pin, track, country, cp_qualified, current_streak')
+      .eq('email', email)
+      .eq('type', 'real')
+      .maybeSingle();
+    if (existing) {
+      closeModal('register');
+      document.getElementById('loginEmail').value = email;
+      openModal('login');
+      await loginLookup();
+      return;
+    }
+
     const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     if (error) { showError('emailError', 'ARIA // ' + error.message); return; }
   }
@@ -3658,11 +3675,35 @@ async function finaliseRegistration() {
       cp_qualified: newPlayer.cp_qualified,
       type:        'real'
     });
-    if (pErr && pErr.code !== '23505') { // 23505 = unique violation (already exists)
-      console.warn('Player insert error:', pErr.message);
+    if (pErr && pErr.code === '23505') {
+      // Unique violation -- an account with this id/email already exists.
+      // sendOTP() now routes existing emails to sign-in before we ever get
+      // here, so this is a defensive fallback (race condition, stale tab,
+      // etc.), not the normal path. Load the REAL existing record instead
+      // of proceeding with the just-typed callsign/track and a fresh
+      // credits row -- continuing here would silently overwrite their
+      // actual credits back to 0 via the upsert below.
+      const { data: existing } = await sb.from('players')
+        .select('id, callsign, pin, track, country, cp_qualified, current_streak, longest_streak, shields')
+        .eq('id', newPlayer.id)
+        .maybeSingle();
+      if (existing) {
+        const { data: cRow } = await sb.from('credits').select('amount').eq('player_id', existing.id).maybeSingle();
+        currentPlayer = { ...existing, credits: cRow?.amount || 0 };
+        savePlayer(currentPlayer);
+        updatePlayerUI();
+        claimPendingCyberflightScore();
+        loadLeaderboard();
+        closeModal('register');
+        return;
+      }
+      console.warn('Player insert conflict but could not load existing record');
+      return;
     }
+    if (pErr) console.warn('Player insert error:', pErr.message);
 
-    // Insert credits row (0 starting balance)
+    // Insert credits row (0 starting balance) -- only reached for genuinely
+    // new accounts (the existing-account path above already returned).
     const { error: cErr } = await sb.from('credits').upsert({
       player_id: newPlayer.id,
       amount:    0,
