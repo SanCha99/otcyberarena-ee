@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.5 · 2026-07-28 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.6 · 2026-07-30 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2119,7 +2119,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.5</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.6</span>
   </div>
 </footer>
 
@@ -2132,7 +2132,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.5';
+const EC_VERSION = '2.1.6';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2307,6 +2307,7 @@ function filterLB(btn, filter) {
 
 // ── NUDGE ─────────────────────────────────────────
 function showNudge(correct) {
+  if (currentPlayer) return; // already signed in — no need to nudge them to join
   const nudge = document.getElementById('regNudge');
   const title = document.getElementById('nudgeTitle');
   title.textContent = correct
@@ -2317,6 +2318,14 @@ function showNudge(correct) {
 
 function closeNudge() {
   document.getElementById('regNudge').classList.remove('show');
+}
+
+// Shows the post-challenge "Save My Score" CTA only for anonymous players —
+// a signed-in player's score is already saved automatically (see
+// applyCredits/recordSolve), so re-prompting them to join is just noise.
+function showPostActions(elId) {
+  if (currentPlayer) return;
+  document.getElementById(elId).style.display = (elId === 'wordlePost') ? 'block' : 'flex';
 }
 
 // ── SCORE FLASH ───────────────────────────────────
@@ -2645,7 +2654,7 @@ function renderMCQ(rawChallenge) {
       <div id="mcqPostActions" style="display:none;margin-top:12px;display:none;">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-primary" onclick="openModal('register')"
-                  style="flex:1;min-width:140px;padding:8px 14px;font-size:11px;min-height:38px">
+                  style="display:block;width:100%;padding:8px 14px;font-size:11px;min-height:38px;box-sizing:border-box">
             Save My Score
           </button>
           <!-- v2.0.9 (2026-07-22): LinkedIn share button hidden for now
@@ -2701,7 +2710,7 @@ function replayMCQAnswered(saved, ch) {
             : 'ARIA // Breach uncontained. (resumed)';
   showMCQFeedback(saved.outcome === 'correct', 0, msg, ch.debrief, ch.source);
   document.getElementById('mcqActions').style.display     = 'none';
-  document.getElementById('mcqPostActions').style.display = 'flex';
+  showPostActions('mcqPostActions');
 }
 
 function selectMCQ(btn, idx) {
@@ -2773,7 +2782,7 @@ function selectMCQ(btn, idx) {
 
   if (mcqState.answered) {
     document.getElementById('mcqActions').style.display    = 'none';
-    document.getElementById('mcqPostActions').style.display = 'flex';
+    showPostActions('mcqPostActions');
     recordSolve('mcq_weekly', ch.id, mcqState.correct ? 'correct' : 'wrong',
                 mcqState.correct ? (mcqState.hintUsed ? CREDITS_MCQ.hint : CREDITS_MCQ.first) : CREDITS_MCQ.wrong);
     saveMCQProgress();
@@ -2836,7 +2845,7 @@ function giveUpMCQ() {
   scoreFlash(CREDITS_MCQ.wrong, false);
   applyCredits(CREDITS_MCQ.wrong);
   document.getElementById('mcqActions').style.display     = 'none';
-  document.getElementById('mcqPostActions').style.display = 'flex';
+  showPostActions('mcqPostActions');
   recordSolve('mcq_weekly', ch.id, 'giveup', CREDITS_MCQ.wrong);
   saveMCQProgress();
   setTimeout(() => showNudge(false), 1600);
@@ -2940,7 +2949,7 @@ function renderCywordle(wordData) {
       <div id="wordlePost" style="display:none;margin-top:14px">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn-primary" onclick="openModal('register')"
-                  style="flex:1;min-width:140px;padding:8px 14px;font-size:11px;min-height:38px">
+                  style="display:block;width:100%;padding:8px 14px;font-size:11px;min-height:38px;box-sizing:border-box">
             Save My Score
           </button>
           <!-- v2.0.9 (2026-07-22): LinkedIn share button hidden for now
@@ -2976,7 +2985,7 @@ function replayCywordleProgress(saved) {
     wordleState.solved = saved.solved;
     wordleState.failed = saved.failed;
     document.getElementById('wordleInput').style.display = 'none';
-    document.getElementById('wordlePost').style.display   = 'block';
+    showPostActions('wordlePost');
     setWordleMessage(saved.solved
       ? `ARIA // Correct — ${wordleState.word}. Threat neutralised. ${wordleState.clue} (resumed)`
       : `ARIA // The word was: ${wordleState.word}. ${wordleState.clue} (resumed)`,
@@ -3053,7 +3062,7 @@ function submitWordleGuess() {
     scoreFlash(earned, true);
     applyCredits(earned);
     document.getElementById('wordleInput').style.display = 'none';
-    setTimeout(()=>{ document.getElementById('wordlePost').style.display='block'; showNudge(true); }, 1000);
+    setTimeout(()=>{ showPostActions('wordlePost'); showNudge(true); }, 1000);
     recordSolve('cywordle', `cyw_${target.toLowerCase()}`, 'correct', earned);
   } else if (failed) {
     wordleState.failed = true;
@@ -3062,7 +3071,7 @@ function submitWordleGuess() {
     scoreFlash(earned, false);
     applyCredits(earned);
     document.getElementById('wordleInput').style.display = 'none';
-    setTimeout(()=>{ document.getElementById('wordlePost').style.display='block'; showNudge(false); }, 1000);
+    setTimeout(()=>{ showPostActions('wordlePost'); showNudge(false); }, 1000);
     recordSolve('cywordle', `cyw_${target.toLowerCase()}`, 'wrong', earned);
   } else {
     const remaining = wordleState.maxGuesses - wordleState.guesses.length;
@@ -3666,6 +3675,7 @@ async function finaliseRegistration() {
   currentPlayer = newPlayer;
   updatePlayerUI();
   claimPendingCyberflightScore();
+  loadLeaderboard();
   closeModal('register');
   logEvent('registration_complete', { track: newPlayer.track, country: newPlayer.country });
 }
@@ -3751,6 +3761,7 @@ async function loginWithPIN() {
   currentPlayer = p;
   updatePlayerUI();
   claimPendingCyberflightScore();
+  loadLeaderboard();
   closeModal('login');
   logEvent('login', { callsign: p.callsign });
 }
