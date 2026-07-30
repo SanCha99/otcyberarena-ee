@@ -103,6 +103,17 @@
   .table-scroll::-webkit-scrollbar-track{background:#1a1e29;border-radius:3px;}
   .table-scroll::-webkit-scrollbar-thumb{background:#3a3e4a;border-radius:3px;}
   .table-scroll::-webkit-scrollbar-thumb:hover{background:#4a5060;}
+  .login-wrap{min-height:calc(100vh - 65px);display:flex;align-items:center;justify-content:center;padding:24px;}
+  .login-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px 28px;width:100%;max-width:340px;}
+  .login-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+  .login-sub{font-size:12px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
+  .login-field{margin-bottom:14px;}
+  .login-label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;}
+  .login-input{width:100%;padding:9px 11px;border-radius:7px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:var(--font);}
+  .login-input:focus{outline:none;border-color:var(--accent);}
+  .login-btn{width:100%;padding:10px;border-radius:7px;border:none;background:var(--accent);color:#000;font-weight:600;font-size:13px;cursor:pointer;margin-top:6px;}
+  .login-btn:disabled{opacity:0.5;cursor:default;}
+  .login-error{font-size:11px;color:var(--danger);margin-top:10px;min-height:14px;}
 </style>
 </head>
 <body>
@@ -112,27 +123,49 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.0 · 26-Jul-2026</div>
+      <div class="logo-ver">Dashboard v1.1 · 30-Jul-2026</div>
     </div>
   </div>
   <div class="topbar-right">
-    <div class="range-switch">
-      <button class="range-btn active" onclick="setRange(7,this)">7D</button>
-      <button class="range-btn" onclick="setRange(30,this)">1M</button>
-      <button class="range-btn" onclick="setRange(90,this)">3M</button>
-      <button class="range-btn" onclick="setRange(180,this)">6M</button>
-      <button class="range-btn" onclick="setRange(365,this)">1Y</button>
-      <button class="range-btn" onclick="setRange(0,this)">Max</button>
+    <div id="dashControls" style="display:none;align-items:center;gap:16px;flex-wrap:wrap">
+      <div class="range-switch">
+        <button class="range-btn active" onclick="setRange(7,this)">7D</button>
+        <button class="range-btn" onclick="setRange(30,this)">1M</button>
+        <button class="range-btn" onclick="setRange(90,this)">3M</button>
+        <button class="range-btn" onclick="setRange(180,this)">6M</button>
+        <button class="range-btn" onclick="setRange(365,this)">1Y</button>
+        <button class="range-btn" onclick="setRange(0,this)">Max</button>
+      </div>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
+        <span id="refreshIcon">↻</span> Refresh
+      </button>
+      <div class="last-refreshed" id="lastRefreshed">Not loaded yet</div>
+      <button class="home-link" id="signOutBtn" onclick="adminSignOut()" style="cursor:pointer;background:none">Sign Out</button>
     </div>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
-      <span id="refreshIcon">↻</span> Refresh
-    </button>
-    <div class="last-refreshed" id="lastRefreshed">Not loaded yet</div>
     <a class="home-link" href="./index.html">← Site</a>
   </div>
 </div>
 
-<div class="main" id="main">
+<div class="login-wrap" id="loginGate" style="display:none">
+  <div class="login-card">
+    <div class="login-title">Admin sign-in required</div>
+    <div class="login-sub">This dashboard is restricted to a single admin account. Sign in to continue.</div>
+    <form id="loginForm" onsubmit="return adminSignIn(event)">
+      <div class="login-field">
+        <label class="login-label" for="loginEmailInput">Email</label>
+        <input class="login-input" type="email" id="loginEmailInput" autocomplete="email" required/>
+      </div>
+      <div class="login-field">
+        <label class="login-label" for="loginPasswordInput">Password</label>
+        <input class="login-input" type="password" id="loginPasswordInput" autocomplete="current-password" required/>
+      </div>
+      <button class="login-btn" id="loginSubmitBtn" type="submit">Sign In</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+</div>
+
+<div class="main" id="main" style="display:none">
   <div class="empty"><div class="empty-icon">◎</div><div>Loading operational data...</div></div>
 </div>
 
@@ -144,6 +177,63 @@
 const SB_URL='https://obqqbfvrnkwkgucqdqad.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icXFiZnZybmt3a2d1Y3FkcWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MjU2NDUsImV4cCI6MjA5NjMwMTY0NX0.I5KjNSrEgF4fZ3jlYqgGj-TVIeQo5XKCQAcK8RHPnzs';
 const sb=supabase.createClient(SB_URL,SB_KEY);
+
+// ── ADMIN LOGIN GATE (v1.1) ───────────────────────────
+// Reuses the same Supabase Auth system that powers player OTP sign-in, but
+// via email+password. Real players never have a password set (OTP-only),
+// so signInWithPassword() can only ever succeed for the one admin account
+// Sandip creates directly in the Supabase Dashboard -- this page never
+// creates accounts or sees a password beyond what's typed into the form
+// below. ADMIN_EMAIL is a belt-and-suspenders allowlist in case a second
+// password-based account ever exists for any reason.
+// NOTE: this gates the dashboard UI only. players/credits/solves keep
+// public-read RLS (required for the site's own public leaderboard), so
+// this is not a substitute for DB-level access control.
+const ADMIN_EMAIL='san66cha@gmail.com';
+
+function showLoginGate(msg){
+  document.getElementById('main').style.display='none';
+  document.getElementById('dashControls').style.display='none';
+  document.getElementById('loginGate').style.display='flex';
+  document.getElementById('loginError').textContent=msg||'';
+}
+function showDashboard(){
+  document.getElementById('loginGate').style.display='none';
+  document.getElementById('main').style.display='block';
+  document.getElementById('dashControls').style.display='flex';
+  loadAll();
+}
+async function adminSignIn(e){
+  e.preventDefault();
+  const btn=document.getElementById('loginSubmitBtn');
+  const email=document.getElementById('loginEmailInput').value.trim();
+  const password=document.getElementById('loginPasswordInput').value;
+  btn.disabled=true;btn.textContent='Signing in…';
+  document.getElementById('loginError').textContent='';
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  btn.disabled=false;btn.textContent='Sign In';
+  if(error){document.getElementById('loginError').textContent='Sign-in failed: '+error.message;return false;}
+  if((data?.user?.email||'').toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
+    await sb.auth.signOut();
+    document.getElementById('loginError').textContent='This account is not authorized for admin access.';
+    return false;
+  }
+  showDashboard();
+  return false;
+}
+async function adminSignOut(){
+  await sb.auth.signOut();
+  showLoginGate('');
+}
+async function checkAdminAuth(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user?.email && session.user.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
+    showDashboard();
+  }else{
+    if(session)await sb.auth.signOut(); // stray non-admin session — clear it
+    showLoginGate();
+  }
+}
 
 let charts=[],currentDays=7;
 
@@ -488,7 +578,7 @@ function renderDashboard(players,solves,credits,sessions){
   if(ctx){const c=new Chart(ctx,{type:'bar',data:{labels:Object.keys(buckets),datasets:[{label:'Active players',data:Object.values(buckets),backgroundColor:'rgba(34,197,94,0.6)',borderColor:'#22c55e',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7a8099',font:{size:10},autoSkip:true,maxTicksLimit:14},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#7a8099',font:{size:11},stepSize:1},grid:{color:'rgba(255,255,255,0.07)'},beginAtZero:true}}}});charts.push(c);}
 }
 
-loadAll();
+checkAdminAuth();
 </script>
 </body>
 </html>
