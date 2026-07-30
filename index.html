@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.8 · 2026-07-30 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.9 · 2026-07-30 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2119,7 +2119,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.8</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.9</span>
   </div>
 </footer>
 
@@ -2132,7 +2132,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.8';
+const EC_VERSION = '2.1.9';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2408,6 +2408,25 @@ function savePlayer(p) {
 function clearPlayer() {
   localStorage.removeItem(STORAGE_KEY);
 }
+
+// ── DEV/TEST RESET (Sandip-only testing aid — no UI link, not for real users) ──
+// Visiting index.html?devreset=1 wipes THIS BROWSER's player identity plus
+// the weekly MCQ/Cywordle "already answered" locks (normally per-device,
+// independent of account, to stop someone signing out and farming credits
+// with a fresh email). Lets Sandip walk through registration/answering
+// again on his own device during E2E testing without touching that
+// protection for real visitors, who never see or use this param.
+(function devReset() {
+  if (new URLSearchParams(location.search).get('devreset') !== '1') return;
+  Object.keys(localStorage).forEach(k => {
+    if (k === STORAGE_KEY || k.startsWith('ec_mcq_progress_') || k.startsWith('ec_cywordle_progress_')) {
+      localStorage.removeItem(k);
+    }
+  });
+  const url = new URL(location.href);
+  url.searchParams.delete('devreset');
+  location.replace(url.toString());
+})();
 
 // v2.1.5: first real way to sign out -- clearPlayer() existed already but
 // nothing ever called it. Full reload is deliberate: simplest way to reset
