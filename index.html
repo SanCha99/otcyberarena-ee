@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.9 · 2026-07-30 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.10 · 2026-07-30 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2119,7 +2119,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.9</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.10</span>
   </div>
 </footer>
 
@@ -2132,7 +2132,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.9';
+const EC_VERSION = '2.1.10';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3467,6 +3467,12 @@ async function applyCredits(delta) {
       { onConflict: 'player_id' }
     );
   }
+  // v2.1.10: updatePlayerUI() above only refreshes the player's own
+  // top-of-page credit total -- the global leaderboard is a separate
+  // fetch and previously only got reloaded on registration/login/page
+  // load, so a signed-in player's rank stayed stale on screen until a
+  // manual refresh even though their credits had genuinely updated.
+  loadLeaderboard();
 }
 
 // ── SOLVE RECORD (stub — Supabase insert in Chunk 3) ─
