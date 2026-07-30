@@ -159,5 +159,15 @@
       "word": "AIRGAP",
       "clue": "A network deliberately isolated with no physical or wireless connection to other networks, used to protect critical OT systems."
     }
+  },
+  {
+    "week_start": "2026-07-31",
+    "mcq_ids": [
+      "EC-00018"
+    ],
+    "cywordle": {
+      "word": "ROOTKIT",
+      "clue": "Malware that hides inside a system to give an attacker persistent, hard-to-detect access."
+    }
   }
 ]
