@@ -239,13 +239,36 @@ window.addEventListener('message', (e) => {
   const data = e.data;
   if (!data || data.type !== 'cyberflight_score' || data.game !== 'CYBERFLIGHT') return;
   const score = Math.max(0, Math.floor(Number(data.score) || 0));
+  const seconds = Math.max(0, Math.floor(Number(data.seconds) || 0));
   if (!currentPlayer) {
-    try { localStorage.setItem(PENDING_KEY, JSON.stringify({ score, ts: Date.now() })); } catch {}
+    try { localStorage.setItem(PENDING_KEY, JSON.stringify({ score, seconds, ts: Date.now() })); } catch {}
     showSignInOverlay(score);
     return;
   }
   logRun(score);
+  logSession(seconds);
 });
+
+// v2.1.11: record play time separately from score, so the admin dashboard
+// can show who's playing and for how long -- not just their credits.
+// game.t (seconds in cyberspace) already comes through on every
+// cyberflight_score message; this just banks it to the sessions table,
+// the same table + shape the admin dashboard already reads from and that
+// any future modular game should write to the same way (game_type as the
+// only thing that varies).
+async function logSession(seconds) {
+  if (!currentPlayer || !currentPlayer.id) return;
+  if (IS_LOCAL || currentPlayer.id.startsWith('local_') || !seconds) return;
+  const endedAt = new Date();
+  const startedAt = new Date(endedAt.getTime() - seconds * 1000);
+  await sb.from('sessions').insert({
+    player_id:        currentPlayer.id,
+    started_at:        startedAt.toISOString(),
+    ended_at:          endedAt.toISOString(),
+    duration_seconds:  seconds,
+    game_type:         'cyberflight'
+  });
+}
 </script>
 </body>
 </html>

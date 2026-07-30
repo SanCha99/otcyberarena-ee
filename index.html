@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.10 · 2026-07-30 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.11 · 2026-07-30 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1920,22 +1920,7 @@ footer {
         <button class="btn-secondary" style="width:100%;margin-top:8px" onclick="sendOTP()">Resend Code</button>
       </div>
 
-      <!-- STEP 2: Callsign -->
-      <div id="regStepCallsign" class="hidden">
-        <div class="aria-modal-msg">
-          <span class="aria-prefix">ARIA //</span> Choose your operative callsign.
-          Visible on the global leaderboard. Suggested format: CountryCode_Word (e.g. SG_FieldOps).
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="inputCallsign">Callsign</label>
-          <input class="form-input" type="text" id="inputCallsign" placeholder="SG_FieldOps"
-                 maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false"/>
-          <div class="form-error" id="callsignError"></div>
-        </div>
-        <button class="btn-primary" style="width:100%" onclick="regNextCallsign()">Set Callsign</button>
-      </div>
-
-      <!-- STEP 3: Country -->
+      <!-- STEP 2: Country (moved ahead of Callsign so we can suggest one) -->
       <div id="regStepCountry" class="hidden">
         <div class="aria-modal-msg">
           <span class="aria-prefix">ARIA //</span> Select your country for the country leaderboard.
@@ -1972,6 +1957,28 @@ footer {
           </select>
         </div>
         <button class="btn-primary" style="width:100%" onclick="regNextCountry()">Continue</button>
+      </div>
+
+      <!-- STEP 3: Callsign -->
+      <div id="regStepCallsign" class="hidden">
+        <div class="aria-modal-msg">
+          <span class="aria-prefix">ARIA //</span> Choose your operative callsign.
+          Visible on the global leaderboard. Suggested format: CountryCode_Word (e.g. SG_FieldOps).
+        </div>
+        <div class="cs-suggest-panel" id="csSuggestPanel" style="display:none;background:var(--accent-dim);border:1px solid rgba(34,197,94,0.25);border-radius:6px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <div style="font-size:12px;color:var(--muted);line-height:1.5;">
+            Suggested callsign: <strong id="csSuggestName" style="font-family:var(--mono);color:var(--accent);font-size:14px;"></strong>
+            <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">✏️ Use this or type your own below</span>
+          </div>
+          <button type="button" class="btn-secondary" style="padding:7px 14px;font-size:12px;flex-shrink:0;" onclick="useCallsignSuggestion()">Use this →</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inputCallsign">Callsign</label>
+          <input class="form-input" type="text" id="inputCallsign" placeholder="SG_FieldOps"
+                 maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false"/>
+          <div class="form-error" id="callsignError"></div>
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="regNextCallsign()">Set Callsign</button>
       </div>
 
       <!-- STEP 4: PIN -->
@@ -2119,7 +2126,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.10</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.11</span>
   </div>
 </footer>
 
@@ -2132,7 +2139,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.10';
+const EC_VERSION = '2.1.11';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2232,7 +2239,7 @@ document.addEventListener('keydown', e => {
 // (Logic wired by Chunk 2 — stubs here to avoid JS errors)
 let regData = { email:'', callsign:'', country:'', pin:'', track:'', consents:{} };
 let regCurrentStep = 0;
-const REG_STEPS = ['regStepEmail','regStepOTP','regStepCallsign','regStepCountry','regStepPIN','regStepConsent'];
+const REG_STEPS = ['regStepEmail','regStepOTP','regStepCountry','regStepCallsign','regStepPIN','regStepConsent'];
 
 function showRegStep(idx) {
   REG_STEPS.forEach((id, i) => {
@@ -3525,6 +3532,20 @@ async function claimPendingCyberflightScore() {
   // dwarfing knowledge-game credits (8-100). Still logged to solves for
   // stats/admin dashboard and the game's own client-side personal best.
   await recordSolve('cyberflight', 'cyberflight_' + Date.now(), null, pending.score);
+  // v2.1.11: same play-time tracking as the signed-in path in
+  // cyberflight-play.html, for the guest-plays-then-signs-in-later case.
+  const seconds = Math.max(0, Math.floor(Number(pending.seconds) || 0));
+  if (seconds && !IS_LOCAL && !currentPlayer.id.startsWith('local_')) {
+    const endedAt = new Date();
+    const startedAt = new Date(endedAt.getTime() - seconds * 1000);
+    await sb.from('sessions').insert({
+      player_id:        currentPlayer.id,
+      started_at:        startedAt.toISOString(),
+      ended_at:          endedAt.toISOString(),
+      duration_seconds:  seconds,
+      game_type:         'cyberflight'
+    });
+  }
 }
 
 async function logEvent(eventType, metadata) {
@@ -3597,15 +3618,40 @@ function regNextCallsign() {
   if (!/^[A-Za-z0-9_]+$/.test(cs)) { showError('callsignError','ARIA // Letters, numbers, and underscores only.'); return; }
   regData.callsign = cs;
   showError('callsignError','');
-  showRegStep(3);
+  showRegStep(4);
+  setTimeout(()=>document.getElementById('inputPIN')?.focus(), 100);
+}
+
+// v2.1.11: callsign suggestion, ported from the ISE/EE flavours' own
+// convention (documented in the project's flavour rules: "Callsign
+// suggestion uses ISO 3166-1 Alpha-2 from selected country, e.g.
+// GhostNode_SG"). Same word lists as ISE/EE -- Prefix+Suffix+_ISO. This is
+// a suggestion only, not checked against existing callsigns in the DB, so
+// it's low-collision (15x15 combinations per country) rather than
+// guaranteed-unique; regNextCallsign()'s own validation is what actually
+// gates submission either way.
+const CS_PREFIXES = ['Ghost','Zero','Iron','Null','Cyber','Phantom','Dark','Stealth','Crimson','Vector','Sigma','Viper','Apex','Nova','Storm'];
+const CS_SUFFIXES = ['Packet','Node','Byte','Sector','Wire','Shield','Cipher','Proxy','Gate','Loop','Stack','Trace','Core','Grid','Link'];
+function genCallsign(iso) {
+  const p = CS_PREFIXES[Math.floor(Math.random() * CS_PREFIXES.length)];
+  const s = CS_SUFFIXES[Math.floor(Math.random() * CS_SUFFIXES.length)];
+  return p + s + '_' + (iso || 'GL');
 }
 
 function regNextCountry() {
   const country = document.getElementById('inputCountry').value;
   if (!country) { showError('countryError','ARIA // Select your country.'); return; }
   regData.country = country;
-  showRegStep(4);
-  setTimeout(()=>document.getElementById('inputPIN')?.focus(), 100);
+  const suggestion = genCallsign(country === 'OTHER' ? 'GL' : country);
+  document.getElementById('csSuggestName').textContent = suggestion;
+  document.getElementById('csSuggestPanel').style.display = 'flex';
+  showRegStep(3);
+}
+
+function useCallsignSuggestion() {
+  const cs = document.getElementById('csSuggestName')?.textContent || '';
+  const inp = document.getElementById('inputCallsign');
+  if (inp && cs) { inp.value = cs; inp.focus(); }
 }
 
 function regNextPIN() {
@@ -3974,6 +4020,32 @@ let currentMCQId   = null;  // this week's MCQ id
 let currentWordData = null; // this week's Cywordle word data
 
 // ── INIT ──────────────────────────────────────────
+// v2.1.11: visitor funnel -- one row per page load into page_visits, so the
+// admin dashboard can show visits vs. signups (players.created_at already
+// covers the "signups" half). session_id is a random per-browser id stored
+// in localStorage purely to distinguish repeat visits from the same
+// browser later if ever needed -- carries no PII, not tied to email/account.
+function pageVisitSessionId() {
+  const KEY = 'ec_visit_sid';
+  let sid = localStorage.getItem(KEY);
+  if (!sid) {
+    sid = 'v_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+    try { localStorage.setItem(KEY, sid); } catch {}
+  }
+  return sid;
+}
+async function logPageVisit() {
+  if (IS_LOCAL) return;
+  try {
+    await sb.from('page_visits').insert({
+      session_id:  pageVisitSessionId(),
+      registered:  !!currentPlayer,
+      device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+      user_id:     currentPlayer?.id && !currentPlayer.id.startsWith('local_') ? currentPlayer.id : null
+    });
+  } catch (e) { /* non-critical, never block page load on this */ }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initHexBg();
   updatePlayerUI();
@@ -3983,6 +4055,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadLeaderboard();
   initLiveCount();
   applyArchiveGate();
+  logPageVisit();
 
   // Archive pages link back as index.html#register / #login for anon visitors
   if (location.hash === '#register' || location.hash === '#login') {

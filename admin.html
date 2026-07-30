@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.1 · 30-Jul-2026</div>
+      <div class="logo-ver">Dashboard v1.2 · 30-Jul-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -147,7 +147,7 @@
 </div>
 
 <div class="login-wrap" id="loginGate" style="display:none">
-  <div class="login-card">
+  <div class="login-card" id="loginCard">
     <div class="login-title">Admin sign-in required</div>
     <div class="login-sub">This dashboard is restricted to a single admin account. Sign in to continue.</div>
     <form id="loginForm" onsubmit="return adminSignIn(event)">
@@ -161,6 +161,21 @@
       </div>
       <button class="login-btn" id="loginSubmitBtn" type="submit">Sign In</button>
       <div class="login-error" id="loginError"></div>
+      <div style="text-align:center;margin-top:12px;">
+        <a href="#" onclick="adminForgotPassword();return false;" style="font-size:11px;color:var(--muted);text-decoration:underline;">Forgot password?</a>
+      </div>
+    </form>
+  </div>
+  <div class="login-card" id="resetCard" style="display:none">
+    <div class="login-title">Set a new password</div>
+    <div class="login-sub" id="resetSub">Choose a new password for the admin account.</div>
+    <form id="resetForm" onsubmit="return adminSetNewPassword(event)">
+      <div class="login-field">
+        <label class="login-label" for="resetPasswordInput">New password</label>
+        <input class="login-input" type="password" id="resetPasswordInput" autocomplete="new-password" minlength="6" required/>
+      </div>
+      <button class="login-btn" id="resetSubmitBtn" type="submit">Set Password</button>
+      <div class="login-error" id="resetError"></div>
     </form>
   </div>
 </div>
@@ -195,6 +210,7 @@ function showLoginGate(msg){
   document.getElementById('main').style.display='none';
   document.getElementById('dashControls').style.display='none';
   document.getElementById('loginGate').style.display='flex';
+  showLoginForm();
   document.getElementById('loginError').textContent=msg||'';
 }
 function showDashboard(){
@@ -225,6 +241,52 @@ async function adminSignOut(){
   await sb.auth.signOut();
   showLoginGate('');
 }
+
+// ── PASSWORD RECOVERY (v1.2) ──────────────────────────
+// admin@otcyberarena.com forwards to Sandip's real inbox (confirmed
+// working), so a real "forgot password" email now has somewhere to land.
+// resetPasswordForEmail() emails a link back to this same page with a
+// recovery token in the URL; Supabase fires a PASSWORD_RECOVERY auth event
+// when that token is present, which is what swaps the login form for the
+// set-new-password form below. Requires this page's URL to be on
+// Supabase's Auth > URL Configuration > Redirect URLs allowlist.
+function showResetForm(msg){
+  document.getElementById('loginCard').style.display='none';
+  document.getElementById('resetCard').style.display='block';
+  document.getElementById('resetError').textContent=msg||'';
+}
+function showLoginForm(){
+  document.getElementById('resetCard').style.display='none';
+  document.getElementById('loginCard').style.display='block';
+}
+async function adminForgotPassword(){
+  const email=(document.getElementById('loginEmailInput').value||'').trim() || ADMIN_EMAIL;
+  document.getElementById('loginError').textContent='';
+  const redirectTo=window.location.origin+window.location.pathname;
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){document.getElementById('loginError').textContent='Reset failed: '+error.message;return;}
+  document.getElementById('loginError').textContent='';
+  alert('ARIA // If '+email+' is the admin account, a reset link is on its way. Check your inbox.');
+}
+async function adminSetNewPassword(e){
+  e.preventDefault();
+  const btn=document.getElementById('resetSubmitBtn');
+  const password=document.getElementById('resetPasswordInput').value;
+  btn.disabled=true;btn.textContent='Saving…';
+  document.getElementById('resetError').textContent='';
+  const {error}=await sb.auth.updateUser({password});
+  btn.disabled=false;btn.textContent='Set Password';
+  if(error){document.getElementById('resetError').textContent='Could not set password: '+error.message;return false;}
+  // Supabase leaves us signed in with the recovery session after this,
+  // and it's the admin account by construction (recovery only ever
+  // targets the account the reset link was sent to) -- go straight in.
+  showDashboard();
+  return false;
+}
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY') showResetForm();
+});
+
 async function checkAdminAuth(){
   const {data:{session}}=await sb.auth.getSession();
   if(session?.user?.email && session.user.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
@@ -305,7 +367,11 @@ async function loadAll(){
       ]);
       solves=sr.data||[];credits=cr.data||[];sessions=ser.data||[];
     }
-    renderDashboard(players,solves,credits,sessions);
+    // v1.2: visitor funnel — page_visits now has a public-read policy (added
+    // alongside the site's own logPageVisit() write, both shipped together).
+    const vr=await sb.from('page_visits').select('id,visited_at,registered,device_type');
+    const visits=vr.data||[];
+    renderDashboard(players,solves,credits,sessions,visits);
     document.getElementById('lastRefreshed').textContent='Refreshed '+new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
     document.getElementById('main').innerHTML=`<div class="empty"><div class="empty-icon">⚠</div><div style="color:#e05c5c">${e.message}</div></div>`;
@@ -313,7 +379,7 @@ async function loadAll(){
   btn.classList.remove('loading');icon.textContent='↻';
 }
 
-function renderDashboard(players,solves,credits,sessions){
+function renderDashboard(players,solves,credits,sessions,visits){
   const now=new Date();
   const rangeMs=currentDays>0?currentDays*24*60*60*1000:null;
   const rangeStart=rangeMs?new Date(now-rangeMs):null;
@@ -568,8 +634,24 @@ function renderDashboard(players,solves,credits,sessions){
   if(!cSorted.length)h+=`<tr><td colspan="6" class="empty" style="padding:20px">No data yet</td></tr>`;
   h+=`</tbody></table></div></div>`;
 
-  h+=`<div class="panel"><div class="panel-title">Visitor funnel</div><div class="panel-sub">Anonymous visits vs. registrations</div>`;
-  h+=`<div class="pending-note">⏳ Pending: <code>visits</code>/<code>page_visits</code> tables have no anon SELECT policy today (insert-only), so this dashboard can't read them yet. Add a public-read policy on one of them to light this panel up.</div>`;
+  h+=`<div class="panel"><div class="panel-title">Visitor funnel</div><div class="panel-sub">Anonymous visits vs. registrations — ${rangeLabel}</div>`;
+  {
+    const visitsInRange=(visits||[]).filter(v=>inRange(v.visited_at));
+    const totalVisits=visitsInRange.length;
+    const signups=newInRange.length; // players.created_at, same figure as the KPI above
+    const conv=pct(signups,totalVisits);
+    const mobileCt=visitsInRange.filter(v=>v.device_type==='mobile').length;
+    if(!totalVisits){
+      h+=`<div class="empty" style="padding:20px 0">No visits recorded yet this period</div>`;
+    }else{
+      h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">`;
+      h+=kpi('Visits',fmt(totalVisits),rangeLabel,'#4d9fff');
+      h+=kpi('Sign-ups',fmt(signups),rangeLabel,'#3ecf8e');
+      h+=kpi('Conversion',conv+'%','visits → sign-ups',conv>30?'#3ecf8e':conv>10?'#f5a623':'#e05c5c');
+      h+=kpi('Mobile',fmt(mobileCt),pct(mobileCt,totalVisits)+'% of visits','#a78bfa');
+      h+=`</div>`;
+    }
+  }
   h+=`</div></div>`;
 
   document.getElementById('main').innerHTML=h;
