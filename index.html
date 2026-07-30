@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.7 · 2026-07-30 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.8 · 2026-07-30 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1887,7 +1887,7 @@ footer {
       <div id="regStepEmail">
         <div class="aria-modal-msg">
           <span class="aria-prefix">ARIA //</span> Enter your email to begin.
-          We'll send an 8-digit verification code — no password required.
+          Already an operative? We'll take you straight to sign-in. New here? We'll send a quick 8-digit code.
         </div>
         <div class="form-group">
           <label class="form-label" for="inputEmail">Email Address</label>
@@ -1895,7 +1895,7 @@ footer {
                  autocomplete="email" autocapitalize="off" inputmode="email" spellcheck="false"/>
           <div class="form-error" id="emailError"></div>
         </div>
-        <button class="btn-primary" style="width:100%" onclick="sendOTP()">Send Verification Code</button>
+        <button class="btn-primary" style="width:100%" onclick="sendOTP()">Continue</button>
       </div>
 
       <!-- STEP 1: OTP -->
@@ -2119,7 +2119,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.7</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.8</span>
   </div>
 </footer>
 
@@ -2132,7 +2132,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.7';
+const EC_VERSION = '2.1.8';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
