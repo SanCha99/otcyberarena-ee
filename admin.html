@@ -97,7 +97,7 @@
   .ctable th.sortable.asc::after{content:' ↑';color:var(--accent);}
   .ctable th.sortable.desc::after{content:' ↓';color:var(--accent);}
   .ctable th.sortable:not(.asc):not(.desc)::after{content:' ↕';opacity:0.3;font-size:10px;}
-  .table-scroll{overflow-y:auto;max-height:400px;margin-top:8px;}
+  .table-scroll{overflow-y:auto;max-height:360px;margin-top:8px;}
   .table-scroll .ctable thead th{position:sticky;top:0;background:var(--bg2);z-index:2;}
   .table-scroll::-webkit-scrollbar{width:6px;}
   .table-scroll::-webkit-scrollbar-track{background:#1a1e29;border-radius:3px;}
@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.3 · 01-Aug-2026</div>
+      <div class="logo-ver">Dashboard v1.4 · 01-Aug-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -375,7 +375,7 @@ async function loadAll(){
     }
     // v1.2: visitor funnel — page_visits now has a public-read policy (added
     // alongside the site's own logPageVisit() write, both shipped together).
-    const vr=await sb.from('page_visits').select('id,session_id,visited_at,registered,device_type');
+    const vr=await sb.from('page_visits').select('id,session_id,visited_at,registered,device_type,timezone');
     const visits=vr.data||[];
     // v1.3: anonymous visitor activity — events table now has a public-read
     // policy too (added alongside the site's anon_* event writes). Only
@@ -667,7 +667,7 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
   }
   h+=`</div></div>`;
 
-  h+=`<div class="panel"><div class="panel-title">Anonymous visitor activity</div><div class="panel-sub">Time spent + what they tried, for visitors who never signed up — ${rangeLabel}</div>`;
+  h+=`<div class="panel"><div class="panel-title">Anonymous visitor activity</div><div class="panel-sub">Every visit from someone who never signed up — one row per visit, so repeat visitors show up as multiple rows. Country is approximate (from browser timezone, no location prompt) — ${rangeLabel}</div>`;
   {
     const FLAG_LABELS={
       anon_viewed_mcq:'Viewed MCQ', anon_attempted_mcq:'Tried MCQ',
@@ -675,38 +675,82 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
       anon_opened_cyberflight:'Opened CyberFlight',
       anon_opened_register:'Opened sign-up', anon_abandoned_register:'Abandoned sign-up'
     };
+    // Timezone -> country label, matching the exact country names used in
+    // the site's own registration dropdown so the two stay consistent.
+    // Approximate by nature (a timezone can span several countries) —
+    // falls back to the raw IANA zone string, never fabricates a guess.
+    const TZ_COUNTRY={
+      'Australia/Sydney':'Australia','Australia/Melbourne':'Australia','Australia/Brisbane':'Australia','Australia/Perth':'Australia','Australia/Adelaide':'Australia',
+      'America/Sao_Paulo':'Brazil','America/Fortaleza':'Brazil','America/Manaus':'Brazil',
+      'America/Toronto':'Canada','America/Vancouver':'Canada','America/Edmonton':'Canada','America/Winnipeg':'Canada','America/Halifax':'Canada',
+      'Asia/Shanghai':'China','Asia/Chongqing':'China','Asia/Urumqi':'China',
+      'Europe/Berlin':'Germany','Europe/Munich':'Germany',
+      'Asia/Kolkata':'India','Asia/Calcutta':'India',
+      'Asia/Jakarta':'Indonesia','Asia/Makassar':'Indonesia','Asia/Jayapura':'Indonesia',
+      'Asia/Tokyo':'Japan',
+      'Asia/Kuala_Lumpur':'Malaysia',
+      'Europe/Amsterdam':'Netherlands',
+      'Pacific/Auckland':'New Zealand',
+      'Africa/Lagos':'Nigeria',
+      'Asia/Manila':'Philippines',
+      'Asia/Riyadh':'Saudi Arabia',
+      'Asia/Singapore':'Singapore',
+      'Africa/Johannesburg':'South Africa',
+      'Asia/Seoul':'South Korea',
+      'Europe/Madrid':'Spain',
+      'Europe/Stockholm':'Sweden',
+      'Asia/Bangkok':'Thailand',
+      'Asia/Dubai':'United Arab Emirates',
+      'Europe/London':'United Kingdom',
+      'America/New_York':'United States','America/Chicago':'United States','America/Denver':'United States','America/Los_Angeles':'United States','America/Anchorage':'United States','Pacific/Honolulu':'United States',
+      'Asia/Ho_Chi_Minh':'Vietnam','Asia/Saigon':'Vietnam'
+    };
+    function tzToCountry(tz){ if(!tz)return'—'; return TZ_COUNTRY[tz]||tz; }
+
+    // Which whole SESSIONS ever registered -- excluded entirely, since this
+    // panel is specifically about visitors who did NOT create an account.
+    const convertedSessions=new Set((visits||[]).filter(v=>v.registered).map(v=>v.session_id));
+
+    // Group visits by session so we can (a) number repeat visits and (b)
+    // bucket each anon_* event into the visit that was open when it fired.
     const bySession={};
-    (anonEvents||[]).forEach(e=>{
-      const sid=e.metadata&&e.metadata.session_id;
-      if(!sid||!inRange(e.created_at))return;
-      if(!bySession[sid])bySession[sid]={seconds:0,flags:new Set(),first:e.created_at,device:null,converted:false};
-      const s=bySession[sid];
-      if(e.event_type==='anon_session_duration')s.seconds+=(e.metadata.seconds||0);
-      else s.flags.add(e.event_type);
-      if(new Date(e.created_at)<new Date(s.first))s.first=e.created_at;
-    });
-    // Cross-reference page_visits for device type + whether this session
-    // ever went on to register (registered flips true on a later page load
-    // in the same browser once they sign up — excludes converted sessions,
-    // since this panel is specifically about the ones who did NOT).
     (visits||[]).forEach(v=>{
-      const s=bySession[v.session_id];
-      if(!s)return;
-      if(v.device_type)s.device=v.device_type;
-      if(v.registered)s.converted=true;
+      if(!v.session_id||convertedSessions.has(v.session_id))return;
+      (bySession[v.session_id]=bySession[v.session_id]||[]).push(v);
     });
-    const rows=Object.entries(bySession).filter(([,s])=>!s.converted)
-      .sort((a,b)=>new Date(b[1].first)-new Date(a[1].first));
-    if(!rows.length){
-      h+=`<div class="empty" style="padding:20px 0">No anonymous activity recorded yet this period</div>`;
+    Object.values(bySession).forEach(list=>list.sort((a,b)=>new Date(a.visited_at)-new Date(b.visited_at)));
+
+    const visitRows=[];
+    Object.entries(bySession).forEach(([sid,list])=>{
+      list.forEach((v,i)=>{
+        if(!inRange(v.visited_at))return;
+        const windowStart=new Date(v.visited_at);
+        const windowEnd=i+1<list.length?new Date(list[i+1].visited_at):null;
+        let seconds=0;const flags=new Set();
+        (anonEvents||[]).forEach(e=>{
+          if((e.metadata&&e.metadata.session_id)!==sid)return;
+          const t=new Date(e.created_at);
+          if(t<windowStart)return;
+          if(windowEnd&&t>=windowEnd)return;
+          if(e.event_type==='anon_session_duration')seconds+=(e.metadata.seconds||0);
+          else flags.add(e.event_type);
+        });
+        visitRows.push({date:v.visited_at,country:tzToCountry(v.timezone),device:v.device_type,visitNum:i+1,totalVisits:list.length,seconds,flags});
+      });
+    });
+    visitRows.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+    if(!visitRows.length){
+      h+=`<div class="empty" style="padding:20px 0">No anonymous visits recorded yet this period</div>`;
     }else{
-      h+=`<div class="table-scroll"><table class="ctable"><thead><tr><th>First seen</th><th>Time spent</th><th>Device</th><th>What they tried</th></tr></thead><tbody>`;
-      rows.slice(0,50).forEach(([sid,s])=>{
-        const badges=[...s.flags].map(f=>`<span class="tag">${FLAG_LABELS[f]||f}</span>`).join(' ');
-        h+=`<tr><td>${fmtAgo(new Date(s.first))}</td><td>${fmtDwell(s.seconds)}</td><td>${s.device||'—'}</td><td>${badges||'<span style="color:var(--muted)">Left immediately</span>'}</td></tr>`;
+      h+=`<div class="table-scroll"><table class="ctable"><thead><tr><th>Date</th><th>Country</th><th>Device</th><th>Visit</th><th>Time spent</th><th>What they tried</th></tr></thead><tbody>`;
+      visitRows.slice(0,300).forEach(r=>{
+        const badges=[...r.flags].map(f=>`<span class="tag">${FLAG_LABELS[f]||f}</span>`).join(' ');
+        const visitTag=r.totalVisits>1?`<span class="tag" style="background:rgba(245,166,35,0.15);color:#f5a623">Visit ${r.visitNum} of ${r.totalVisits}</span>`:'1st visit';
+        h+=`<tr><td>${fmtDate(new Date(r.date))}</td><td>${r.country}</td><td>${r.device||'—'}</td><td>${visitTag}</td><td>${fmtDwell(r.seconds)}</td><td>${badges||'<span style="color:var(--muted)">Left immediately</span>'}</td></tr>`;
       });
       h+=`</tbody></table></div>`;
-      if(rows.length>50)h+=`<div class="panel-sub" style="margin-top:6px">Showing 50 most recent of ${rows.length}</div>`;
+      if(visitRows.length>300)h+=`<div class="panel-sub" style="margin-top:6px">Showing 300 most recent of ${visitRows.length}</div>`;
     }
   }
   h+=`</div>`;

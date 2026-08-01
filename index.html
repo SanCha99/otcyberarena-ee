@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.14 · 2026-08-01 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.15 · 2026-08-01 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2126,7 +2126,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.14</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.15</span>
   </div>
 </footer>
 
@@ -2139,7 +2139,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.14';
+const EC_VERSION = '2.1.15';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -4136,11 +4136,19 @@ function pageVisitSessionId() {
 async function logPageVisit() {
   if (IS_LOCAL) return;
   try {
+    // v2.1.15: browser timezone as an approximate, zero-consent country
+    // signal -- Intl is available with no permission prompt (unlike
+    // Geolocation), and this static site has no server to read an IP from
+    // even if we wanted to. Never displayed as a verified country, just an
+    // approximation, in the admin dashboard.
+    let tz = null;
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch {}
     await sb.from('page_visits').insert({
       session_id:  pageVisitSessionId(),
       registered:  !!currentPlayer,
       device_type: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-      user_id:     currentPlayer?.id && !currentPlayer.id.startsWith('local_') ? currentPlayer.id : null
+      user_id:     currentPlayer?.id && !currentPlayer.id.startsWith('local_') ? currentPlayer.id : null,
+      timezone:    tz
     });
   } catch (e) { /* non-critical, never block page load on this */ }
 }
