@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.11 · 2026-07-30 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.12 · 2026-08-01 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2126,7 +2126,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.11</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.12</span>
   </div>
 </footer>
 
@@ -2139,7 +2139,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.11';
+const EC_VERSION = '2.1.12';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2882,6 +2882,23 @@ function giveUpMCQ() {
 // engine. Sandip: let the player choose the tone instead of one fixed post.
 
 // ── CYWORDLE ENGINE ───────────────────────────────
+// v2.1.12: guess-validation dictionary (common English words + OT/cyber term
+// bank). Loaded once on page init; if the fetch fails for any reason we
+// fail OPEN (CYWORDLE_DICT stays null) so a network hiccup never blocks
+// gameplay. The current puzzle's own target word is always accepted even
+// if it's missing from the file, so forgetting to add a brand-new OT term
+// to cywordle_dictionary.json can never soft-lock a player out of a win.
+let CYWORDLE_DICT = null;
+async function loadCywordleDictionary() {
+  try {
+    const res = await fetch('cywordle_dictionary.json?v=' + Date.now());
+    const words = await res.json();
+    CYWORDLE_DICT = new Set(words);
+  } catch {
+    CYWORDLE_DICT = null;
+  }
+}
+
 let wordleState = {
   word: '',
   clue: '',
@@ -3057,6 +3074,16 @@ function submitWordleGuess() {
 
   if (raw.length !== wl) {
     setWordleMessage(`ARIA // Enter a ${wl}-letter OT term.`, 'var(--muted)');
+    input.style.borderColor = 'var(--red)';
+    setTimeout(()=>input.style.borderColor='var(--border)',800);
+    return;
+  }
+
+  // v2.1.12: reject strings that aren't real English words or known OT/cyber
+  // terms — doesn't consume an attempt (matches standard Wordle UX). The
+  // puzzle's own answer is always accepted regardless of dictionary state.
+  if (CYWORDLE_DICT && raw !== wordleState.word && !CYWORDLE_DICT.has(raw)) {
+    setWordleMessage(`ARIA // "${raw}" isn't a recognised word. Try again.`, 'var(--red)');
     input.style.borderColor = 'var(--red)';
     setTimeout(()=>input.style.borderColor='var(--border)',800);
     return;
@@ -4050,6 +4077,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHexBg();
   updatePlayerUI();
   claimPendingCyberflightScore();
+  loadCywordleDictionary();
   loadWeeklyQueue();
   loadIntelFeed();
   loadLeaderboard();
