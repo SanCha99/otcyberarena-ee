@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.4 · 01-Aug-2026</div>
+      <div class="logo-ver">Dashboard v1.5 · 01-Aug-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -739,6 +739,17 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
       });
     });
     visitRows.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+    // Reconciliation note: this panel's row count will legitimately be
+    // LOWER than the Visits/Mobile KPIs above, because those count every
+    // page load regardless of outcome while this table excludes any
+    // session that ever registered. Spelling that out here so the gap
+    // isn't mistaken for missing data.
+    const totalVisitsInRange=(visits||[]).filter(v=>inRange(v.visited_at)).length;
+    const excludedCount=totalVisitsInRange-visitRows.length;
+    if(totalVisitsInRange>0){
+      h+=`<div class="panel-sub" style="margin-bottom:8px">${fmt(visitRows.length)} of ${fmt(totalVisitsInRange)} visits shown${excludedCount?` — ${fmt(excludedCount)} excluded because that session later signed up`:''}</div>`;
+    }
 
     if(!visitRows.length){
       h+=`<div class="empty" style="padding:20px 0">No anonymous visits recorded yet this period</div>`;
