@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.12 · 2026-08-01 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.13 · 2026-08-01 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2126,7 +2126,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.12</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.13</span>
   </div>
 </footer>
 
@@ -2139,7 +2139,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.12';
+const EC_VERSION = '2.1.13';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3082,10 +3082,17 @@ function submitWordleGuess() {
   // v2.1.12: reject strings that aren't real English words or known OT/cyber
   // terms — doesn't consume an attempt (matches standard Wordle UX). The
   // puzzle's own answer is always accepted regardless of dictionary state.
+  // v2.1.13 fix: also clear the box + currentGuess on rejection — leaving
+  // the rejected letters in place blocked all further input, because the
+  // input's maxlength equals the word length, so a full-but-rejected guess
+  // silently ate every subsequent keystroke (looked like the game "froze").
   if (CYWORDLE_DICT && raw !== wordleState.word && !CYWORDLE_DICT.has(raw)) {
     setWordleMessage(`ARIA // "${raw}" isn't a recognised word. Try again.`, 'var(--red)');
     input.style.borderColor = 'var(--red)';
     setTimeout(()=>input.style.borderColor='var(--border)',800);
+    input.value = '';
+    wordleState.currentGuess = '';
+    updateWordleCurrentRow();
     return;
   }
 
