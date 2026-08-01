@@ -269,6 +269,28 @@ async function logSession(seconds) {
     game_type:         'cyberflight'
   });
 }
+
+// v2.1.14: log that an anonymous (not-signed-in) visitor opened CyberFlight.
+// Reuses the exact same localStorage session_id as index.html's
+// pageVisitSessionId() (same key, same-origin) so an anonymous visitor's
+// activity across pages can be grouped together in the admin dashboard.
+// Fire-and-forget, non-critical -- never blocks page load or gameplay.
+(async function () {
+  if (IS_LOCAL || currentPlayer) return;
+  try {
+    const SID_KEY = 'ec_visit_sid';
+    let sid = localStorage.getItem(SID_KEY);
+    if (!sid) {
+      sid = 'v_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(SID_KEY, sid);
+    }
+    await sb.from('events').insert({
+      event_type: 'anon_opened_cyberflight',
+      player_id:  null,
+      metadata:   { session_id: sid }
+    });
+  } catch {}
+})();
 </script>
 </body>
 </html>

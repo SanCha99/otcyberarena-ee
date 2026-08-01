@@ -1671,7 +1671,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.13 · 2026-08-01 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.14 · 2026-08-01 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2126,7 +2126,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.13</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.14</span>
   </div>
 </footer>
 
@@ -2139,7 +2139,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.13';
+const EC_VERSION = '2.1.14';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2200,6 +2200,7 @@ document.addEventListener('click', e => {
 // ── MODAL SYSTEM ─────────────────────────────────
 function openModal(which) {
   closeThemePanel();
+  if (which === 'register' && !anonFlags.openedRegister) { anonFlags.openedRegister = true; logAnonEvent('anon_opened_register', {}); }
   document.getElementById('modal' + which.charAt(0).toUpperCase() + which.slice(1))
           .classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2213,14 +2214,17 @@ function closeModal(which) {
   document.getElementById('modal' + which.charAt(0).toUpperCase() + which.slice(1))
           .classList.remove('open');
   document.body.style.overflow = '';
+  if (which === 'register' && !currentPlayer && anonFlags.openedRegister && !anonFlags.abandonedRegister) {
+    anonFlags.abandonedRegister = true;
+    logAnonEvent('anon_abandoned_register', {});
+  }
 }
 
 // Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', e => {
     if (e.target === overlay) {
-      overlay.classList.remove('open');
-      document.body.style.overflow = '';
+      closeModal(overlay.id.slice(5).charAt(0).toLowerCase() + overlay.id.slice(6));
     }
   });
 });
@@ -2229,8 +2233,7 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-overlay.open').forEach(m => {
-      m.classList.remove('open');
-      document.body.style.overflow = '';
+      closeModal(m.id.slice(5).charAt(0).toLowerCase() + m.id.slice(6));
     });
   }
 });
@@ -2607,6 +2610,7 @@ function normalizeMCQChallenge(challenge) {
 function renderMCQ(rawChallenge) {
   const challenge = normalizeMCQChallenge(rawChallenge);
   mcqState = { challenge, attempt:0, hintUsed:false, answered:false, correct:false, selectedIdx:null, outcome:null };
+  if (!anonFlags.viewedMcq) { anonFlags.viewedMcq = true; logAnonEvent('anon_viewed_mcq', { challenge_id: challenge?.id || null }); }
 
   const body = document.getElementById('gameCardBodyMCQ');
   body.innerHTML = `
@@ -2741,6 +2745,7 @@ function replayMCQAnswered(saved, ch) {
 
 function selectMCQ(btn, idx) {
   if (mcqState.answered) return;
+  if (!anonFlags.attemptedMcq) { anonFlags.attemptedMcq = true; logAnonEvent('anon_attempted_mcq', { challenge_id: mcqState.challenge?.id || null }); }
   const ch = mcqState.challenge;
   mcqState.selectedIdx = idx;
   const opts = document.querySelectorAll('.mcq-opt');
@@ -2923,6 +2928,7 @@ function renderCywordle(wordData) {
   const word = wordData.word.toUpperCase();
   wordleState = { word, clue:wordData.clue, guesses:[], currentGuess:'', maxGuesses:6, solved:false, failed:false };
   const wordLen = word.length;
+  if (!anonFlags.viewedCywordle) { anonFlags.viewedCywordle = true; logAnonEvent('anon_viewed_cywordle', { word_length: wordLen }); }
 
   const body = document.getElementById('gameCardBodyWordle');
   body.innerHTML = `
@@ -3095,6 +3101,8 @@ function submitWordleGuess() {
     updateWordleCurrentRow();
     return;
   }
+
+  if (!anonFlags.attemptedCywordle) { anonFlags.attemptedCywordle = true; logAnonEvent('anon_attempted_cywordle', {}); }
 
   const guess = raw.slice(0, wl);
   const rowIdx = wordleState.guesses.length;
@@ -3590,6 +3598,63 @@ async function logEvent(eventType, metadata) {
       metadata:   metadata || {}
     });
   }
+}
+
+// ── ANONYMOUS VISITOR ACTIVITY (v2.1.14) ──────────
+// Sandip: dashboard showed 14 visits vs 3 sign-ups -- "is it possible to
+// gather some intelligence on the ones that did not create an account..
+// how much time they spent, what did they explore, what did they try?"
+// Reuses the existing `events` table (player_id stays null for these rows)
+// rather than a new table -- session_id (already generated for page_visits)
+// goes in metadata so rows can be grouped per anonymous visitor without
+// ever touching email/PII. Each flag fires at most once per tab load: this
+// shows engagement patterns ("did they try Cywordle before leaving"), not
+// a blow-by-blow replay of every keystroke.
+const anonFlags = {
+  viewedMcq: false, attemptedMcq: false,
+  viewedCywordle: false, attemptedCywordle: false,
+  openedRegister: false, abandonedRegister: false
+};
+function logAnonEvent(eventType, extra) {
+  if (currentPlayer) return; // anonymous-visitor tracking only
+  logEvent(eventType, Object.assign({ session_id: pageVisitSessionId() }, extra || {}));
+}
+
+// Dwell time: fired once, on first tab-hide or page-unload, via a raw
+// keepalive fetch rather than the supabase-js client -- the tab may already
+// be closing by the time this runs, and keepalive is the standard technique
+// to make sure the request still lands.
+let __dwellStart = Date.now();
+let __dwellSent = false;
+function sendAnonDwellTime() {
+  if (__dwellSent || IS_LOCAL || currentPlayer) return;
+  const seconds = Math.max(0, Math.round((Date.now() - __dwellStart) / 1000));
+  if (seconds < 2) return; // ignore instant bounces / accidental taps
+  __dwellSent = true;
+  try {
+    fetch(SUPABASE_URL + '/rest/v1/events', {
+      method: 'POST',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        event_type: 'anon_session_duration',
+        player_id: null,
+        metadata: { session_id: pageVisitSessionId(), seconds, page: 'index' }
+      })
+    });
+  } catch {}
+}
+function initAnonDwellTracking() {
+  if (currentPlayer || IS_LOCAL) return;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') sendAnonDwellTime();
+  });
+  window.addEventListener('pagehide', sendAnonDwellTime);
 }
 
 // ── AUTH FLOW — EMAIL OTP + PIN ───────────────────
@@ -4091,6 +4156,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initLiveCount();
   applyArchiveGate();
   logPageVisit();
+  initAnonDwellTracking();
 
   // Archive pages link back as index.html#register / #login for anon visitors
   if (location.hash === '#register' || location.hash === '#login') {
