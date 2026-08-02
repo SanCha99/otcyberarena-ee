@@ -966,7 +966,8 @@ html { overflow-x: clip; }
 }
 .game-promo-desc {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text);
+  opacity: 0.75;
   line-height: 1.5;
   margin-bottom: 8px;
 }
@@ -1018,7 +1019,14 @@ html { overflow-x: clip; }
   background: var(--accent-dim);
 }
 
-.lb-rows { padding: 0; }
+.lb-rows {
+  padding: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.lb-rows::-webkit-scrollbar { width: 6px; }
+.lb-rows::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.lb-row.lb-self { background: var(--accent-dim); }
 
 .lb-row {
   display: flex;
@@ -1522,6 +1530,7 @@ html { overflow-x: clip; }
 /* Rank progress bar */
 .rank-progress-wrap {
   flex: 1;
+  flex-basis: 100%;
   min-width: 120px;
   max-width: 220px;
   height: 4px;
@@ -1563,7 +1572,7 @@ footer {
   line-height: 1.6;
 }
 
-.footer-left strong { color: var(--accent); }
+.footer-left strong { color: var(--accent); font-size: 13px; }
 
 .footer-right {
   display: flex;
@@ -1671,7 +1680,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.15 · 2026-08-01 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.16 · 2026-08-01 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1715,7 +1724,7 @@ footer {
   <section class="game-section" id="mcqSection" aria-label="This Week's MCQ Challenge">
     <div class="section-label">This Week's MCQ</div>
     <div class="game-card" id="featuredGameCardMCQ">
-      <div class="game-card-header">
+      <div class="game-card-header hidden" id="mcqCardHeader">
         <span class="game-type-badge" id="mcqBadgeLabel">THIS WEEK'S MCQ</span>
         <span class="game-day-label" id="mcqDayLabel">Live all week</span>
         <span class="game-no-login">✓ NO LOGIN</span>
@@ -1737,7 +1746,7 @@ footer {
   <section class="game-section" id="cywordleSection" aria-label="This Week's OT Cywordle">
     <div class="section-label">This Week's OT Cywordle</div>
     <div class="game-card" id="featuredGameCardWordle">
-      <div class="game-card-header">
+      <div class="game-card-header hidden" id="cywordleCardHeader">
         <span class="game-type-badge" id="cywordleBadgeLabel">THIS WEEK'S CYWORDLE</span>
         <span class="game-day-label" id="cywordleDayLabel">Live all week</span>
         <span class="game-no-login">✓ NO LOGIN</span>
@@ -1756,6 +1765,25 @@ footer {
   </section>
 
   </div><!-- /row-pair: MCQ + Cywordle -->
+
+  <!-- CYBERFLIGHT PROMO CARD (v2.1.0): standalone arcade game embedded via
+       cyberflight-play.html (iframe). That page listens for the game's
+       postMessage score event and credits it to the signed-in player,
+       capped at 3 credited runs/day; credited amount = the run's raw
+       final score (Sandip's call: rank tiers already scale the score,
+       no separate lookup table). Not signed in? The page still lets them
+       play and prompts sign-in to bank the score afterward. -->
+  <section class="game-promo-section" aria-label="CyberFlight game">
+    <div class="section-label">More Learning Tools</div>
+    <a class="game-promo-card" href="cyberflight-play.html">
+      <div class="game-promo-art" aria-hidden="true">🚀</div>
+      <div class="game-promo-body">
+        <div class="game-promo-title">CYBERFLIGHT</div>
+        <div class="game-promo-desc">Dodge live OT/ICS threats, collect real defenses, and climb the sectors in this arcade flyer — tracked on its own scoreboard, separate from your knowledge credits.</div>
+        <div class="game-promo-cta">▶ Play CyberFlight</div>
+      </div>
+    </a>
+  </section>
 
   <!-- Register nudge (shown after either game attempt) -->
   <div class="reg-nudge" id="regNudge" aria-live="polite" style="max-width:640px;margin:0 auto;">
@@ -1808,7 +1836,7 @@ footer {
       </div>
       <div class="lb-footer">
         <button class="btn-primary" style="font-size:11px;padding:8px 16px;width:100%;"
-                onclick="openModal('register')">See Your Rank</button>
+                id="seeYourRankBtn" onclick="openModal('register')">See Your Rank</button>
       </div>
     </div>
   </section>
@@ -1820,25 +1848,6 @@ footer {
        skin-toggle button that lived in this card is now in the footer,
        next to Join Arena — see footer-right below. Desktop is unaffected;
        desktop players still use the topbar's #themeToggle. -->
-
-  <!-- CYBERFLIGHT PROMO CARD (v2.1.0): standalone arcade game embedded via
-       cyberflight-play.html (iframe). That page listens for the game's
-       postMessage score event and credits it to the signed-in player,
-       capped at 3 credited runs/day; credited amount = the run's raw
-       final score (Sandip's call: rank tiers already scale the score,
-       no separate lookup table). Not signed in? The page still lets them
-       play and prompts sign-in to bank the score afterward. -->
-  <section class="game-promo-section" aria-label="CyberFlight game">
-    <div class="section-label">More Learning Tools</div>
-    <a class="game-promo-card" href="cyberflight-play.html">
-      <div class="game-promo-art" aria-hidden="true">🚀</div>
-      <div class="game-promo-body">
-        <div class="game-promo-title">CYBERFLIGHT</div>
-        <div class="game-promo-desc">Dodge live OT/ICS threats, collect real defenses, and climb the sectors in this arcade flyer — tracked on its own scoreboard, separate from your knowledge credits.</div>
-        <div class="game-promo-cta">▶ Play CyberFlight</div>
-      </div>
-    </a>
-  </section>
 
   <!-- SECTIONS 7 & 8: PAST MCQs / PAST CYWORDLES -->
   <section class="archive-cta-section" id="archiveCtaSection" aria-label="Past challenges" style="display:none">
@@ -2126,7 +2135,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.15</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.16</span>
   </div>
 </footer>
 
@@ -2139,7 +2148,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.15';
+const EC_VERSION = '2.1.16';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2458,6 +2467,7 @@ function updatePlayerUI() {
   document.getElementById('playerChip').classList.toggle('visible', loggedIn);
   document.getElementById('playerBar').classList.toggle('visible', loggedIn);
   document.getElementById('footerSignOut').classList.toggle('hidden', !loggedIn);
+  document.getElementById('seeYourRankBtn')?.classList.toggle('hidden', loggedIn);
   if (loggedIn) {
     const p = currentPlayer;
     const rank = getRank(p.credits || 0);
@@ -3318,6 +3328,7 @@ function applyBankOverride() {
     if (badge) badge.textContent = 'BANK REPLAY';
     const lbl = document.getElementById('cywordleDayLabel');
     if (lbl) lbl.textContent = 'From the archive';
+    document.getElementById('cywordleCardHeader')?.classList.remove('hidden');
     document.getElementById('cywordleSection')?.scrollIntoView({behavior:'smooth'});
   } else {
     currentMCQId = bankId;
@@ -3326,6 +3337,7 @@ function applyBankOverride() {
     if (badge) badge.textContent = 'BANK REPLAY';
     const lbl = document.getElementById('mcqDayLabel');
     if (lbl) lbl.textContent = 'From the archive';
+    document.getElementById('mcqCardHeader')?.classList.remove('hidden');
     document.getElementById('mcqSection')?.scrollIntoView({behavior:'smooth'});
   }
 }
@@ -3440,7 +3452,7 @@ async function loadLeaderboard() {
     const { data, error } = await sb.from('leaderboard')
       .select('callsign,country,track,credits,current_streak')
       .order('credits', { ascending: false })
-      .limit(20);
+      .limit(200);
     if (error || !data?.length) {
       lbData = SHOW_STAGING_LEADERBOARD_PREVIEW ? [...STAGING_PREVIEW_PLAYERS] : [];
     }
@@ -3468,10 +3480,13 @@ function filterLB(btn, filter) {
 }
 
 function renderLeaderboard() {
+  // v2.1.16: no longer sliced to the top 10 here -- the container's
+  // fixed max-height + overflow-y:auto (see .lb-rows CSS) is what keeps
+  // only ~10 rows visible at a time. Everyone fetched gets rendered so a
+  // signed-in player further down the list can still be scrolled to.
   const rows = lbData
     .filter(p => lbFilter === 'all' || p.track.toLowerCase() === lbFilter)
-    .sort((a,b) => b.credits - a.credits)
-    .slice(0,10);
+    .sort((a,b) => b.credits - a.credits);
 
   const container = document.getElementById('lbRows');
   if (!container) return;
@@ -3486,21 +3501,32 @@ function renderLeaderboard() {
     return;
   }
 
+  const myCallsign = currentPlayer?.callsign || null;
+
   container.innerHTML = rows.map((p,i) => {
     const rank = getRank(p.credits);
     const pos  = i+1;
     const posClass = pos===1?'p1':pos===2?'p2':pos===3?'p3':'';
+    const isSelf = myCallsign && p.callsign === myCallsign;
     return `
-      <div class="lb-row" role="listitem">
+      <div class="lb-row ${isSelf?'lb-self':''}" role="listitem" data-callsign="${p.callsign}">
         <div class="lb-pos ${posClass}">#${pos}</div>
         <div class="lb-flag">${FLAG_MAP[p.country]||'🌍'}</div>
         <div class="lb-info">
-          <div class="lb-callsign">${p.callsign}</div>
+          <div class="lb-callsign">${p.callsign}${isSelf?' (you)':''}</div>
           <div class="lb-track-rank">${p.track} · ${rank.name}</div>
         </div>
         <div class="lb-credits">${p.credits.toLocaleString()}</div>
       </div>`;
   }).join('');
+
+  // Land a signed-in player on their own row instead of making them
+  // scroll to find it. block:'nearest' keeps the page itself from
+  // jumping -- only the internal scrollable list moves.
+  if (myCallsign) {
+    const selfRow = container.querySelector('.lb-row.lb-self');
+    if (selfRow) selfRow.scrollIntoView({ block: 'nearest' });
+  }
 }
 
 // ── SCORING + PLAYER CREDITS ──────────────────────
