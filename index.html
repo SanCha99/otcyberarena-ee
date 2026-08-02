@@ -761,9 +761,19 @@ html { overflow-x: clip; }
 .main > * { min-width: 0; max-width: 100%; }
 .game-card, .game-card * { max-width: 100%; }
 
+/* v2.1.17: mobile .row-pair had NO gap between its stacked children (plain
+   block), unlike every other section which gets .main's flex gap — this is
+   why the Cywordle heading was touching the MCQ card above it. Give it the
+   same gap value as .main so spacing is visually consistent everywhere. */
+.row-pair {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.8vw, 20px);
+}
+
 /* ─── v2.0.1: DESKTOP 2-COLUMN PAIRING ───
-   Mobile (default): .row-pair is a plain block, children stack exactly as
-   before via the .main .game-section etc rule above — no behaviour change.
+   Mobile (default): .row-pair now uses the flex/gap rule above so stacked
+   children get the same spacing rhythm as every other section.
    Desktop/laptop (>=900px): paired sections (MCQ+Cywordle, Intel+Leaderboard)
    sit side by side. Sandip's flag: MCQ card height changes as someone
    answers (feedback/debrief reveal), which would misalign a stretched grid
@@ -826,9 +836,9 @@ html { overflow-x: clip; }
 /* ─── SECTION LABEL ─── */
 .section-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--accent);
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   margin-bottom: 14px;
   display: flex;
@@ -1511,7 +1521,7 @@ html { overflow-x: clip; }
 .player-bar.visible {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: clamp(10px, 3vw, 20px);
   flex-wrap: wrap;
 }
 
@@ -1645,10 +1655,10 @@ footer {
 <!-- Player status bar (visible when logged in) -->
 <div class="player-bar" id="playerBar" role="complementary" aria-label="Player status">
   <div class="player-bar-item">ARIA//</div>
+  <div class="player-bar-item">Rank: <span class="val accent" id="barRank">Trainee</span></div>
   <div class="player-bar-item">Credits: <span class="val accent" id="barCredits">0</span></div>
   <div class="player-bar-item">Streak: <span class="val" id="barStreak">0</span>🔥</div>
   <div class="player-bar-item">Shields: <span class="val" id="barShields">0</span>🛡</div>
-  <div class="player-bar-item">Rank: <span class="val accent" id="barRank">Trainee</span></div>
   <div class="rank-progress-wrap" title="Progress to next rank">
     <div class="rank-progress-bar" id="rankProgressBar" style="width:0%"></div>
   </div>
@@ -1680,7 +1690,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.16 · 2026-08-01 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.17 · 2026-08-02 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2135,7 +2145,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.16</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.17</span>
   </div>
 </footer>
 
@@ -2148,7 +2158,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.16';
+const EC_VERSION = '2.1.17';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
