@@ -7,7 +7,7 @@
     ],
     "cywordle": {
       "word": "CERT",
-      "clue": "Computer Emergency Response Team — the coordination group you notify when an ICS incident hits."
+      "clue": "Computer Emergency Response Team \u2014 the coordination group you notify when an ICS incident hits."
     }
   },
   {
@@ -17,7 +17,7 @@
     ],
     "cywordle": {
       "word": "PATCH",
-      "clue": "The fix a vendor ships for a known vulnerability — applying it in OT usually needs a planned maintenance window."
+      "clue": "The fix a vendor ships for a known vulnerability \u2014 applying it in OT usually needs a planned maintenance window."
     }
   },
   {
@@ -47,7 +47,7 @@
     ],
     "cywordle": {
       "word": "WIPER",
-      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it — used in some of the most destructive attacks on OT networks."
+      "clue": "Malware built to permanently destroy or erase data and systems rather than steal it \u2014 used in some of the most destructive attacks on OT networks."
     }
   },
   {
@@ -177,7 +177,17 @@
     ],
     "cywordle": {
       "word": "TAMPER",
-      "clue": "Deliberately altering a device or its readings without authorization — a key OT/ICS security concern."
+      "clue": "Deliberately altering a device or its readings without authorization \u2014 a key OT/ICS security concern."
+    }
+  },
+  {
+    "week_start": "2026-08-02",
+    "mcq_ids": [
+      "EC-00020"
+    ],
+    "cywordle": {
+      "word": "BEACON",
+      "clue": "A malware's periodic signal back to its command-and-control server, revealing a hidden compromise."
     }
   }
 ]
