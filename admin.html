@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.6 · 03-Aug-2026</div>
+      <div class="logo-ver">Dashboard v1.7 · 04-Aug-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -309,6 +309,15 @@ const OUTCOME_LABELS={correct_1st:'1st try',correct_2nd:'2nd try',hint_used:'hin
 // game_type CHECK constraint: quiz-style (has meaningful outcome) vs score-based
 const QUIZ_TYPES=['mcq_daily','mcq_episode','cywordle','word_search','true_false','drag_match','drill_60sec'];
 const SCORE_TYPES=['cyberflight','red_shift','scada_siege'];
+// Founder's own device(s) -- confirmed 2026-08-04 via live session match
+// (Sandip visited from his phone, matched to this exact session_id, 33
+// prior visits Jul31-Aug4, always mobile, Asia/Singapore). Excluded from
+// every anonymous-visitor stat below (funnel KPIs, activity table, device
+// summary) so his own testing never counts as a "visitor." Non-destructive
+// -- rows stay in the DB untouched, this only filters the dashboard view.
+// Add more session_ids here if he tests from another device -- ask him to
+// visit once, then look up the newest page_visits row to get the id.
+const OWNER_SESSION_IDS=new Set(['v_ms88sspu_a5l7c7e0']);
 
 const FLAGS={'Australia':'🇦🇺','China':'🇨🇳','India':'🇮🇳','Indonesia':'🇮🇩','Japan':'🇯🇵','Korea':'🇰🇷','Malaysia':'🇲🇾','New Zealand':'🇳🇿','Philippines':'🇵🇭','Singapore':'🇸🇬','Taiwan':'🇹🇼','Thailand':'🇹🇭','Vietnam':'🇻🇳','Argentina':'🇦🇷','Canada':'🇨🇦','Chile':'🇨🇱','Germany':'🇩🇪','Israel':'🇮🇱','Mexico':'🇲🇽','Poland':'🇵🇱','Portugal':'🇵🇹','Spain':'🇪🇸','United Kingdom':'🇬🇧','United States':'🇺🇸','Venezuela':'🇻🇪','LA Region':'🌎','EMEA Region':'🌍','Others':'🌐'};
 
@@ -393,6 +402,11 @@ async function loadAll(){
 }
 
 function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
+  // v1.7: strip the founder's own devices before any downstream computation
+  // touches these two arrays, so every anonymous-visitor surface (funnel
+  // KPIs, activity table, device summary) is automatically clean.
+  visits=(visits||[]).filter(v=>!OWNER_SESSION_IDS.has(v.session_id));
+  anonEvents=(anonEvents||[]).filter(e=>!OWNER_SESSION_IDS.has(e.metadata&&e.metadata.session_id));
   const now=new Date();
   const rangeMs=currentDays>0?currentDays*24*60*60*1000:null;
   const rangeStart=rangeMs?new Date(now-rangeMs):null;
