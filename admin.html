@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.7 · 04-Aug-2026</div>
+      <div class="logo-ver">Dashboard v1.8 · 04-Aug-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -324,7 +324,7 @@ const FLAGS={'Australia':'🇦🇺','China':'🇨🇳','India':'🇮🇳','Indon
 function setRange(d,el){currentDays=d;document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadAll();}
 function destroyCharts(){charts.forEach(c=>{try{c.destroy();}catch(e){}});charts=[];}
 
-const sortState={player:{col:'credits',dir:'desc'},challenge:{col:'total',dir:'desc'},country:{col:'players',dir:'desc'}};
+const sortState={player:{col:'credits',dir:'desc'},challenge:{col:'total',dir:'desc'},country:{col:'players',dir:'desc'},device:{col:'visits',dir:'desc'},visit:{col:'date',dir:'desc'}};
 
 function sortTable(tableId,col,type='num'){
   const st=sortState[tableId];
@@ -782,11 +782,27 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
       h+=kpi('Returning',pct(returningDevices,uniqueDevices)+'%',`${fmt(returningDevices)} visited more than once`,'#f5a623');
       h+=kpi('Total Time',fmtDwell(totalAnonSecs),'across all anon devices','#3ecf8e');
       h+=`</div>`;
-      h+=`<div class="table-scroll"><table class="ctable"><thead><tr><th>First Seen</th><th>Last Seen</th><th>Country</th><th>Device</th><th class="num">Visits</th><th class="num">Total Time</th><th>What they tried</th></tr></thead><tbody>`;
+      h+=`<div class="table-scroll"><table class="ctable" id="device-table"><thead><tr>
+        <th class="sortable" data-col="firstseen" onclick="sortTable('device','firstseen','num')">First Seen</th>
+        <th class="sortable" data-col="lastseen" onclick="sortTable('device','lastseen','num')">Last Seen</th>
+        <th class="sortable" data-col="country" onclick="sortTable('device','country','str')">Country</th>
+        <th class="sortable" data-col="device" onclick="sortTable('device','device','str')">Device</th>
+        <th class="num sortable desc" data-col="visits" onclick="sortTable('device','visits','num')">Visits</th>
+        <th class="num sortable" data-col="time" onclick="sortTable('device','time','num')">Total Time</th>
+        <th class="sortable" data-col="tried" onclick="sortTable('device','tried','num')">What they tried</th>
+      </tr></thead><tbody>`;
       deviceRows.slice(0,300).forEach(d=>{
         const badges=[...d.flags].map(f=>`<span class="tag">${FLAG_LABELS[f]||f}</span>`).join(' ');
         const visitTag=d.visits>1?`<span class="tag" style="background:rgba(245,166,35,0.15);color:#f5a623">${d.visits}</span>`:'1';
-        h+=`<tr><td style="color:var(--muted);font-size:11px">${fmtDate(new Date(d.firstSeen))}</td><td style="color:var(--muted);font-size:11px">${fmtAgo(new Date(d.lastSeen))}</td><td>${d.country}</td><td>${d.device||'—'}</td><td class="num">${visitTag}</td><td class="num">${fmtDwell(d.totalSeconds)}</td><td>${badges||'<span style="color:var(--muted)">Left immediately</span>'}</td></tr>`;
+        h+=`<tr data-firstseen="${new Date(d.firstSeen).getTime()}" data-lastseen="${new Date(d.lastSeen).getTime()}" data-country="${d.country}" data-device="${d.device||''}" data-visits="${d.visits}" data-time="${d.totalSeconds}" data-tried="${d.flags.size}">
+          <td style="color:var(--muted);font-size:11px">${fmtDate(new Date(d.firstSeen))}</td>
+          <td style="color:var(--muted);font-size:11px">${fmtAgo(new Date(d.lastSeen))}</td>
+          <td>${d.country}</td>
+          <td>${d.device||'—'}</td>
+          <td class="num">${visitTag}</td>
+          <td class="num">${fmtDwell(d.totalSeconds)}</td>
+          <td>${badges||'<span style="color:var(--muted)">Left immediately</span>'}</td>
+        </tr>`;
       });
       h+=`</tbody></table></div>`;
       if(deviceRows.length>300)h+=`<div class="panel-sub" style="margin-top:6px">Showing 300 most recent of ${deviceRows.length}</div>`;
@@ -809,11 +825,25 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
     if(!visitRows.length){
       h+=`<div class="empty" style="padding:20px 0">No anonymous visits recorded yet this period</div>`;
     }else{
-      h+=`<div class="table-scroll"><table class="ctable"><thead><tr><th>Date</th><th>Country</th><th>Device</th><th>Visit</th><th>Time spent</th><th>What they tried</th></tr></thead><tbody>`;
+      h+=`<div class="table-scroll"><table class="ctable" id="visit-table"><thead><tr>
+        <th class="sortable desc" data-col="date" onclick="sortTable('visit','date','num')">Date</th>
+        <th class="sortable" data-col="country" onclick="sortTable('visit','country','str')">Country</th>
+        <th class="sortable" data-col="device" onclick="sortTable('visit','device','str')">Device</th>
+        <th class="sortable" data-col="visit" onclick="sortTable('visit','visit','num')">Visit</th>
+        <th class="sortable" data-col="time" onclick="sortTable('visit','time','num')">Time spent</th>
+        <th class="sortable" data-col="tried" onclick="sortTable('visit','tried','num')">What they tried</th>
+      </tr></thead><tbody>`;
       visitRows.slice(0,300).forEach(r=>{
         const badges=[...r.flags].map(f=>`<span class="tag">${FLAG_LABELS[f]||f}</span>`).join(' ');
         const visitTag=r.totalVisits>1?`<span class="tag" style="background:rgba(245,166,35,0.15);color:#f5a623">Visit ${r.visitNum} of ${r.totalVisits}</span>`:'1st visit';
-        h+=`<tr><td>${fmtDate(new Date(r.date))}</td><td>${r.country}</td><td>${r.device||'—'}</td><td>${visitTag}</td><td>${fmtDwell(r.seconds)}</td><td>${badges||'<span style="color:var(--muted)">Left immediately</span>'}</td></tr>`;
+        h+=`<tr data-date="${new Date(r.date).getTime()}" data-country="${r.country}" data-device="${r.device||''}" data-visit="${r.totalVisits}" data-time="${r.seconds}" data-tried="${r.flags.size}">
+          <td>${fmtDate(new Date(r.date))}</td>
+          <td>${r.country}</td>
+          <td>${r.device||'—'}</td>
+          <td>${visitTag}</td>
+          <td>${fmtDwell(r.seconds)}</td>
+          <td>${badges||'<span style="color:var(--muted)">Left immediately</span>'}</td>
+        </tr>`;
       });
       h+=`</tbody></table></div>`;
       if(visitRows.length>300)h+=`<div class="panel-sub" style="margin-top:6px">Showing 300 most recent of ${visitRows.length}</div>`;
