@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.5 · 01-Aug-2026</div>
+      <div class="logo-ver">Dashboard v1.6 · 03-Aug-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -667,7 +667,6 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
   }
   h+=`</div></div>`;
 
-  h+=`<div class="panel"><div class="panel-title">Anonymous visitor activity</div><div class="panel-sub">Every visit from someone who never signed up — one row per visit, so repeat visitors show up as multiple rows. Country is approximate (from browser timezone, no location prompt) — ${rangeLabel}</div>`;
   {
     const FLAG_LABELS={
       anon_viewed_mcq:'Viewed MCQ', anon_attempted_mcq:'Tried MCQ',
@@ -735,10 +734,52 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
           if(e.event_type==='anon_session_duration')seconds+=(e.metadata.seconds||0);
           else flags.add(e.event_type);
         });
-        visitRows.push({date:v.visited_at,country:tzToCountry(v.timezone),device:v.device_type,visitNum:i+1,totalVisits:list.length,seconds,flags});
+        visitRows.push({sid,date:v.visited_at,country:tzToCountry(v.timezone),device:v.device_type,visitNum:i+1,totalVisits:list.length,seconds,flags});
       });
     });
     visitRows.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+    // v1.6: summary by device -- aggregates the same visitRows (already
+    // scoped to rangeLabel) by session id, so it always agrees with the
+    // per-visit table below rather than recomputing anything independently.
+    const deviceMap={};
+    visitRows.forEach(r=>{
+      if(!deviceMap[r.sid])deviceMap[r.sid]={sid:r.sid,country:r.country,device:r.device,firstSeen:r.date,lastSeen:r.date,visits:0,totalSeconds:0,flags:new Set()};
+      const d=deviceMap[r.sid];
+      d.visits++;
+      d.totalSeconds+=r.seconds;
+      r.flags.forEach(f=>d.flags.add(f));
+      if(new Date(r.date)<new Date(d.firstSeen))d.firstSeen=r.date;
+      if(new Date(r.date)>new Date(d.lastSeen))d.lastSeen=r.date;
+    });
+    const deviceRows=Object.values(deviceMap).sort((a,b)=>(b.visits-a.visits)||(new Date(b.lastSeen)-new Date(a.lastSeen)));
+    const uniqueDevices=deviceRows.length;
+    const returningDevices=deviceRows.filter(d=>d.visits>1).length;
+    const avgVisitsPerDevice=uniqueDevices?Math.round(visitRows.length/uniqueDevices*10)/10:0;
+    const totalAnonSecs=deviceRows.reduce((a,d)=>a+d.totalSeconds,0);
+
+    h+=`<div class="panel"><div class="panel-title">Anonymous visitors — summary by device</div><div class="panel-sub">One row per unique device/browser that never signed up, aggregated across all its visits — ${rangeLabel}. A device is identified the same way as elsewhere on this dashboard (browser-local id) — the same person on two devices counts as two.</div>`;
+    if(!uniqueDevices){
+      h+=`<div class="empty" style="padding:20px 0">No anonymous visits recorded yet this period</div>`;
+    }else{
+      h+=`<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));margin-bottom:16px">`;
+      h+=kpi('Unique Devices',fmt(uniqueDevices),rangeLabel,'#4d9fff');
+      h+=kpi('Avg Visits/Device',avgVisitsPerDevice,'per device','#a78bfa');
+      h+=kpi('Returning',pct(returningDevices,uniqueDevices)+'%',`${fmt(returningDevices)} visited more than once`,'#f5a623');
+      h+=kpi('Total Time',fmtDwell(totalAnonSecs),'across all anon devices','#3ecf8e');
+      h+=`</div>`;
+      h+=`<div class="table-scroll"><table class="ctable"><thead><tr><th>First Seen</th><th>Last Seen</th><th>Country</th><th>Device</th><th class="num">Visits</th><th class="num">Total Time</th><th>What they tried</th></tr></thead><tbody>`;
+      deviceRows.slice(0,300).forEach(d=>{
+        const badges=[...d.flags].map(f=>`<span class="tag">${FLAG_LABELS[f]||f}</span>`).join(' ');
+        const visitTag=d.visits>1?`<span class="tag" style="background:rgba(245,166,35,0.15);color:#f5a623">${d.visits}</span>`:'1';
+        h+=`<tr><td style="color:var(--muted);font-size:11px">${fmtDate(new Date(d.firstSeen))}</td><td style="color:var(--muted);font-size:11px">${fmtAgo(new Date(d.lastSeen))}</td><td>${d.country}</td><td>${d.device||'—'}</td><td class="num">${visitTag}</td><td class="num">${fmtDwell(d.totalSeconds)}</td><td>${badges||'<span style="color:var(--muted)">Left immediately</span>'}</td></tr>`;
+      });
+      h+=`</tbody></table></div>`;
+      if(deviceRows.length>300)h+=`<div class="panel-sub" style="margin-top:6px">Showing 300 most recent of ${deviceRows.length}</div>`;
+    }
+    h+=`</div>`;
+
+    h+=`<div class="panel"><div class="panel-title">Anonymous visitor activity</div><div class="panel-sub">Every visit from someone who never signed up — one row per visit, so repeat visitors show up as multiple rows. For a per-device rollup, see the summary panel above. Country is approximate (from browser timezone, no location prompt) — ${rangeLabel}</div>`;
 
     // Reconciliation note: this panel's row count will legitimately be
     // LOWER than the Visits/Mobile KPIs above, because those count every
