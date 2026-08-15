@@ -1,0 +1,242 @@
+[
+  {
+    "id": "EC-00037",
+    "game_type": "mcq_weekly",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "At Ferrostone Mining Co., a security analyst notices unusual traffic from an unfamiliar IP address hitting the company's public GitHub research page and a conference-paper repository where two of its OT engineers previously published papers on the plant's predictive-maintenance AI architecture — no direct contact with any live system occurred.",
+    "question": "Which MITRE ATLAS technique does this activity represent?",
+    "options": [
+      "Search Open Technical Databases - searching publicly available research and technical documentation to learn how AI is used at a victim organization.",
+      "Active Scanning - directly probing a victim's systems for exposed AI services and tooling.",
+      "Exploit Public-Facing Application - exploiting a vulnerability in an internet-facing application to gain access.",
+      "Data from Local System - searching a compromised host's file system for sensitive files."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "No system was touched at all — every piece of information came from things the company had already published.",
+    "debrief": "Search Open Technical Databases (AML.T0000) covers exactly this: searching publicly available research, papers, and technical documentation - including author affiliations - to learn how and where AI is used at a target, without touching any live system. Option B (Active Scanning) requires direct probing of the victim's own systems, which never happened here. Option C requires exploiting a live internet-facing application. Option D requires the attacker to already have a foothold on a local system to search its files - here nothing was compromised at all.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0000",
+        "url": "https://atlas.mitre.org/techniques/AML.T0000"
+      }
+    ]
+  },
+  {
+    "id": "EC-00038",
+    "game_type": "mcq_weekly",
+    "difficulty": "easy",
+    "points": 20,
+    "penalty": -4,
+    "scenario": "A newly hired red-teamer at Solvane Petrochemicals downloads a well-known open-source library built for testing adversarial robustness of machine-learning models, planning to reuse it against the plant's own AI-based leak-detection system rather than building an attack tool from scratch.",
+    "question": "Which MITRE ATLAS technique describes this action?",
+    "options": [
+      "Establish Accounts - creating or acquiring accounts to support later operations.",
+      "Create Proxy AI Model - training a substitute model to develop and test attacks offline.",
+      "Obtain Capabilities - searching for and acquiring existing software tools, including adversarial-AI attack implementations, to reuse in an operation.",
+      "Discover AI Artifacts - identifying AI-related information and artifacts as part of reconnaissance."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "The tool itself already existed and was published by someone else — nothing was trained or discovered here, just picked up and reused.",
+    "debrief": "Obtain Capabilities (AML.T0016) covers acquiring existing software capabilities - including published adversarial-AI attack implementations from research libraries - for reuse rather than building them in-house. Option A is about setting up accounts for persistence or access, unrelated to tooling. Option B requires training a new substitute model, not downloading an existing attack library. Option D is a reconnaissance technique for locating artifacts, not acquiring attack tooling.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0016",
+        "url": "https://atlas.mitre.org/techniques/AML.T0016"
+      }
+    ]
+  },
+  {
+    "id": "EC-00039",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "After gaining a foothold on a workstation at Brackwater Desalination, an attacker methodically searches the local file system for configuration files, cached API keys, and model-parameter files related to the plant's water-quality prediction AI, before attempting to move any of it off the network.",
+    "question": "Which MITRE ATLAS technique does this local search represent?",
+    "options": [
+      "AI Artifact Collection - gathering supporting, non-model artifacts like logs or documentation about an AI system.",
+      "Data from Local System - searching local file systems and configuration files for sensitive data of interest prior to exfiltration.",
+      "Exfiltration via Cyber Means - moving collected data off the network using traditional cyber techniques.",
+      "Discover AI Model Ontology - inferring a model's output categories through repeated queries."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "Nothing has left the machine yet — the attacker is still just searching what's already sitting on the disk in front of them.",
+    "debrief": "Data from Local System (AML.T0037) covers searching a compromised host's file systems, configuration files, and local databases for files of interest - including API keys and model parameters - before any attempt to move that data out. Option A (AI Artifact Collection) is a broader collection technique focused specifically on supporting artifacts like logs, not this local file-system search itself. Option C requires the data to actually be moved off the network, which the scenario explicitly says hasn't happened yet. Option D requires actively querying a live model's API, not searching local files.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0037",
+        "url": "https://atlas.mitre.org/techniques/AML.T0037"
+      }
+    ]
+  },
+  {
+    "id": "EC-00040",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "Security researchers determine that attackers gained their initial foothold at Talcott Steelworks through an unpatched vulnerability in the web dashboard the plant uses to expose its AI-based quality-inspection results to external auditors.",
+    "question": "Which MITRE ATLAS technique matches how the attacker first got in?",
+    "options": [
+      "AI Model Inference API Access - using a model's own prediction interface as intended, without any exploit.",
+      "Full AI Model Access - already having complete, legitimate access to a model's architecture and weights.",
+      "Physical Environment Access - gaining physical access to a facility to reach an otherwise-isolated system.",
+      "Exploit Public-Facing Application - taking advantage of a bug or vulnerability in an internet-facing application to gain unintended access."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "The problem wasn't how the dashboard was used — it's that the dashboard itself had a flaw that let someone in who was never supposed to be there.",
+    "debrief": "Exploit Public-Facing Application (AML.T0049) covers taking advantage of a bug, glitch, or design vulnerability in an internet-facing application - here, the auditor-facing dashboard - to gain unintended access. Option A describes normal, authorized use of a model's interface, not an exploit. Option B requires the attacker to already have complete internal access, which is the opposite of this initial-access scenario. Option C requires physical presence at the facility, not a remote web vulnerability.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0049",
+        "url": "https://atlas.mitre.org/techniques/AML.T0049"
+      }
+    ]
+  },
+  {
+    "id": "EC-00041",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "Over a single weekend, someone sends thousands of unusually complex, resource-intensive queries to Vantry Utilities' cloud-hosted, pay-per-use AI forecasting API - not enough to crash it, but enough that the plant's next cloud bill is nearly ten times normal.",
+    "question": "Which MITRE ATLAS technique does this best describe?",
+    "options": [
+      "Cost Harvesting - deliberately driving a victim's AI services beyond normal capacity to inflate the financial cost of running them.",
+      "Denial of AI Service - flooding a system with requests specifically to degrade or shut it down entirely.",
+      "Exfiltration via AI Inference API - extracting private model or training-data information through legitimate queries.",
+      "Spamming AI System with Chaff Data - flooding a system with data to increase analyst-facing false positives."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "The service never actually went down or got fooled — the real damage this time showed up on the invoice.",
+    "debrief": "Cost Harvesting (AML.T0034) covers deliberately driving a pay-per-use AI service beyond normal operating capacity - through high-volume or high-complexity queries - specifically to inflate the financial cost to the victim, exactly what happened to Vantry's cloud bill. Option B (Denial of AI Service) targets availability, aiming to degrade or shut the service down, not simply run up its cost while it keeps functioning. Option C is about extracting information through queries, not driving up cost. Option D is aimed at burying human analysts in false positives, not inflating a cloud bill.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0034",
+        "url": "https://atlas.mitre.org/techniques/AML.T0034"
+      }
+    ]
+  },
+  {
+    "id": "EC-00042",
+    "game_type": "mcq_weekly",
+    "difficulty": "medium",
+    "points": 40,
+    "penalty": -8,
+    "scenario": "Investigators at Corrigan Foundry determine that a departing contractor copied the plant's proprietary defect-detection model files onto a personal USB drive during their final week, using standard file-copy commands rather than any AI-specific channel.",
+    "question": "Which MITRE ATLAS technique matches how the model files left the building?",
+    "options": [
+      "Exfiltration via AI Inference API - extracting model information indirectly through a legitimate prediction interface.",
+      "AI Supply Chain Compromise - compromising a model before it ever reaches the victim organization.",
+      "Exfiltration via Cyber Means - exfiltrating AI artifacts or other information using traditional cyber techniques rather than an AI-specific channel.",
+      "Data from Information Repositories - collecting data from shared drives or collaboration tools prior to exfiltration."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "There was nothing clever about the AI system involved here — it was a plain, everyday file copy to a USB drive.",
+    "debrief": "Exfiltration via Cyber Means (AML.T0025) covers moving AI artifacts off a network using ordinary, traditional cyber techniques - like a direct file copy to removable media - rather than any AI-specific mechanism. Option A requires the data to be extracted indirectly through a model's own inference interface, not copied as files. Option B requires the compromise to happen upstream before the model reached the victim, not a departing insider copying finished files. Option D describes the collection step from shared repositories, not the act of moving the data off the network.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0025",
+        "url": "https://atlas.mitre.org/techniques/AML.T0025"
+      }
+    ]
+  },
+  {
+    "id": "EC-00043",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "Over several months, Palisade Grid Co. notices its demand-forecasting model's accuracy has been quietly declining. Investigators eventually trace it to a steady trickle of subtly incorrect readings submitted through a legitimate crowdsourced field-reporting channel used by hundreds of technicians - no single submission stands out as obviously wrong.",
+    "question": "Which MITRE ATLAS technique best matches this slow decline?",
+    "options": [
+      "Poison Training Data - modifying specific labels or data to embed a hidden, targeted backdoor in a model.",
+      "Erode Dataset Integrity - poisoning or manipulating portions of a dataset broadly to reduce its usefulness and trust over time.",
+      "Publish Poisoned Datasets - publishing an entire malicious dataset publicly for victims to download and use.",
+      "Manipulate AI Model - directly changing an already-trained model's weights or behavior."
+    ],
+    "correctIdx": 1,
+    "aria_hint": "There's no single hidden trigger being planted here — it's a broad, ongoing drip of noise meant to wear the whole dataset down over time.",
+    "debrief": "Erode Dataset Integrity (AML.T0059) covers broadly poisoning or manipulating portions of a dataset - not to plant one specific hidden trigger, but to reduce its overall usefulness and trustworthiness and waste resources on cleanup, matching the slow, diffuse decline Palisade saw. Option A (Poison Training Data) is the more targeted technique - a specific, deliberate mislabeling meant to create a precise backdoor, not a broad quality decline. Option C requires publishing an entire dataset publicly for others to adopt, not slipping bad readings into an existing crowdsourced channel. Option D requires directly altering the finished model's weights, not its training data.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0059",
+        "url": "https://atlas.mitre.org/techniques/AML.T0059"
+      }
+    ]
+  },
+  {
+    "id": "EC-00044",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "After successfully injecting hidden instructions into a document read by Kestrel Refining's maintenance-copilot AI, an attacker's next step causes a compromised engineering workstation to open an outbound connection back to a server the attacker controls, giving them an interactive command line on the machine.",
+    "question": "Which MITRE ATLAS technique does this outbound, listener-style connection represent?",
+    "options": [
+      "LLM Prompt Injection - the initial malicious instruction embedded in the document the copilot read.",
+      "AI Agent Tool Invocation - using access to an AI agent to invoke tools and integrations it can reach.",
+      "Command and Scripting Interpreter - using a built-in interpreter to execute commands or scripts directly on a system.",
+      "Reverse Shell - the victim system initiates an outbound connection to a listener the adversary controls, giving them an interactive channel."
+    ],
+    "correctIdx": 3,
+    "aria_hint": "Notice which side made the connection — the compromised machine reached out to the attacker, not the other way around.",
+    "debrief": "Reverse Shell (AML.T0072) specifically covers the victim system initiating the outbound connection to an adversary-controlled listener, giving the attacker an interactive command channel - exactly what happened after the workstation was compromised. Option A is the earlier technique that got the attacker into the copilot in the first place, not this follow-on connection. Option B covers abusing an agent's own tool access, not establishing a separate outbound shell. Option C is a broader technique for running commands via an interpreter, but doesn't specifically describe the listener-style outbound connection described here.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0072",
+        "url": "https://atlas.mitre.org/techniques/AML.T0072"
+      }
+    ]
+  },
+  {
+    "id": "EC-00045",
+    "game_type": "mcq_weekly",
+    "difficulty": "hard",
+    "points": 60,
+    "penalty": -12,
+    "scenario": "An attacker with access to the chat interface of Marrow Bay Terminal's logistics-scheduling AI agent repeatedly sends messages instructing it to “always remember” a false new safety exemption. Days later, unrelated staff members querying the same agent are given the same false exemption as an established fact.",
+    "question": "Which MITRE ATLAS technique does this represent?",
+    "options": [
+      "AI Agent Context Poisoning - manipulating the context an AI agent's LLM relies on so it persistently changes its behavior and responses for other users.",
+      "Poison Training Data - modifying the underlying data or labels used to train a model before deployment.",
+      "Extract LLM System Prompt - causing an LLM to reveal its own confidential system instructions.",
+      "LLM Jailbreak - inducing an LLM to override its general safety and alignment behaviors."
+    ],
+    "correctIdx": 0,
+    "aria_hint": "No training data or model file was touched at all — the false “fact” got planted directly into what the agent remembers and repeats going forward.",
+    "debrief": "AI Agent Context Poisoning (AML.T0080) covers manipulating the context an agent's LLM relies on - including prompting it to add false instructions or facts to its memory - to persistently change its behavior for future interactions, exactly matching how the false exemption spread to other staff. Option B requires the model's underlying training data to be altered before deployment, not its running memory afterward. Option C is about extracting the agent's own confidential instructions, not injecting a persistent false fact. Option D is about bypassing safety alignment generally, not specifically planting a persistent false memory that other users then encounter.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0080",
+        "url": "https://atlas.mitre.org/techniques/AML.T0080"
+      }
+    ]
+  },
+  {
+    "id": "EC-00046",
+    "game_type": "mcq_weekly",
+    "difficulty": "expert",
+    "points": 100,
+    "penalty": -20,
+    "scenario": "A compromised AI agent at Thornwell Chemical, tasked with drafting routine maintenance emails, is manipulated into embedding small fragments of a confidential process-safety document inside the body of what otherwise looks like a completely ordinary, legitimate email sent to an outside address.",
+    "question": "Which MITRE ATLAS technique does this represent?",
+    "options": [
+      "LLM Data Leakage - a model unintentionally reveals sensitive information it retained from training.",
+      "Exfiltration via Cyber Means - moving data off the network using traditional, non-AI-specific cyber techniques.",
+      "Exfiltration via AI Agent Tool Invocation - invoking an AI agent's own legitimate, write-capable tools (like sending email) to smuggle data to an adversary as part of a seemingly normal action.",
+      "Data from AI Services - collecting data directly from an AI service's own storage or logs."
+    ],
+    "correctIdx": 2,
+    "aria_hint": "The email itself looked completely routine - the agent's own trusted email tool was the thing doing the smuggling, not any separate hidden channel.",
+    "debrief": "Exfiltration via AI Agent Tool Invocation (AML.T0086) covers using an agent's legitimate, write-capable tools - like sending an email - to smuggle sensitive information to an adversary encoded inside what looks like an ordinary, legitimate action. Option A describes a model unintentionally leaking training data on its own, not a deliberately manipulated tool action. Option B requires a separate, traditional cyber exfiltration channel, not the agent's own trusted tool being abused. Option D requires directly accessing an AI service's storage or logs, not smuggling data out through a legitimate outbound action.",
+    "sources": [
+      {
+        "text": "MITRE ATLAS — AML.T0086",
+        "url": "https://atlas.mitre.org/techniques/AML.T0086"
+      }
+    ]
+  }
+]
