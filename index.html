@@ -1690,7 +1690,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.20 · 2026-08-16 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.21 · 2026-08-16 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2145,7 +2145,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.20</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.21</span>
   </div>
 </footer>
 
@@ -2158,7 +2158,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.20';
+const EC_VERSION = '2.1.21';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2758,7 +2758,7 @@ function replayMCQAnswered(saved, ch) {
   const msg = saved.outcome === 'correct' ? 'ARIA // Correct — threat neutralised. (resumed)'
             : saved.outcome === 'giveup'  ? "ARIA // Conceded. Here's the debrief — (resumed)"
             : 'ARIA // Breach uncontained. (resumed)';
-  showMCQFeedback(saved.outcome === 'correct', 0, msg, ch.debrief, ch.source);
+  showMCQFeedback(saved.outcome === 'correct', 0, msg, ch.debrief, ch.source, ch.sources);
   document.getElementById('mcqActions').style.display     = 'none';
   showPostActions('mcqPostActions');
 }
@@ -2788,7 +2788,7 @@ function selectMCQ(btn, idx) {
     const earned = mcqState.hintUsed ? CREDITS_MCQ.hint : CREDITS_MCQ.first;
     showMCQFeedback(true, earned,
       'ARIA // Correct — threat neutralised.',
-      ch.debrief, ch.source);
+      ch.debrief, ch.source, ch.sources);
     scoreFlash(earned, true);
     applyCredits(earned);
     setTimeout(() => showNudge(true), 1800);
@@ -2824,7 +2824,7 @@ function selectMCQ(btn, idx) {
       const earned = CREDITS_MCQ.wrong;
       showMCQFeedback(false, earned,
         'ARIA // Breach uncontained.',
-        ch.debrief, ch.source);
+        ch.debrief, ch.source, ch.sources);
       scoreFlash(earned, false);
       applyCredits(earned);
       setTimeout(() => showNudge(false), 1600);
@@ -2840,7 +2840,24 @@ function selectMCQ(btn, idx) {
   }
 }
 
-function showMCQFeedback(correct, credits, ariaMsg, debrief, source) {
+// Builds the source line as short label(s) + a tappable link icon instead of
+// a raw "Text — https://..." string (added 2026-08-16). Prefers the
+// structured sources[] array (each {text,url}) so each citation becomes its
+// own link; falls back to the flattened legacy plain-text `source` string
+// (older content with no url field) rendered as-is, unchanged.
+function renderSourceHTML(source, sourcesArr) {
+  if (Array.isArray(sourcesArr) && sourcesArr.length) {
+    return sourcesArr.map(s => {
+      const label = s.text || s.url || 'Source';
+      return s.url
+        ? `<a href="${s.url}" target="_blank" rel="noopener noreferrer" class="mcq-source-link" style="color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted)">${label} <span aria-hidden="true" style="opacity:0.7">&#128279;</span></a>`
+        : `<span>${label}</span>`;
+    }).join(' &nbsp;&middot;&nbsp; ');
+  }
+  return source || '';
+}
+
+function showMCQFeedback(correct, credits, ariaMsg, debrief, source, sourcesArr) {
   const el = document.getElementById('mcqFeedback');
   const color = correct ? 'var(--green)' : 'var(--red)';
   const border = correct ? 'rgba(0,255,65,0.25)' : 'rgba(255,68,68,0.25)';
@@ -2848,6 +2865,7 @@ function showMCQFeedback(correct, credits, ariaMsg, debrief, source) {
   el.style.border      = `1px solid ${border}`;
   el.style.borderLeft  = `3px solid ${color}`;
   el.style.background  = correct ? 'rgba(0,255,65,0.04)' : 'rgba(255,68,68,0.04)';
+  const sourceHtml = renderSourceHTML(source, sourcesArr);
   el.innerHTML = `
     <div style="font-family:var(--display);font-weight:700;font-size:16px;
                 letter-spacing:.05em;text-transform:uppercase;color:${color};margin-bottom:5px">
@@ -2856,8 +2874,8 @@ function showMCQFeedback(correct, credits, ariaMsg, debrief, source) {
     </div>
     <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">${ariaMsg}</div>
     ${debrief ? `<div style="font-size:13px;color:var(--text);line-height:1.55;margin-bottom:8px">${debrief}</div>` : ''}
-    ${source  ? `<div style="font-family:var(--mono);font-size:10px;color:var(--muted);
-                              border-top:1px solid var(--border);padding-top:8px">${source}</div>` : ''}`;
+    ${sourceHtml ? `<div style="font-family:var(--mono);font-size:10px;color:var(--muted);
+                              border-top:1px solid var(--border);padding-top:8px">${sourceHtml}</div>` : ''}`;
 }
 
 function useMCQHint() {
@@ -2892,7 +2910,7 @@ function giveUpMCQ() {
   });
   showMCQFeedback(false, CREDITS_MCQ.wrong,
     'ARIA // Conceded. Here\'s the debrief —',
-    ch.debrief, ch.source);
+    ch.debrief, ch.source, ch.sources);
   scoreFlash(CREDITS_MCQ.wrong, false);
   applyCredits(CREDITS_MCQ.wrong);
   document.getElementById('mcqActions').style.display     = 'none';
