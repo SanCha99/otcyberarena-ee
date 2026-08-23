@@ -139,6 +139,57 @@ table.results td.win{color:var(--green)}table.results td.loss{color:var(--red)}
 @keyframes steamup{0%{transform:translateY(0);opacity:.5}100%{transform:translateY(-46px);opacity:0}}
 .flame{transform-origin:640px 118px;animation:flick .35s ease-in-out infinite alternate}
 @keyframes flick{from{transform:scaleY(.85) scaleX(.92)}to{transform:scaleY(1.12) scaleX(1.05)}}
+
+/* ============ MOBILE (added 2026-08-23) ============
+   This game was originally built desktop-only (RED SHIFT, no @media rules
+   at all) -- Sandip caught the RESPONSE ACTIONS header overlapping and the
+   Plant Integrity meter cut off on his phone within minutes of first
+   deploy. Root causes, all from the same source: three separate rows
+   (#hud, #main, #abHead) assumed a fixed layout wide enough for every
+   element to sit side-by-side with no wrapping. On mobile:
+   - #hud's title+timer+meter no longer fit on one line -> wrap onto two,
+     timer centered on its own row (was already visually centered via
+     margin-left/right:auto, so wrapping it to a full-width row keeps
+     that same centered look).
+   - #main was a fixed horizontal split (plant view flex:1 fighting a
+     comms panel hard-pinned to 340px) -- on a ~390px phone the comms
+     panel alone nearly fills the screen, squeezing the plant view into
+     an unusable sliver. Stacked vertically instead, plant view capped
+     to a shorter band since it's atmospheric, not required for play.
+   - #abHead's two spans used justify-content:space-between with no wrap,
+     so long text on both sides collided in the middle -- exactly the
+     overlap in Sandip's screenshot. Stacked instead of side-by-side.
+   #app stays 100dvh (dvh, not vh, so mobile browser chrome doesn't clip
+   the bottom) with #main now scrollable so the action cards at the
+   bottom are always reachable regardless of how tall the plant+comms
+   stack gets. */
+@media (max-width:760px){
+  html,body{overflow:visible}
+  #app{height:100dvh}
+
+  #hud{flex-wrap:wrap;min-height:auto;gap:6px 10px;padding:8px 12px}
+  #scnTitle{max-width:56vw;font-size:13px}
+  #timerBlock{order:3;flex-basis:100%;margin:2px 0 0}
+  #timer{font-size:26px;letter-spacing:2px}
+  #rightHud{gap:10px}
+  .meter{width:min(120px,26vw)}
+  #score{font-size:16px}
+
+  #main{flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #plantwrap{flex:0 0 auto;height:30vh;min-height:150px}
+  #comms{width:100%;border-left:none;border-top:1px solid var(--line);flex:0 0 auto}
+  #feed{max-height:24vh}
+
+  #abHead{flex-direction:column;align-items:flex-start;gap:3px}
+  #abHead span{white-space:normal}
+  #cards{max-height:34vh}
+  .card{padding:9px 10px 9px 36px;font-size:11.5px;min-height:46px}
+
+  #modal{width:94vw;padding:18px 16px}
+  #modal h1{font-size:18px;letter-spacing:2px}
+  table.results{font-size:11px}
+  table.results td,table.results th{padding:5px 6px}
+}
 </style>
 </head>
 <body>
@@ -683,7 +734,7 @@ function hideModal(){ $("#overlay").classList.remove("show"); }
 function startScreen(){
   showModal(`
     <h1>⬢ OT CYBERARENA — OT SOC WARRIOR</h1>
-    <h2>INCIDENT COMMANDER SIMULATOR · SECTOR 7 PROCESS PLANT · v1.1.0</h2>
+    <h2>INCIDENT COMMANDER SIMULATOR · SECTOR 7 PROCESS PLANT · v1.1.1</h2>
     <div class="body">You are the on-shift <b>OT security incident commander</b>.
 
 Ten cyber incidents will hit this plant in random order — infected USBs, rogue devices, ransomware at the gates, safety-system tampering and worse.
@@ -856,7 +907,7 @@ function endScenario(win,reason){
    into the live site (2026-08-23). */
 function submitScore(){
   try{
-    const payload={type:"redshift_score",game:"OT_SOC_WARRIOR",version:"1.1.0",
+    const payload={type:"redshift_score",game:"OT_SOC_WARRIOR",version:"1.1.1",
       score:G.total,wins:G.results.filter(r=>r.win).length,total:G.queue.length,
       mistakes:G.results.reduce((a,r)=>a+(r.mistakes||0),0),
       traps:G.results.reduce((a,r)=>a+(r.traps||0),0)};
