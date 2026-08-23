@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.8 · 04-Aug-2026</div>
+      <div class="logo-ver">Dashboard v1.9 · 23-Aug-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -324,7 +324,7 @@ const FLAGS={'Australia':'🇦🇺','China':'🇨🇳','India':'🇮🇳','Indon
 function setRange(d,el){currentDays=d;document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadAll();}
 function destroyCharts(){charts.forEach(c=>{try{c.destroy();}catch(e){}});charts=[];}
 
-const sortState={player:{col:'credits',dir:'desc'},challenge:{col:'total',dir:'desc'},country:{col:'players',dir:'desc'},device:{col:'visits',dir:'desc'},visit:{col:'date',dir:'desc'}};
+const sortState={player:{col:'credits',dir:'desc'},challenge:{col:'total',dir:'desc'},country:{col:'players',dir:'desc'},device:{col:'visits',dir:'desc'},visit:{col:'date',dir:'desc'},feedback:{col:'down',dir:'desc'}};
 
 function sortTable(tableId,col,type='num'){
   const st=sortState[tableId];
@@ -393,7 +393,11 @@ async function loadAll(){
     // this is exclusively pre-registration/never-registered behaviour.
     const evr=await sb.from('events').select('event_type,metadata,created_at').like('event_type','anon_%');
     const anonEvents=evr.data||[];
-    renderDashboard(players,solves,credits,sessions,visits,anonEvents);
+    // v1.9: MCQ quality feedback (thumbs up/down) — same events table, own
+    // event_type, own query so it's not mixed into the anon_% activity feed.
+    const fbr=await sb.from('events').select('event_type,metadata,created_at').eq('event_type','mcq_feedback');
+    const feedbackEvents=fbr.data||[];
+    renderDashboard(players,solves,credits,sessions,visits,anonEvents,feedbackEvents);
     document.getElementById('lastRefreshed').textContent='Refreshed '+new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
     document.getElementById('main').innerHTML=`<div class="empty"><div class="empty-icon">⚠</div><div style="color:#e05c5c">${e.message}</div></div>`;
@@ -401,12 +405,16 @@ async function loadAll(){
   btn.classList.remove('loading');icon.textContent='↻';
 }
 
-function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
+function renderDashboard(players,solves,credits,sessions,visits,anonEvents,feedbackEvents){
   // v1.7: strip the founder's own devices before any downstream computation
   // touches these two arrays, so every anonymous-visitor surface (funnel
   // KPIs, activity table, device summary) is automatically clean.
   visits=(visits||[]).filter(v=>!OWNER_SESSION_IDS.has(v.session_id));
   anonEvents=(anonEvents||[]).filter(e=>!OWNER_SESSION_IDS.has(e.metadata&&e.metadata.session_id));
+  // v1.9: same owner-exclusion for feedback votes, keyed the same way
+  // (session_id in metadata) — Sandip's own thumbs-up/down testing shouldn't
+  // count as real player sentiment.
+  feedbackEvents=(feedbackEvents||[]).filter(e=>!OWNER_SESSION_IDS.has(e.metadata&&e.metadata.session_id));
   const now=new Date();
   const rangeMs=currentDays>0?currentDays*24*60*60*1000:null;
   const rangeStart=rangeMs?new Date(now-rangeMs):null;
@@ -444,6 +452,27 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
   const chList=Object.entries(byChallenge).filter(([,d])=>d.total>=1);
   const solvedOf=d=>d.correct_1st+d.correct_2nd+d.hint_used;
   const unsolvedOf=d=>d.gave_up+d.wrong;
+
+  // MCQ quality feedback (thumbs up/down, v1.9) — one row per vote in
+  // feedbackEvents, metadata = {challenge_id, vote:'up'|'down', reason, session_id}
+  const byFeedback={};
+  feedbackEvents.forEach(e=>{
+    const m=e.metadata||{};
+    const cid=m.challenge_id||'unknown';
+    if(!byFeedback[cid])byFeedback[cid]={up:0,down:0,reasons:{}};
+    if(m.vote==='up')byFeedback[cid].up++;
+    else if(m.vote==='down'){
+      byFeedback[cid].down++;
+      const r=m.reason||'(no reason given)';
+      byFeedback[cid].reasons[r]=(byFeedback[cid].reasons[r]||0)+1;
+    }
+  });
+  const fbList=Object.entries(byFeedback);
+  const fbTotalUp=fbList.reduce((a,[,d])=>a+d.up,0);
+  const fbTotalDown=fbList.reduce((a,[,d])=>a+d.down,0);
+  // Flagged = more downs than ups, or 2+ downs outright regardless of ups —
+  // either signals a question worth Sandip re-checking, not just noise.
+  const fbFlagged=fbList.filter(([,d])=>d.down>=2||d.down>d.up);
   const easiest=chList.length?[...chList].sort((a,b)=>pct(solvedOf(b[1]),b[1].total)-pct(solvedOf(a[1]),a[1].total))[0]:null;
   const hardest=chList.length?[...chList].sort((a,b)=>pct(unsolvedOf(b[1]),b[1].total)-pct(unsolvedOf(a[1]),a[1].total))[0]:null;
 
@@ -590,6 +619,49 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents){
     h+=`</tbody></table></div>`;
   }else{
     h+=`<div class="empty" style="padding:20px 0">No challenge attempts recorded yet</div>`;
+  }
+  h+=`</div>`;
+
+  // 3b. MCQ QUALITY FEEDBACK (thumbs up/down, v1.9)
+  h+=`<div class="section-label">Content feedback</div><div class="panel-full">`;
+  h+=`<div class="panel-title" style="margin-bottom:4px">MCQ thumbs up / down</div>`;
+  h+=`<div class="panel-sub">Real player sentiment per question — a direct pulse instead of inferring quality from solve rate alone. Reason is optional on a thumbs-down, so "(no reason given)" is expected, not a gap.</div>`;
+  h+=`<div class="kpi-grid">`;
+  h+=kpi('Total votes',fmt(fbTotalUp+fbTotalDown),`${fmt(fbTotalUp)} up · ${fmt(fbTotalDown)} down`,'#4d9fff');
+  h+=kpi('Net sentiment',(fbTotalUp-fbTotalDown>=0?'+':'')+fmt(fbTotalUp-fbTotalDown),'up minus down, all questions','#3ecf8e');
+  h+=kpi('Flagged for review',fmt(fbFlagged.length),'2+ downs, or downs > ups',fbFlagged.length?'#e05c5c':'#3ecf8e');
+  h+=`</div>`;
+  if(fbList.length){
+    if(fbFlagged.length){
+      h+=`<div class="insight-grid" style="margin-top:12px">`;
+      fbFlagged.sort((a,b)=>b[1].down-a[1].down).forEach(([cid,d])=>{
+        const topReason=Object.entries(d.reasons).sort((a,b)=>b[1]-a[1])[0];
+        h+=ins('⚑',`${cid} needs a look`,`<span class="insight-hl" style="color:#e05c5c">${d.down} down</span> vs ${d.up} up${topReason?` · most-cited: <span class="insight-hl">${topReason[0]}</span> (${topReason[1]})`:''}. Cross-reference in the Master Inventory.`,'#e05c5c');
+      });
+      h+=`</div>`;
+    }
+    h+=`<div class="table-scroll" style="margin-top:12px"><table class="ctable" id="feedback-table"><thead><tr>
+      <th class="sortable" data-col="title" onclick="sortTable('feedback','title','str')">Challenge ID</th>
+      <th class="num sortable" data-col="up" onclick="sortTable('feedback','up','num')">👍 Up</th>
+      <th class="num sortable desc" data-col="down" onclick="sortTable('feedback','down','num')">👎 Down</th>
+      <th class="num sortable" data-col="net" onclick="sortTable('feedback','net','num')">Net</th>
+      <th>Top reason (if any)</th>
+    </tr></thead><tbody>`;
+    [...fbList].sort((a,b)=>b[1].down-a[1].down).forEach(([cid,d])=>{
+      const net=d.up-d.down;
+      const netColor=net>0?'#3ecf8e':net<0?'#e05c5c':'#7a8099';
+      const topReason=Object.entries(d.reasons).sort((a,b)=>b[1]-a[1])[0];
+      h+=`<tr data-title="${cid}" data-up="${d.up}" data-down="${d.down}" data-net="${net}">
+        <td style="font-family:var(--mono)">${cid}</td>
+        <td class="num" style="color:#3ecf8e">${d.up}</td>
+        <td class="num" style="color:#e05c5c">${d.down}</td>
+        <td class="num" style="color:${netColor};font-weight:600">${net>0?'+':''}${net}</td>
+        <td style="color:var(--muted);font-size:11px">${topReason?`${topReason[0]} (${topReason[1]})`:'—'}</td>
+      </tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  }else{
+    h+=`<div class="empty" style="padding:20px 0">No feedback votes yet — the thumbs up/down widget shipped in EC v2.1.22 (2026-08-23), so this fills in as real players use it.</div>`;
   }
   h+=`</div>`;
 

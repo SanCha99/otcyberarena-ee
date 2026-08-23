@@ -1690,7 +1690,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.21 · 2026-08-16 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.22 · 2026-08-23 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2145,7 +2145,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.21</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.22</span>
   </div>
 </footer>
 
@@ -2158,7 +2158,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.21';
+const EC_VERSION = '2.1.22';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2758,7 +2758,7 @@ function replayMCQAnswered(saved, ch) {
   const msg = saved.outcome === 'correct' ? 'ARIA // Correct — threat neutralised. (resumed)'
             : saved.outcome === 'giveup'  ? "ARIA // Conceded. Here's the debrief — (resumed)"
             : 'ARIA // Breach uncontained. (resumed)';
-  showMCQFeedback(saved.outcome === 'correct', 0, msg, ch.debrief, ch.source, ch.sources);
+  showMCQFeedback(saved.outcome === 'correct', 0, msg, ch.debrief, ch.source, ch.sources, ch.id);
   document.getElementById('mcqActions').style.display     = 'none';
   showPostActions('mcqPostActions');
 }
@@ -2788,7 +2788,7 @@ function selectMCQ(btn, idx) {
     const earned = mcqState.hintUsed ? CREDITS_MCQ.hint : CREDITS_MCQ.first;
     showMCQFeedback(true, earned,
       'ARIA // Correct — threat neutralised.',
-      ch.debrief, ch.source, ch.sources);
+      ch.debrief, ch.source, ch.sources, ch.id);
     scoreFlash(earned, true);
     applyCredits(earned);
     setTimeout(() => showNudge(true), 1800);
@@ -2824,7 +2824,7 @@ function selectMCQ(btn, idx) {
       const earned = CREDITS_MCQ.wrong;
       showMCQFeedback(false, earned,
         'ARIA // Breach uncontained.',
-        ch.debrief, ch.source, ch.sources);
+        ch.debrief, ch.source, ch.sources, ch.id);
       scoreFlash(earned, false);
       applyCredits(earned);
       setTimeout(() => showNudge(false), 1600);
@@ -2857,7 +2857,7 @@ function renderSourceHTML(source, sourcesArr) {
   return source || '';
 }
 
-function showMCQFeedback(correct, credits, ariaMsg, debrief, source, sourcesArr) {
+function showMCQFeedback(correct, credits, ariaMsg, debrief, source, sourcesArr, challengeId) {
   const el = document.getElementById('mcqFeedback');
   const color = correct ? 'var(--green)' : 'var(--red)';
   const border = correct ? 'rgba(0,255,65,0.25)' : 'rgba(255,68,68,0.25)';
@@ -2875,7 +2875,85 @@ function showMCQFeedback(correct, credits, ariaMsg, debrief, source, sourcesArr)
     <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">${ariaMsg}</div>
     ${debrief ? `<div style="font-size:13px;color:var(--text);line-height:1.55;margin-bottom:8px">${debrief}</div>` : ''}
     ${sourceHtml ? `<div style="font-family:var(--mono);font-size:10px;color:var(--muted);
-                              border-top:1px solid var(--border);padding-top:8px">${sourceHtml}</div>` : ''}`;
+                              border-top:1px solid var(--border);padding-top:8px">${sourceHtml}</div>` : ''}
+    <div id="mcqFbSlot-${challengeId||'x'}">${renderMcqFeedbackHTML(challengeId)}</div>`;
+}
+
+// ── MCQ QUALITY FEEDBACK (thumbs up/down, added 2026-08-23) ──────────
+// Sandip: wants a real "pulse" of what people think of each question,
+// instead of guessing from hypotheticals. Reuses the same `events` table
+// and logEvent() helper already used for anon tracking + registration/
+// login events -- no new table, no migration. Works for signed-in AND
+// anonymous players (logEvent sets player_id null automatically when
+// currentPlayer is unset, same as every other anon event on this page).
+// One vote per challenge per browser, enforced client-side via
+// localStorage (same pattern as best-score/badges/theme) -- this is a
+// lightweight sentiment pulse, not an audited ballot, so a determined
+// person could clear storage and vote again; that's an acceptable
+// tradeoff for keeping this friction-free and schema-free.
+const MCQ_FB_REASONS = ['Not factual', 'Broken link', 'Confusing wording', 'Wrong answer marked', 'Other'];
+
+function mcqFeedbackKey(id) { return 'ec_mcq_fb_' + id; }
+
+function renderMcqFeedbackHTML(challengeId) {
+  if (!challengeId) return '';
+  if (localStorage.getItem(mcqFeedbackKey(challengeId))) {
+    return mcqFeedbackThanksHTML();
+  }
+  return `
+    <div class="mcq-feedback-row" style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);
+                display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">Was this question good?</span>
+      <button type="button" onclick="mcqFeedbackUp('${challengeId}')" aria-label="Thumbs up — this question was good"
+              style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;
+                     cursor:pointer;font-size:14px;line-height:1">👍</button>
+      <button type="button" onclick="mcqFeedbackDownPrompt('${challengeId}')" aria-label="Thumbs down — something's wrong with this question"
+              style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;
+                     cursor:pointer;font-size:14px;line-height:1">👎</button>
+    </div>`;
+}
+
+function mcqFeedbackThanksHTML() {
+  return `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);
+                       font-family:var(--mono);font-size:10px;color:var(--muted)">Thanks — feedback recorded.</div>`;
+}
+
+function mcqFeedbackSlot(challengeId) { return document.getElementById('mcqFbSlot-' + challengeId); }
+
+function submitMcqFeedback(challengeId, vote, reason) {
+  localStorage.setItem(mcqFeedbackKey(challengeId), vote);
+  logEvent('mcq_feedback', {
+    challenge_id: challengeId,
+    vote:         vote,
+    reason:       reason || null,
+    session_id:   pageVisitSessionId()
+  });
+  const slot = mcqFeedbackSlot(challengeId);
+  if (slot) slot.innerHTML = mcqFeedbackThanksHTML();
+}
+
+function mcqFeedbackUp(challengeId) {
+  submitMcqFeedback(challengeId, 'up', null);
+}
+
+function mcqFeedbackDownPrompt(challengeId) {
+  const slot = mcqFeedbackSlot(challengeId);
+  if (!slot) return;
+  const chips = MCQ_FB_REASONS.map(r =>
+    `<button type="button" onclick="submitMcqFeedback('${challengeId}','down','${r.replace(/'/g,"\\'")}')"
+             style="background:none;border:1px solid var(--border);border-radius:12px;padding:3px 10px;
+                    cursor:pointer;font-size:10px;font-family:var(--mono);color:var(--text)">${r}</button>`
+  ).join('');
+  slot.innerHTML = `
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px">What was wrong? (optional)</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        ${chips}
+        <button type="button" onclick="submitMcqFeedback('${challengeId}','down',null)"
+                style="background:none;border:none;text-decoration:underline;cursor:pointer;
+                       font-size:10px;font-family:var(--mono);color:var(--muted)">Skip</button>
+      </div>
+    </div>`;
 }
 
 function useMCQHint() {
@@ -2910,7 +2988,7 @@ function giveUpMCQ() {
   });
   showMCQFeedback(false, CREDITS_MCQ.wrong,
     'ARIA // Conceded. Here\'s the debrief —',
-    ch.debrief, ch.source, ch.sources);
+    ch.debrief, ch.source, ch.sources, ch.id);
   scoreFlash(CREDITS_MCQ.wrong, false);
   applyCredits(CREDITS_MCQ.wrong);
   document.getElementById('mcqActions').style.display     = 'none';
