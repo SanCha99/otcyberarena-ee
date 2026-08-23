@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OT CYBERARENA — OT SOC WARRIOR: Incident Commander</title>
+<style>
+:root{
+  --bg:#04070c; --panel:#0a121c; --panel2:#0d1826; --line:#12314a;
+  --cyan:#29e6ff; --green:#37ff8b; --amber:#ffb347; --red:#ff3b4d;
+  --dim:#7fa3bd; --text:#cfe8f5;
+  --mono:'Consolas','Lucida Console','Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--mono);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;position:relative}
+
+/* ============ HUD ============ */
+#hud{display:flex;align-items:center;gap:16px;padding:8px 16px;background:linear-gradient(180deg,#0c1a2a,#070e17);border-bottom:1px solid var(--line);min-height:64px;z-index:20}
+#hud .block{display:flex;flex-direction:column;gap:2px}
+.hlabel{font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase}
+#scnTitle{font-size:15px;color:var(--cyan);text-shadow:0 0 8px rgba(41,230,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+#scnCount{font-size:12px;color:var(--dim)}
+#timerBlock{margin-left:auto;margin-right:auto;text-align:center}
+#timer{font-size:34px;font-weight:bold;color:var(--green);letter-spacing:4px;text-shadow:0 0 14px rgba(55,255,139,.55);line-height:1}
+#timer.warn{color:var(--amber);text-shadow:0 0 14px rgba(255,179,71,.6)}
+#timer.crit{color:var(--red);text-shadow:0 0 16px rgba(255,59,77,.8);animation:blinker .5s steps(2) infinite}
+@keyframes blinker{50%{opacity:.25}}
+#rightHud{display:flex;align-items:center;gap:18px}
+.meter{width:150px;height:14px;border:1px solid var(--line);background:#050b12;position:relative;border-radius:2px;overflow:hidden}
+.meter .fill{height:100%;background:linear-gradient(90deg,#0e7d4a,var(--green));width:100%;transition:width .4s}
+.meter.low .fill{background:linear-gradient(90deg,#7d0e1c,var(--red))}
+#score{font-size:20px;color:var(--cyan);text-shadow:0 0 8px rgba(41,230,255,.5)}
+#muteBtn{background:none;border:1px solid var(--line);color:var(--dim);padding:6px 10px;cursor:pointer;font-family:var(--mono);font-size:14px;border-radius:3px}
+#muteBtn:hover{color:var(--cyan);border-color:var(--cyan)}
+
+/* ============ MAIN ============ */
+#main{flex:1;display:flex;min-height:0;position:relative}
+#plantwrap{flex:1;position:relative;background:radial-gradient(ellipse at 50% 120%,#0a1f33 0%,#04070c 70%);overflow:hidden}
+#plantsvg{width:100%;height:100%;display:block}
+#zoneTag{position:absolute;top:10px;left:14px;font-size:11px;letter-spacing:3px;color:var(--dim);background:rgba(5,10,18,.7);padding:4px 10px;border:1px solid var(--line);border-radius:2px;z-index:5}
+
+/* incident marker */
+#marker{position:absolute;width:70px;height:70px;margin:-35px 0 0 -35px;pointer-events:none;display:none;z-index:6}
+#marker .ring{position:absolute;inset:0;border:2px solid var(--red);border-radius:50%;animation:ping 1.4s ease-out infinite}
+#marker .ring2{animation-delay:.7s}
+@keyframes ping{0%{transform:scale(.3);opacity:1}100%{transform:scale(1.5);opacity:0}}
+#marker .micon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;filter:drop-shadow(0 0 6px var(--red))}
+#markerLabel{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:10px;color:var(--red);background:rgba(10,5,8,.85);padding:2px 6px;border:1px solid var(--red);white-space:nowrap;letter-spacing:1px}
+
+/* alarm beacons + vignette */
+.beacon{position:absolute;top:70px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ff8a94,var(--red) 60%,#5c0410);box-shadow:0 0 24px 8px rgba(255,59,77,.0);z-index:15;opacity:.25}
+#beaconL{left:12px}#beaconR{right:352px}
+.alarm .beacon{animation:beacon 1s ease-in-out infinite}
+@keyframes beacon{0%,100%{box-shadow:0 0 8px 2px rgba(255,59,77,.2);opacity:.4}50%{box-shadow:0 0 34px 14px rgba(255,59,77,.85);opacity:1}}
+#vignette{position:absolute;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 140px 30px rgba(255,30,50,0);transition:box-shadow .5s}
+.alarm #vignette{animation:vign 1.6s ease-in-out infinite}
+@keyframes vign{0%,100%{box-shadow:inset 0 0 120px 20px rgba(255,30,50,.12)}50%{box-shadow:inset 0 0 170px 55px rgba(255,30,50,.4)}}
+
+/* ============ COMMS ============ */
+#comms{width:340px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;z-index:5}
+#comms header{padding:8px 12px;font-size:11px;letter-spacing:3px;color:var(--cyan);border-bottom:1px solid var(--line);background:#0b1622;display:flex;justify-content:space-between;align-items:center}
+#comms header .live{color:var(--red);animation:blinker 1.2s steps(2) infinite;font-size:10px}
+#feed{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.msg{font-size:12px;line-height:1.45;border-left:3px solid var(--dim);padding:5px 8px;background:rgba(255,255,255,.02);animation:msgin .3s ease-out}
+@keyframes msgin{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+.msg .src{font-size:10px;letter-spacing:1px;display:block;margin-bottom:2px;opacity:.85}
+.msg.system{border-color:var(--red)}.msg.system .src{color:var(--red)}
+.msg.soc{border-color:var(--cyan)}.msg.soc .src{color:var(--cyan)}
+.msg.ops{border-color:var(--amber)}.msg.ops .src{color:var(--amber)}
+.msg.intel{border-color:var(--green)}.msg.intel .src{color:var(--green)}
+.msg.good{border-color:var(--green);background:rgba(55,255,139,.06)}
+.msg.bad{border-color:var(--red);background:rgba(255,59,77,.08)}
+.msg.hint{border-color:var(--amber);background:rgba(255,179,71,.06)}
+
+/* ============ ACTION BAR ============ */
+#actionbar{background:linear-gradient(180deg,#08101b,#060b13);border-top:1px solid var(--line);padding:10px 14px;z-index:10}
+#abHead{font-size:10px;letter-spacing:3px;color:var(--dim);margin-bottom:8px;display:flex;justify-content:space-between}
+#abHead .kb{color:#3d5a72}
+#cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;max-height:26vh;overflow-y:auto}
+.card{position:relative;border:1px solid var(--line);background:linear-gradient(180deg,#0e1c2c,#0a1420);padding:9px 10px 9px 40px;cursor:pointer;font-family:var(--mono);color:var(--text);font-size:12px;text-align:left;line-height:1.35;border-radius:3px;transition:all .15s;min-height:52px}
+.card:hover:not(.locked){border-color:var(--cyan);background:linear-gradient(180deg,#12253a,#0d1a29);box-shadow:0 0 12px rgba(41,230,255,.25);transform:translateY(-2px)}
+.card .cicon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:19px}
+.card .stamp{position:absolute;right:8px;top:6px;font-size:14px;font-weight:bold}
+.card.done{border-color:var(--green);color:#9fd8b8;cursor:default;background:rgba(20,60,40,.35)}
+.card.done .stamp{color:var(--green)}
+.card.trapped{border-color:var(--red);color:#d89aa2;cursor:default;background:rgba(70,15,22,.4)}
+.card.trapped .stamp{color:var(--red)}
+.card.intelDone{border-color:var(--green);color:#8fc9ad;cursor:default;background:rgba(15,50,40,.3)}
+.card.intelDone .stamp{color:var(--cyan)}
+.card.oops{animation:oops .4s}
+@keyframes oops{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.locked{pointer-events:none}
+
+/* ============ MODAL ============ */
+#overlay{position:fixed;inset:0;background:rgba(2,5,9,.88);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50}
+#overlay.show{display:flex}
+#modal{width:min(760px,92vw);max-height:88vh;overflow-y:auto;background:linear-gradient(180deg,#0b1826,#070f18);border:1px solid var(--cyan);box-shadow:0 0 40px rgba(41,230,255,.25),inset 0 0 60px rgba(41,230,255,.04);padding:26px 30px;border-radius:4px}
+#modal h1{font-size:22px;color:var(--cyan);letter-spacing:4px;text-shadow:0 0 12px rgba(41,230,255,.6);margin-bottom:4px}
+#modal h2{font-size:13px;color:var(--dim);letter-spacing:2px;font-weight:normal;margin-bottom:16px}
+#modal .body{font-size:13px;line-height:1.6;white-space:pre-wrap}
+#modal .body b{color:var(--amber)}
+.btnrow{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{background:linear-gradient(180deg,#123147,#0b1f30);border:1px solid var(--cyan);color:var(--cyan);font-family:var(--mono);font-size:14px;letter-spacing:2px;padding:12px 22px;cursor:pointer;border-radius:3px;transition:all .15s}
+.btn:hover{background:var(--cyan);color:#04222e;box-shadow:0 0 18px rgba(41,230,255,.6)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn.danger:hover{background:var(--red);color:#fff}
+.diffbtn.sel{background:var(--cyan);color:#04222e}
+.seqlist{margin:10px 0 14px;padding:0;list-style:none}
+.seqlist li{padding:6px 10px;border-left:3px solid var(--line);margin-bottom:5px;font-size:12.5px;background:rgba(255,255,255,.02)}
+.seqlist li.hit{border-color:var(--green)}
+.seqlist li.miss{border-color:var(--red)}
+.tag{display:inline-block;font-size:10px;letter-spacing:1px;border:1px solid;padding:1px 7px;border-radius:2px;margin-right:6px}
+.tag.g{color:var(--green);border-color:var(--green)}.tag.r{color:var(--red);border-color:var(--red)}
+.lesson{margin-top:14px;padding:12px;border:1px dashed var(--amber);background:rgba(255,179,71,.05);font-size:12.5px;line-height:1.55}
+.lesson .lt{color:var(--amber);letter-spacing:2px;font-size:10px;display:block;margin-bottom:6px}
+table.results{width:100%;border-collapse:collapse;margin:12px 0;font-size:12.5px}
+table.results td,table.results th{border:1px solid var(--line);padding:6px 10px;text-align:left}
+table.results th{color:var(--cyan);font-size:11px;letter-spacing:1px}
+table.results td.win{color:var(--green)}table.results td.loss{color:var(--red)}
+.bigrank{font-size:26px;color:var(--green);letter-spacing:4px;text-shadow:0 0 16px rgba(55,255,139,.6);margin:10px 0}
+
+/* ============ FX ============ */
+#scan{position:fixed;inset:0;pointer-events:none;z-index:60;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:55;background:rgba(255,40,60,0);transition:background .1s}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,-3px)}80%{transform:translate(5px,4px)}}
+#glitch{position:fixed;inset:0;z-index:70;display:none;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,0,60,.15) 0 4px,rgba(0,255,255,.1) 4px 7px,transparent 7px 13px);animation:blinker .12s steps(2) infinite}
+.typecursor::after{content:'▊';animation:blinker .7s steps(2) infinite;color:var(--green)}
+
+/* plant svg animations */
+.flow{stroke-dasharray:6 10;animation:dashmove 1.2s linear infinite}
+@keyframes dashmove{to{stroke-dashoffset:-32}}
+.led{animation:ledblink 2.2s ease-in-out infinite}
+.led.fast{animation-duration:.7s}
+@keyframes ledblink{0%,100%{opacity:.25}50%{opacity:1}}
+.steam{animation:steamup 3.4s ease-out infinite;opacity:0}
+.steam.s2{animation-delay:1.1s}.steam.s3{animation-delay:2.2s}
+@keyframes steamup{0%{transform:translateY(0);opacity:.5}100%{transform:translateY(-46px);opacity:0}}
+.flame{transform-origin:640px 118px;animation:flick .35s ease-in-out infinite alternate}
+@keyframes flick{from{transform:scaleY(.85) scaleX(.92)}to{transform:scaleY(1.12) scaleX(1.05)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hud">
+    <div class="block">
+      <span class="hlabel">Incident</span>
+      <span id="scnTitle">— STANDBY —</span>
+      <span id="scnCount"></span>
+    </div>
+    <div class="block" id="timerBlock">
+      <span class="hlabel">Time to Contain</span>
+      <span id="timer">--:--</span>
+    </div>
+    <div id="rightHud">
+      <div class="block">
+        <span class="hlabel">Plant Integrity</span>
+        <div class="meter" id="integrityMeter"><div class="fill" id="integrityFill"></div></div>
+      </div>
+      <div class="block">
+        <span class="hlabel">Score</span>
+        <span id="score">0</span>
+      </div>
+      <button id="muteBtn" title="Toggle sound">🔊</button>
+    </div>
+  </header>
+
+  <div id="main">
+    <section id="plantwrap">
+      <div id="zoneTag">SECTOR 7 PROCESS PLANT — LIVE VIEW</div>
+      <svg id="plantsvg" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#16283c"/><stop offset=".5" stop-color="#2a4a66"/><stop offset="1" stop-color="#10202f"/>
+          </linearGradient>
+          <linearGradient id="metal2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#1a2c3f"/><stop offset=".5" stop-color="#35566f"/><stop offset="1" stop-color="#13212f"/>
+          </linearGradient>
+          <linearGradient id="skyglow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#04070c"/><stop offset="1" stop-color="#0b2033"/>
+          </linearGradient>
+          <radialGradient id="flamegrad" cx=".5" cy=".8" r=".8">
+            <stop offset="0" stop-color="#fff3b0"/><stop offset=".45" stop-color="#ffb347"/><stop offset="1" stop-color="#ff3b1d" stop-opacity=".85"/>
+          </radialGradient>
+        </defs>
+
+        <rect width="1200" height="600" fill="url(#skyglow)"/>
+        <!-- stars -->
+        <g fill="#9fd4ff" opacity=".5">
+          <circle cx="90" cy="60" r="1.2"/><circle cx="240" cy="40" r="1"/><circle cx="410" cy="80" r="1.4"/>
+          <circle cx="760" cy="50" r="1"/><circle cx="930" cy="90" r="1.3"/><circle cx="1100" cy="45" r="1"/><circle cx="540" cy="35" r="1.1"/>
+        </g>
+        <!-- ground -->
+        <rect y="520" width="1200" height="80" fill="#060d15"/>
+        <g stroke="#0f2334" stroke-width="1">
+          <line x1="0" y1="520" x2="1200" y2="520"/><line x1="0" y1="545" x2="1200" y2="545"/><line x1="0" y1="572" x2="1200" y2="572"/>
+          <line x1="100" y1="520" x2="60" y2="600"/><line x1="300" y1="520" x2="280" y2="600"/><line x1="500" y1="520" x2="495" y2="600"/>
+          <line x1="700" y1="520" x2="712" y2="600"/><line x1="900" y1="520" x2="928" y2="600"/><line x1="1100" y1="520" x2="1145" y2="600"/>
+        </g>
+
+        <!-- UNIT 100: storage tanks -->
+        <g>
+          <rect x="70" y="370" width="120" height="150" fill="url(#metal)" stroke="#3a6280" stroke-width="1.5"/>
+          <ellipse cx="130" cy="370" rx="60" ry="14" fill="#2a4a66" stroke="#3a6280" stroke-width="1.5"/>
+          <rect x="215" y="400" width="95" height="120" fill="url(#metal)" stroke="#3a6280" stroke-width="1.5"/>
+          <ellipse cx="262" cy="400" rx="47.5" ry="11" fill="#2a4a66" stroke="#3a6280" stroke-width="1.5"/>
+          <!-- level gauges -->
+          <rect x="180" y="390" width="6" height="120" fill="#050b12" stroke="#28455c"/>
+          <rect x="181.5" y="440" width="3" height="68" fill="#37ff8b">
+            <animate attributeName="y" values="440;455;440" dur="7s" repeatCount="indefinite"/>
+            <animate attributeName="height" values="68;53;68" dur="7s" repeatCount="indefinite"/>
+          </rect>
+          <circle class="led" cx="130" cy="352" r="4" fill="#37ff8b"/>
+          <circle class="led fast" cx="262" cy="386" r="4" fill="#ffb347"/>
+          <text x="130" y="558" fill="#4d7691" font-size="13" text-anchor="middle" font-family="monospace">UNIT-100 TANK FARM</text>
+        </g>
+
+        <!-- pump -->
+        <g>
+          <rect x="345" y="480" width="52" height="40" fill="#132638" stroke="#3a6280"/>
+          <circle cx="371" cy="470" r="20" fill="#0d1e2e" stroke="#3a6280" stroke-width="2"/>
+          <g stroke="#29e6ff" stroke-width="3">
+            <line x1="371" y1="455" x2="371" y2="485"/><line x1="356" y1="470" x2="386" y2="470"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 371 470" to="360 371 470" dur="1.6s" repeatCount="indefinite"/>
+          </g>
+          <text x="371" y="558" fill="#4d7691" font-size="12" text-anchor="middle" font-family="monospace">P-101</text>
+        </g>
+
+        <!-- UNIT 200: column -->
+        <g>
+          <rect x="450" y="180" width="62" height="340" rx="10" fill="url(#metal2)" stroke="#3a6280" stroke-width="1.5"/>
+          <ellipse cx="481" cy="180" rx="31" ry="10" fill="#35566f" stroke="#3a6280"/>
+          <line x1="450" y1="250" x2="512" y2="250" stroke="#28455c"/><line x1="450" y1="320" x2="512" y2="320" stroke="#28455c"/>
+          <line x1="450" y1="390" x2="512" y2="390" stroke="#28455c"/><line x1="450" y1="460" x2="512" y2="460" stroke="#28455c"/>
+          <circle class="led" cx="481" cy="215" r="4" fill="#37ff8b"/>
+          <circle class="led fast" cx="481" cy="355" r="4" fill="#37ff8b"/>
+          <text x="481" y="558" fill="#4d7691" font-size="13" text-anchor="middle" font-family="monospace">UNIT-200 COLUMN</text>
+        </g>
+
+        <!-- CCTV mast -->
+        <g>
+          <line x1="565" y1="520" x2="565" y2="330" stroke="#28455c" stroke-width="4"/>
+          <rect x="552" y="322" width="30" height="14" rx="3" fill="#132638" stroke="#3a6280"/>
+          <circle class="led" cx="580" cy="329" r="3" fill="#ff3b4d"/>
+          <path d="M552 336 L536 352" stroke="#28455c" stroke-width="2"/>
+          <text x="565" y="558" fill="#4d7691" font-size="12" text-anchor="middle" font-family="monospace">CCTV-12</text>
+        </g>
+
+        <!-- UNIT 300: flare stack -->
+        <g>
+          <polygon points="630,520 650,520 646,140 634,140" fill="url(#metal2)" stroke="#3a6280"/>
+          <line x1="640" y1="200" x2="600" y2="520" stroke="#1d3850" stroke-width="2"/>
+          <line x1="640" y1="200" x2="680" y2="520" stroke="#1d3850" stroke-width="2"/>
+          <g class="flame">
+            <path d="M640 138 C 628 112, 636 96, 640 82 C 644 96, 654 110, 640 138Z" fill="url(#flamegrad)"/>
+            <path d="M640 132 C 634 116, 638 106, 640 96 C 642 106, 647 118, 640 132Z" fill="#fff3b0" opacity=".8"/>
+          </g>
+          <text x="640" y="558" fill="#4d7691" font-size="13" text-anchor="middle" font-family="monospace">UNIT-300 FLARE</text>
+        </g>
+
+        <!-- cooling tower -->
+        <g>
+          <path d="M760 520 C 775 430, 770 380, 790 340 L 850 340 C 870 380, 865 430, 880 520 Z" fill="url(#metal)" stroke="#3a6280" stroke-width="1.5"/>
+          <ellipse cx="820" cy="340" rx="30" ry="8" fill="#10202f" stroke="#3a6280"/>
+          <circle class="steam" cx="812" cy="326" r="10" fill="#9fd4ff" opacity=".35"/>
+          <circle class="steam s2" cx="828" cy="322" r="13" fill="#9fd4ff" opacity=".3"/>
+          <circle class="steam s3" cx="820" cy="318" r="9" fill="#9fd4ff" opacity=".3"/>
+          <text x="820" y="558" fill="#4d7691" font-size="13" text-anchor="middle" font-family="monospace">CT-01</text>
+        </g>
+
+        <!-- SIS cabinet -->
+        <g>
+          <rect x="905" y="452" width="46" height="68" fill="#132638" stroke="#c9a227" stroke-width="1.5"/>
+          <rect x="912" y="462" width="32" height="20" fill="#050b12" stroke="#28455c"/>
+          <circle class="led" cx="928" cy="500" r="4" fill="#ffb347"/>
+          <text x="928" y="558" fill="#4d7691" font-size="12" text-anchor="middle" font-family="monospace">SIS</text>
+        </g>
+
+        <!-- control room building -->
+        <g>
+          <rect x="975" y="410" width="200" height="110" fill="#0e1c2c" stroke="#3a6280" stroke-width="1.5"/>
+          <rect x="975" y="398" width="200" height="12" fill="#16283c" stroke="#3a6280"/>
+          <line x1="1075" y1="398" x2="1075" y2="330" stroke="#28455c" stroke-width="3"/>
+          <circle class="led fast" cx="1075" cy="326" r="4" fill="#ff3b4d"/>
+          <g fill="#29e6ff" opacity=".85">
+            <rect x="990" y="430" width="26" height="18"><animate attributeName="opacity" values="1;.4;1" dur="3.1s" repeatCount="indefinite"/></rect>
+            <rect x="1026" y="430" width="26" height="18"><animate attributeName="opacity" values=".5;1;.5" dur="2.3s" repeatCount="indefinite"/></rect>
+            <rect x="1062" y="430" width="26" height="18"/>
+            <rect x="1098" y="430" width="26" height="18"><animate attributeName="opacity" values="1;.3;1" dur="4s" repeatCount="indefinite"/></rect>
+            <rect x="1134" y="430" width="26" height="18"/>
+          </g>
+          <rect x="1050" y="478" width="34" height="42" fill="#091320" stroke="#28455c"/>
+          <text x="1075" y="558" fill="#4d7691" font-size="13" text-anchor="middle" font-family="monospace">CENTRAL CONTROL ROOM</text>
+        </g>
+
+        <!-- pipes with animated flow -->
+        <g fill="none" stroke="#1d3850" stroke-width="7" stroke-linecap="round">
+          <path d="M190 470 L345 470"/>
+          <path d="M397 470 L450 470 L450 430"/>
+          <path d="M512 300 L640 300 L640 240"/>
+          <path d="M512 470 L760 470"/>
+          <path d="M880 470 L975 470"/>
+        </g>
+        <g fill="none" stroke="#29e6ff" stroke-width="2.5" opacity=".8" class="flow">
+          <path d="M190 470 L345 470"/>
+          <path d="M397 470 L450 470 L450 430"/>
+          <path d="M512 300 L640 300 L640 240"/>
+          <path d="M512 470 L760 470"/>
+          <path d="M880 470 L975 470"/>
+        </g>
+
+        <!-- perimeter fence hint -->
+        <g stroke="#0f2334" stroke-width="1.5">
+          <line x1="20" y1="520" x2="20" y2="496"/><line x1="45" y1="520" x2="45" y2="496"/><line x1="20" y1="500" x2="45" y2="500"/>
+          <line x1="1160" y1="520" x2="1160" y2="496"/><line x1="1185" y1="520" x2="1185" y2="496"/><line x1="1160" y1="500" x2="1185" y2="500"/>
+        </g>
+      </svg>
+      <div id="marker"><div class="ring"></div><div class="ring ring2"></div><div class="micon">⚠️</div><div id="markerLabel"></div></div>
+      <div id="vignette"></div>
+    </section>
+    <aside id="comms">
+      <header><span>◉ COMMS / RADIO NET</span><span class="live" id="liveTag" style="display:none">● LIVE</span></header>
+      <div id="feed"></div>
+    </aside>
+  </div>
+
+  <section id="actionbar">
+    <div id="abHead"><span>RESPONSE ACTIONS — CHOOSE WISELY, ORDER MATTERS</span><span class="kb" id="abStatus"></span></div>
+    <div id="cards"></div>
+  </section>
+
+  <div class="beacon" id="beaconL"></div>
+  <div class="beacon" id="beaconR"></div>
+</div>
+
+<div id="overlay" class="show"><div id="modal"></div></div>
+<div id="flash"></div>
+<div id="glitch"></div>
+<div id="scan"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   SCENARIO DATA — 10 OT incident-response scenarios
+   steps[]  = required actions, in the ONLY correct order
+   intel[]  = safe info-gathering actions (cost time, give clues)
+   traps[]  = plausible but wrong actions (cost time + integrity)
+   ============================================================ */
+const SCENARIOS = [
+{
+  id:"usb", title:"INFECTED USB AT OPERATOR STATION",
+  marker:{x:1075,y:455,icon:"💾",label:"OS-7 · CONTROL ROOM"},
+  brief:"⚠ 14:22 — CCTV and the shift supervisor confirm a vendor technician plugged a personal USB drive into operator station OS-7 in the central control room.\n\nThe AV console flagged a trojan dropper heuristic on OS-7... then went silent. OS-7 still has an active HMI session on Unit-300.\n\nContain it. The clock is running.",
+  steps:[
+    {label:"Isolate OS-7 from the network — disable its switch port, keep power ON", icon:"🔌", feedback:"Switch port shut. OS-7 is off the PCN. Power stays on — volatile memory and running processes preserved for forensics."},
+    {label:"Transfer Unit-300 view/control to the backup operator station", icon:"🖥️", feedback:"OS-4 has taken over Unit-300. Operators confirm full visibility. Process stable — no loss of view."},
+    {label:"Sweep IDS/network monitoring for lateral movement from OS-7", icon:"📡", feedback:"IDS shows OS-7 attempted SMB connections to two peers at 14:19 — both blocked by host firewall. No successful spread detected."},
+    {label:"Seize the USB drive — bag it, log chain of custody, hold the vendor tech for interview", icon:"🧤", feedback:"USB secured in an evidence bag. Vendor tech is cooperating with site security. Chain of custody form started."},
+    {label:"Notify SOC / incident commander and start forensic imaging of OS-7", icon:"📞", feedback:"SOC engaged, IR case opened. Live memory capture and disk image of OS-7 under way."}
+  ],
+  intel:[
+    {label:"Pull AV console logs for OS-7", icon:"🔍", feedback:"AV log: 'Trojan.GenKryptik' dropper wrote an autorun payload at 14:17, then the AV service was stopped. Assume the box is compromised."},
+    {label:"Review CCTV timeline of the vendor's movements", icon:"🎥", feedback:"CCTV: tech was ONLY at OS-7, for 4 minutes. Did not visit any other station. Scope may be limited to one host."},
+    {label:"Ask shift supervisor which stations the vendor touched", icon:"🗣️", feedback:"Supervisor: 'Just OS-7. He said he needed to copy trend data for the pump report.' Not an approved procedure."}
+  ],
+  traps:[
+    {label:"Power off OS-7 immediately — kill it dead", icon:"⛔", feedback:"✗ You destroyed volatile memory — the malware's in-RAM stage and network connections are gone forever. Forensics just got much harder, and you lost the HMI gracefully-transfer window."},
+    {label:"Run AV 'scan and clean' on OS-7 while it's still connected", icon:"🧹", feedback:"✗ The scan modified hundreds of file timestamps and tipped the malware — it fired a beacon before quarantine. Evidence contaminated, and it stayed on the network the whole time."},
+    {label:"Format the USB stick and hand it back to the vendor", icon:"🗑️", feedback:"✗ You just wiped the primary evidence and released a suspect device. The IR team and legal are... not pleased."}
+  ],
+  failText:"The dropper spread to a second HMI before containment. Unit-300 lost operator view for 40 minutes and tripped on high level. Post-incident review: containment was too slow.",
+  lesson:"USB policy + device control on operator stations, isolate-don't-power-off (preserve volatile evidence), transfer control before you touch anything, and always preserve chain of custody.",
+  mitre:"ATT&CK for ICS: T0847 Replication Through Removable Media"
+},
+{
+  id:"phish", title:"PHISHED ENGINEERING WORKSTATION BEACONING TO C2",
+  marker:{x:1030,y:445,icon:"🎣",label:"EWS-2 · ENG OFFICE"},
+  brief:"⚠ 10:05 — SOC flags engineering workstation EWS-2: periodic DNS queries every 5 minutes to a known command-and-control domain.\n\nThe process engineer admits opening 'pump_curve_calc.xlsm' from an email this morning. EWS-2 holds the PLC project files for Unit-100 and has TIA Portal installed.\n\nAn attacker may have hands on your engineering tools.",
+  steps:[
+    {label:"Block the C2 domain/IP at the OT-DMZ firewall and verify egress is denied", icon:"🧱", feedback:"Firewall rule live. Next beacon attempt at 10:10 DENIED. The implant is cut off from its operator."},
+    {label:"Isolate EWS-2 — disable its switch port", icon:"🔌", feedback:"EWS-2 is off the network. Whatever is on it can no longer reach the PLCs."},
+    {label:"Check for EWS-2 sessions to controllers since infection — review PLC connection logs", icon:"📡", feedback:"Controller logs: one online connection from EWS-2 to PLC-04 at 09:41, duration 6 minutes. That window needs verification."},
+    {label:"Verify PLC-04 program integrity — compare online logic against the validated offline baseline", icon:"🧮", feedback:"Checksum comparison: MATCH. Logic, setpoints and alarm limits identical to baseline. No tampering made it to the controller."},
+    {label:"Reset the engineer's credentials and hand IOCs to SOC for a fleet-wide phishing sweep", icon:"🔐", feedback:"Credentials rotated, token revoked. SOC finds the same email in 3 other mailboxes — quarantined before anyone else opened it."}
+  ],
+  intel:[
+    {label:"Pull DNS logs for EWS-2", icon:"🔍", feedback:"Beaconing started 09:14 — about 8 minutes after the attachment was opened. Regular 300-second interval, classic implant heartbeat."},
+    {label:"Ask email gateway who else received the message", icon:"📧", feedback:"Gateway: same sender hit 4 engineering mailboxes. Only EWS-2's user opened it — so far."},
+    {label:"Detonate the attachment in a sandbox", icon:"🧪", feedback:"Sandbox: macro drops a RAT with keylogging and screen capture. It specifically screenshots windows titled 'TIA Portal' — this attacker knows OT."}
+  ],
+  traps:[
+    {label:"Re-download the PLC program from EWS-2's backup 'just to be safe'", icon:"⛔", feedback:"✗ You pushed a program from a COMPROMISED machine to a live controller before verifying anything. If the project file was trojaned, you just did the attacker's job for them."},
+    {label:"Shut down EWS-2 and reimage it right now", icon:"🗑️", feedback:"✗ Reimaging destroyed the implant, its config, and every artifact showing what the attacker did during that 6-minute PLC session. Now you can't prove the logic is clean."},
+    {label:"It came through corporate email — hand it to IT and stand down", icon:"🤷", feedback:"✗ While you waited for IT's queue, the implant kept beaconing from a machine with engineering access to your controllers. OT owns OT incidents."}
+  ],
+  failText:"The attacker used the live session to download the Unit-100 project, including credentials stored in it. Weeks later, modified logic appears on PLC-04. Cut the C2 first next time.",
+  lesson:"Cut C2 comms first, then isolate the host, then verify controller integrity against offline baselines. Never write to a PLC from a suspect machine, and never destroy the evidence trail.",
+  mitre:"ATT&CK for ICS: T0865 Spearphishing Attachment, T0843 Program Download"
+},
+{
+  id:"ransom", title:"RANSOMWARE STORM APPROACHING THE OT BOUNDARY",
+  marker:{x:1075,y:345,icon:"☣️",label:"IT/OT DMZ LINK"},
+  brief:"⚠ 11:48 — Corporate SOC declares a major incident: ransomware is encrypting IT file servers and spreading by SMB and stolen admin credentials.\n\nYour historian in the DMZ has mapped drives to corporate shares. The OT firewall still allows the standard IT↔DMZ conduits.\n\nIT is losing. Keep it out of the plant.",
+  steps:[
+    {label:"Activate the segmentation playbook — cut IT↔DMZ conduits at the firewall to deny-all except life-safety", icon:"🧱", feedback:"Conduits severed. OT is now an island. Corporate can burn; the plant network no longer trusts it."},
+    {label:"Kill SMB sessions and unmap corporate drives on the DMZ historian, then snapshot it", icon:"🗄️", feedback:"Mapped drives disconnected, SMB service stopped, clean VM snapshot taken. The most exposed OT asset is buttoned up."},
+    {label:"Verify OT backups are offline/immutable and recent", icon:"💽", feedback:"Backup check: last full set 22 hours old, stored on the offline vault, test-restore passes. Worst case, you can rebuild."},
+    {label:"Raise OT monitoring — load IOC rules, watch for SMB/psexec/lateral movement inside the PCN", icon:"📡", feedback:"IDS updated with the ransomware's IOCs. Zero matches inside the PCN so far. Eyes on glass at every level-2 segment."},
+    {label:"Brief operations for possible manual ops and open a standing bridge with corporate IR", icon:"📻", feedback:"Ops briefed: field operators ready to run local/manual if HMIs degrade. Joint bridge running — you'll know the moment IT's status changes."}
+  ],
+  intel:[
+    {label:"Get the IOC package from corporate SOC", icon:"🔍", feedback:"SOC: LockBit-family variant, spreads via SMB + stolen domain admin creds. Kill switch: none. Encrypts VMs via hypervisor too — check your DMZ ESXi."},
+    {label:"Review OT firewall logs for recent denies from corporate", icon:"🧾", feedback:"Firewall: 340 denied connection attempts from corporate subnets in the last hour — scanning pattern. It is actively probing for a way in."},
+    {label:"Check historian OS patch level and exposure", icon:"🧪", feedback:"Historian: Windows Server, SMBv1 still enabled (!), patched 9 months ago. If it reaches this box, it will land."}
+  ],
+  traps:[
+    {label:"Emergency-shutdown the whole plant NOW, just in case", icon:"⛔", feedback:"✗ An unnecessary full trip is its own hazard: thermal stress, flare load, restart risk — and days of lost production for an attack that never touched OT. Proportionate response, always."},
+    {label:"Copy OT backups onto a network share for quick access during the crisis", icon:"🗑️", feedback:"✗ You just moved your last line of defence onto the same network the ransomware is hunting. Offline backups exist precisely for today."},
+    {label:"Pull the plug on the historian mid-write", icon:"🔌", feedback:"✗ Hard power-off corrupted the historian database. You now have a self-inflicted data-loss incident while the real attack is still inbound."}
+  ],
+  failText:"The ransomware rode a mapped drive into the DMZ historian, then harvested cached OT admin credentials from it. Three HMI servers encrypted. The plant ran blind on manual for 14 hours.",
+  lesson:"Pre-planned IT/OT severance criteria beat improvisation. Kill the conduits early, strip DMZ trust relationships, and treat offline backups as sacred.",
+  mitre:"ATT&CK for ICS: T0867 Lateral Tool Transfer, T0828 Loss of Productivity and Revenue"
+},
+{
+  id:"vpn", title:"UNAUTHORIZED VENDOR VPN SESSION — LIVE ON A PLC",
+  marker:{x:481,y:300,icon:"🛰️",label:"PLC-12 · UNIT-200"},
+  brief:"⚠ 02:31 — Night shift. The remote-access gateway shows an ACTIVE vendor VPN session connected through the jump host to the engineering interface of PLC-12 (Unit-200).\n\nNo maintenance window is scheduled. No change request exists. The session has been live for 18 minutes.\n\nSomeone — or something — is on your controller right now.",
+  steps:[
+    {label:"Terminate the VPN session and disable the vendor account at the jump host", icon:"✂️", feedback:"Session killed, account disabled. Whoever that was, their hands are off PLC-12. Total session time: 19 minutes — every one of them needs explaining."},
+    {label:"Call the vendor's registered emergency contact — verify against the maintenance schedule", icon:"📞", feedback:"Vendor duty manager, half asleep: 'Nobody from us is working tonight.' CONFIRMED UNAUTHORIZED. This is now a security incident, not a support call."},
+    {label:"Inspect PLC-12: key-switch mode, last change timestamp, online/offline checksum compare", icon:"🧮", feedback:"PLC-12: mode was left in REMOTE (!), last program change 02:19 — during the session. Checksum MISMATCH against baseline. The logic was touched."},
+    {label:"Restore validated baseline logic to PLC-12 under supervision and set key-switch to RUN (locked)", icon:"💽", feedback:"Golden-image logic restored with ops watching the process. Checksums verify. Key physically locked to RUN. The controller is trustworthy again."},
+    {label:"Pull jump-host session recording, rotate ALL vendor credentials, report to SOC/CERT", icon:"🔐", feedback:"Recording shows setpoint edits + an attempted logic upload. All vendor accounts rotated, 2FA enforced, IR case and CERT report filed."}
+  ],
+  intel:[
+    {label:"Geolocate the session source IP", icon:"🌍", feedback:"Source IP resolves to a hosting provider abroad — not the vendor's country of operation. Legit vendor techs come from their corporate ranges."},
+    {label:"Review this account's session history", icon:"🧾", feedback:"History: 6 logins in 3 weeks, all between 02:00–04:00, all under 30 min. This account has been quietly abused for a while."},
+    {label:"Check 2FA logs for the account", icon:"🔍", feedback:"2FA log: this is a legacy account EXEMPTED from 2FA 'for compatibility'. Password-only, exposed to credential stuffing. There's your entry vector."}
+  ],
+  traps:[
+    {label:"Watch silently for an hour to gather more intelligence", icon:"👁️", feedback:"✗ You let an unverified actor keep live access to a running controller for another hour. In OT, attacker dwell time on a PLC is measured in damage, not in intel value."},
+    {label:"Reboot PLC-12 immediately to kick them off", icon:"⛔", feedback:"✗ The controller dropped its outputs mid-process — Unit-200 pressure excursion, relief valve lifted. You caused a process upset the attacker hadn't managed yet."},
+    {label:"Email the vendor's generic support inbox and wait for the morning reply", icon:"📧", feedback:"✗ An active intrusion, handled at the speed of a ticket queue. The session ran on while your email sat unread."}
+  ],
+  failText:"The intruder finished uploading modified logic and disconnected. The change ran undetected until Unit-200 tripped on a manipulated interlock two days later.",
+  lesson:"Live unauthorized access to a controller = cut it first, verify second. Then always assume the controller was modified until checksums prove otherwise. No 2FA exemptions for OT remote access — ever.",
+  mitre:"ATT&CK for ICS: T0886 Remote Services, T0831 Manipulation of Control"
+},
+{
+  id:"sis", title:"SAFETY SYSTEM TAMPERING — SIS UNDER ATTACK",
+  marker:{x:928,y:480,icon:"☢️",label:"SIS CABINET"},
+  brief:"⚠ 01:12 — The Safety Instrumented System engineering workstation logged an unexpected connection, and the SIS controller is throwing intermittent diagnostic faults.\n\nProcess history shows 'TriStation.exe' executed on the SIS EWS at 01:12 — no safety work is authorized this month.\n\nThis is the TRITON playbook. The system that keeps people alive may be compromised.",
+  steps:[
+    {label:"Bring the process to a safe operating state per procedure — reduce demand on the SIS", icon:"🛑", feedback:"Rates cut back to the safe envelope, ops holding steady. If the SIS is degraded, the process is no longer relying on it to catch a big excursion. People first."},
+    {label:"Physically lock the SIS key-switch to RUN and isolate the SIS engineering network", icon:"🔑", feedback:"Field operator confirms: key OUT of PROGRAM, locked to RUN. SIS engineering segment air-gapped. No further logic writes are physically possible."},
+    {label:"Verify SIS logic against the last validated baseline", icon:"🧮", feedback:"Comparison result: 2 of 3 attempted downloads FAILED (that's your diagnostic faults) — the third partially wrote a test routine. Deviation identified and documented. Restoration plan with the safety engineer."},
+    {label:"Image the SIS EWS and preserve all logs — do not clean it yet", icon:"💽", feedback:"Full disk + memory image captured. Logs show the attacker had access for 3 weeks, staging carefully. Evidence locked down."},
+    {label:"Escalate: plant manager, corporate IR, and regulator/CERT notification as required", icon:"📞", feedback:"This one goes all the way up. Regulator informed per safety-case obligations, national CERT engaged. Nobody hides a safety-system compromise."}
+  ],
+  intel:[
+    {label:"Review SIS diagnostic fault history", icon:"🔍", feedback:"Faults began 01:14, pattern matches failed logic-download attempts — the attacker's tooling kept crashing the write. The faults are your early-warning gift."},
+    {label:"Audit who has SIS EWS access", icon:"🧾", feedback:"Access list: 4 authorized engineers... plus a service account created 3 weeks ago that nobody recognizes. That's your persistence mechanism."},
+    {label:"Check the SIS EWS for recently created accounts/tasks", icon:"🧪", feedback:"Found: scheduled task re-launching a remote-access implant at boot, installed via the rogue service account. Professional work — this was a staged, patient operation."}
+  ],
+  traps:[
+    {label:"Reset the faults and continue at full production", icon:"⛔", feedback:"✗ You silenced the only symptom of a safety-system attack and kept the plant leaning on a possibly-sabotaged SIS at full rates. This is the exact mistake that nearly ended in catastrophe in 2017."},
+    {label:"Do an online logic download to 'refresh' the SIS program", icon:"🗑️", feedback:"✗ You wrote to a compromised safety controller from a compromised workstation. If the EWS project file was poisoned, the SIS is now reliably running the attacker's logic."},
+    {label:"Bypass the SIS to stop the nuisance faults", icon:"💀", feedback:"✗ You disabled the last independent layer of protection while under active attack. If the process moves, nothing catches it. This is the worst possible action on this board."}
+  ],
+  failText:"The final download attempt succeeded. The SIS ran modified logic with trip functions suppressed. The plant kept operating with no functioning safety layer until the deviation was found in a scheduled proof test.",
+  lesson:"SIS incidents are process-safety events first, cyber events second: safe state → physical key lock → verify logic → preserve evidence → escalate wide. Keep SIS engineering physically separate and key-switches locked.",
+  mitre:"ATT&CK for ICS: T0857 System Firmware / TRITON case study (T0880 Loss of Safety)"
+},
+{
+  id:"wiper", title:"WIPER OUTBREAK — CONTROL ROOM GOING DARK",
+  marker:{x:1075,y:430,icon:"🕳️",label:"SCADA SERVERS"},
+  brief:"⚠ 15:40 — One by one, HMIs in the central control room are going black or boot-looping. The historian trend screens froze 4 minutes ago.\n\nOperators are losing visibility of Unit-300 while it runs at full rate. SCADA servers A and B are unresponsive.\n\nThe process is still running. You just can't see it.",
+  steps:[
+    {label:"Go to manual: dispatch field operators to local panels and gauges — confirm the process is stable", icon:"👷", feedback:"Field ops report from local panels: Unit-300 steady, levels and pressures in range. The plant is safe on human eyes and local control while you fight the cyber fire."},
+    {label:"Isolate the SCADA server segment to stop further spread", icon:"🔌", feedback:"SCADA VLAN cut from the rest of the PCN. Whatever is wiping machines can no longer reach the surviving nodes or the controllers."},
+    {label:"Identify surviving nodes — keep the standby server and spare HMIs OFF the infected segment", icon:"🖥️", feedback:"Standby server C and two cold-spare HMIs found clean and kept isolated. That's your rebuild seed — protect it."},
+    {label:"Restore from offline gold images onto clean hardware, on a quarantined network", icon:"💽", feedback:"Rebuild started from the offline image set on a fresh, isolated segment. First restored HMI comes up clean and validates."},
+    {label:"Root-cause before reconnecting — image one dead server, find the delivery mechanism, then phased reconnect", icon:"🔬", feedback:"Forensics on server A: a scheduled task pushed via the domain controller fired the wiper fleet-wide at 15:38. GPO cleaned, DC rebuilt, reconnection proceeds in verified phases. It won't happen twice."}
+  ],
+  intel:[
+    {label:"Check domain controller logs for pushed jobs", icon:"🔍", feedback:"DC log: a GPO scheduled task was created at 15:31 by a compromised admin account and pushed to every Windows node in OT. That's your delivery mechanism."},
+    {label:"Query the patch/management server", icon:"🧾", feedback:"The WSUS/management server also staged an unknown package this afternoon. Assume ALL centrally-managed nodes are suspect until verified."},
+    {label:"Get last-known-good process values from operators", icon:"🗣️", feedback:"Ops recite the pre-blackout numbers from their logs. You now have a trusted reference for what 'normal' looks like when screens return."}
+  ],
+  traps:[
+    {label:"Keep rebooting the HMIs until they come back", icon:"⛔", feedback:"✗ Each reboot re-triggered the wiper payload and shredded more of the disk. You turned recoverable machines into scrap while the outbreak kept spreading."},
+    {label:"Restore backups straight onto the infected network to get screens back fast", icon:"🗑️", feedback:"✗ The freshly restored server was wiped again in 11 minutes — the delivery mechanism was still live. Restoration before isolation is just feeding the fire."},
+    {label:"Run blind at full rate — screens will probably come back", icon:"💀", feedback:"✗ Full production with zero visibility and no plan is a bet with the plant as the stake. Loss of view has a procedure: manual ops. Use it."}
+  ],
+  failText:"With no field-operator fallback organized, a level excursion went unseen. Unit-300 tripped hard on a mechanical protection device. Recovery took three days.",
+  lesson:"Loss of view ≠ loss of control: manual/local operation is the first move. Isolate before you restore, keep gold images offline, and never reconnect before finding the delivery mechanism.",
+  mitre:"ATT&CK for ICS: T0809 Data Destruction, T0829 Loss of View"
+},
+{
+  id:"rogue", title:"ROGUE DEVICE ON THE PLANT NETWORK",
+  marker:{x:552,y:465,icon:"📦",label:"CABINET C-204 · UNIT-200"},
+  brief:"⚠ 09:17 — Asset-inventory alarm: an UNKNOWN MAC address joined switch SW-OT-04, port 18 — field cabinet C-204 in Unit-200.\n\nSince this morning, operators report intermittent HMI↔PLC comms errors on that segment. ARP tables show anomalies consistent with a man-in-the-middle.\n\nSomething is physically planted in your plant.",
+  steps:[
+    {label:"Disable switch port 18 remotely — cut the device off NOW", icon:"✂️", feedback:"Port down. ARP tables stabilize within a minute and HMI↔PLC comms errors stop. Whatever it is, it's deaf and mute now."},
+    {label:"Dispatch a technician with security escort — photograph the device in place, then seize it", icon:"📸", feedback:"Found zip-tied behind the patch panel: a Raspberry Pi with a cellular modem. Photographed in place, bagged, chain of custody logged. It had its own out-of-band exfil path — port security alone would never have seen the uplink."},
+    {label:"Analyze switch CAM/ARP history — determine what traffic it intercepted or injected", icon:"📡", feedback:"Analysis: the device ARP-spoofed the gateway for 6 days, silently recording HMI↔PLC traffic — and injected crafted write commands twice during shift change."},
+    {label:"Cross-check HMI values against field instruments on that segment; verify PLC data integrity", icon:"🧮", feedback:"Field verification: two setpoints on PLC-07 differ from what the HMI displays — the injected writes. Values corrected against field truth and baseline. Process integrity restored."},
+    {label:"Sweep every cabinet and switch port plant-wide; enable port security / 802.1X", icon:"🔦", feedback:"Full sweep: one more staged (unconnected) device found near Unit-100. Port security and MAC allow-listing now enforced on all field switches. The easy way in is closed."}
+  ],
+  intel:[
+    {label:"Pull switch logs — when did the MAC first appear?", icon:"🔍", feedback:"First seen 6 days ago at 06:52 — during a contractor maintenance window. It has survived a week undetected."},
+    {label:"Review CCTV around cabinet C-204", icon:"🎥", feedback:"CCTV: a contractor in hi-vis opened C-204 six days ago, 90 seconds inside, wrong permit number on the gate log. Badge cloned from an agency worker."},
+    {label:"Check work orders for cabinet C-204", icon:"🧾", feedback:"No legitimate work order touched C-204 in 3 weeks. Whoever opened it had no business there."}
+  ],
+  traps:[
+    {label:"Just unplug it, bin it, and move on", icon:"🗑️", feedback:"✗ You destroyed the evidence chain — no device forensics, no attribution, no idea what it injected for 6 days. And you never learned there was a second device."},
+    {label:"Aggressively port-scan the mystery device first", icon:"⛔", feedback:"✗ Your scan tripped its dead-man switch: it wiped itself and fired a final burst of traffic through its cell modem. Evidence gone, attacker warned."},
+    {label:"Ignore it — probably some technician's laptop", icon:"🤷", feedback:"✗ 'Probably' is not an asset inventory. It kept intercepting control traffic for the rest of the week."}
+  ],
+  failText:"The device kept injecting manipulated setpoints through shift change. By the time the mismatch was noticed against field gauges, off-spec product had shipped.",
+  lesson:"Asset inventory alarms are gold — act on them. Contain (port down) → preserve (photo + seize) → assess (what did it touch) → verify field truth → sweep for siblings. Assume physical implants have out-of-band comms.",
+  mitre:"ATT&CK for ICS: T0830 Adversary-in-the-Middle, T0848 Rogue Master"
+},
+{
+  id:"insider", title:"INSIDER EXFILTRATION — CONTRACTOR ON NOTICE",
+  marker:{x:1140,y:440,icon:"🕶️",label:"ENGINEERING OFFICE"},
+  brief:"⚠ 22:47 — DLP alert: a contractor account is bulk-uploading PLC project files, P&IDs and network diagrams to a personal cloud drive.\n\nBadge logs put him in the engineering office right now. His contract ends Friday, and HR notes an unresolved payment dispute.\n\nHe's still copying. Handle this carefully — and by the book.",
+  steps:[
+    {label:"Silently preserve evidence — snapshot DLP logs, session capture, file access history", icon:"📸", feedback:"Evidence secured first, before anything can be deleted or disputed: 2.3 GB staged across 3 nights, all logged and hashed. Airtight."},
+    {label:"Block the upload at the proxy and suspend the account — quietly", icon:"✂️", feedback:"Upload dies mid-transfer, account suspended. From his desk it looks like a network glitch. No confrontation, no tipping."},
+    {label:"Notify HR, legal and site security together — activate the insider-threat procedure", icon:"⚖️", feedback:"Coordinated call: HR confirms the dispute, legal confirms grounds, security preps the escort. Everyone moves on one plan — nobody freelances."},
+    {label:"Security escorts him out — collect badge, laptop and any media; revoke ALL access", icon:"🚪", feedback:"Calm, professional walk-out. Badge, laptop, and a personal SSD collected. VPN, email, and OT accounts all killed within minutes. No scene, no risk."},
+    {label:"Assess what was taken; rotate every credential and secret in the exposed project files", icon:"🔐", feedback:"Damage assessment: project files contained stored PLC passwords and a VPN profile. All rotated tonight. Whatever he took is now worthless as an access path."}
+  ],
+  intel:[
+    {label:"Audit everything else this account accessed recently", icon:"🔍", feedback:"Access audit: also pulled the SIS documentation folder and the firewall rulebase export. Treat this as full architecture exposure."},
+    {label:"Check DLP history for earlier transfers", icon:"🧾", feedback:"This is night 3. Two earlier uploads, ~800 MB total, already completed to the same personal cloud. The horse is partly out — recovery/legal needs to know."},
+    {label:"Review his HR file with the duty manager", icon:"🗣️", feedback:"HR: invoice dispute for 3 months, escalated aggressively last week, contract not renewed. Motive, opportunity, and a deadline — Friday."}
+  ],
+  traps:[
+    {label:"March over and confront him at his desk right now", icon:"⛔", feedback:"✗ Alone, at night, no witnesses, no HR: he denied everything, closed the laptop lid — and later claimed harassment. The uploads finished during the argument."},
+    {label:"Delete his account AND all his files/logs immediately", icon:"🗑️", feedback:"✗ You destroyed the evidence needed for legal action along with his access. Case dead on arrival, and you can't even prove what he took."},
+    {label:"Message the plant group chat to warn everyone about him", icon:"📢", feedback:"✗ He saw it in 30 seconds, finished the critical upload, and wiped his workstation. Also: defamation exposure. Insider response is need-to-know."}
+  ],
+  failText:"Tipped off, he completed the exfiltration and wiped his tracks before Friday. The full OT architecture pack — including stored credentials — left with him.",
+  lesson:"Insider response order: evidence first, quiet containment second, coordinated HR/legal/security action third. Never confront alone, never destroy logs, never broadcast. And rotate every secret that was exposed.",
+  mitre:"ATT&CK for ICS: T0882 Theft of Operational Information"
+},
+{
+  id:"camdos", title:"BOTNET CAMERA FLOODING THE CONTROL NETWORK",
+  marker:{x:565,y:335,icon:"🎥",label:"CCTV-12 MAST"},
+  brief:"⚠ 13:03 — Unit-100 operators report sluggish HMIs and PLC comms timeouts. NetFlow shows the segment saturated with junk traffic.\n\nThe source: IP camera CCTV-12 — hammering the PLC VLAN with scan and flood traffic. Signature matches a Mirai-family botnet.\n\nA camera should never even be able to REACH that VLAN.",
+  steps:[
+    {label:"Disable CCTV-12's switch port — kill the flood at the source", icon:"✂️", feedback:"Port down, storm over. Segment utilization drops from 96% to 4%. The control network can breathe again."},
+    {label:"Verify PLC comms recover — check controllers and I/O for fault states needing reset", icon:"🧮", feedback:"Polling normal within 90 seconds. One PLC logged comms-loss events but held last-good state as designed. No process impact. Confirmed stable."},
+    {label:"Trace HOW the camera VLAN reached the PLC VLAN — audit ACLs and routing", icon:"🔍", feedback:"Found it: a 'temporary' any-any ACL added during camera commissioning two years ago and never removed. Cameras have had a path to your controllers this whole time."},
+    {label:"Quarantine the entire CCTV network from OT; reset, patch and re-credential all cameras", icon:"🧱", feedback:"Camera VLAN fully fenced off — one-way video export only. Sweep finds 14 of 40 cameras botted (default admin/admin, 2019 firmware). All re-flashed and re-credentialed."},
+    {label:"Deploy traffic monitoring with alerts on abnormal load on control VLANs", icon:"📡", feedback:"Baseline thresholds set — the control segments now alarm on abnormal traffic long before an operator ever feels lag. Next time you'll know in seconds."}
+  ],
+  intel:[
+    {label:"Check CCTV-12's firmware and credentials", icon:"🧾", feedback:"Firmware from 2019, never updated. Credentials: admin/admin. It was compromised from the internet via the vendor's port-forward 'for remote support'."},
+    {label:"Review NetFlow — where else is this traffic going?", icon:"🌍", feedback:"The camera is also scanning external IPs — it's part of a global botnet, and it's advertising your address space to whoever runs it."},
+    {label:"Count how many cameras show the same behavior", icon:"🔍", feedback:"14 of 40 cameras show botnet C2 heartbeats. This is a fleet compromise, not a single bad device."}
+  ],
+  traps:[
+    {label:"Power-cycle every PLC in Unit-100 to clear the timeouts", icon:"⛔", feedback:"✗ The PLCs were victims, not the problem. Mass restart dropped outputs across the unit and caused the process upset the flood itself never achieved."},
+    {label:"Block ALL traffic on the OT core switch until things calm down", icon:"💀", feedback:"✗ You just did the attacker's job: total self-inflicted denial of service. Every HMI in the plant went dark at once."},
+    {label:"Cameras are facilities' problem — send them an email", icon:"🤷", feedback:"✗ The flood kept saturating your control segment all afternoon. If it can touch the PCN, it's your problem, whoever owns the badge on the box."}
+  ],
+  failText:"Sustained comms loss put three controllers into fail-safe holds; Unit-100 ground to a halt. Cause: one $80 camera and one forgotten firewall rule.",
+  lesson:"'IoT' on plant networks is attack surface: segment cameras/building systems away from control traffic, kill default credentials, and monitor bandwidth on control VLANs. Availability IS the security objective in OT.",
+  mitre:"ATT&CK for ICS: T0814 Denial of Service, T0885 Commonly Used Port"
+},
+{
+  id:"firmware", title:"POISONED FIRMWARE — SUPPLY-CHAIN 'HOTFIX'",
+  marker:{x:900,y:500,icon:"📦",label:"RELAY UPDATE SERVER"},
+  brief:"⚠ 16:20 — An email styled as your relay vendor's 'URGENT security hotfix' hit the engineering inbox, firmware package attached.\n\nOne engineer already staged it on the update server, scheduled to push to 30 protection relays tonight at 23:00.\n\nProblem: the file hash does NOT match the vendor portal, and the email headers look spoofed. You have hours, not days.",
+  steps:[
+    {label:"Freeze the rollout — pull the package off the update server and cancel tonight's job", icon:"🛑", feedback:"Deployment job cancelled, package pulled from staging with 6 hours to spare. Nothing pushes to a relay tonight."},
+    {label:"Verify out-of-band: call the vendor on the KNOWN number, compare hash and signature with the portal", icon:"📞", feedback:"Vendor security team: 'We shipped no hotfix this week.' Portal hash ≠ email hash. Digital signature: forged certificate. CONFIRMED MALICIOUS."},
+    {label:"Audit relay fleet firmware versions and deployment logs — was it installed ANYWHERE?", icon:"🧮", feedback:"All 30 relays still on validated firmware, checksums match vendor-published values. Zero installs. You caught it on the launch pad."},
+    {label:"Quarantine the package and email; extract IOCs and hunt fleet-wide for related messages", icon:"🧪", feedback:"Sandbox: the firmware carries a backdoor listening on a maintenance port, phoning a hardcoded IP. IOC hunt finds the same email in two more mailboxes — quarantined unopened."},
+    {label:"Report to the vendor and ICS-CERT; mandate signed-firmware verification in the update procedure", icon:"⚖️", feedback:"Vendor issues a customer-wide alert; ICS-CERT confirms 5 utilities in the region got the same package — a coordinated campaign. Your procedure now requires signature + out-of-band hash verification before ANY staging."}
+  ],
+  intel:[
+    {label:"Detonate the firmware package in a sandbox", icon:"🧪", feedback:"Sandbox: valid-looking relay firmware wrapping a backdoor — remote command execution on the protection relay. On a protection relay, that's grid-level sabotage capability."},
+    {label:"Check who else received the email", icon:"📧", feedback:"Three engineering mailboxes got it. Sender domain registered 9 days ago, one character off the vendor's real domain. Classic typosquat."},
+    {label:"Review update-server access logs", icon:"🧾", feedback:"Only the one engineer touched the package, staging job created 14:32. No other access. The blast radius is still zero — keep it that way."}
+  ],
+  traps:[
+    {label:"It says URGENT SECURITY FIX — deploy it now, verify later", icon:"💀", feedback:"✗ You flashed unverified firmware onto 30 protection relays. If any of it was real, the attacker now owns the devices that keep your electrical system from destroying itself. Urgency is the oldest social-engineering trick."},
+    {label:"Reply to the email asking if it's legitimate", icon:"⛔", feedback:"✗ You asked the attacker whether the attacker is the attacker. They said yes, deploy — with a convincing PDF attached."},
+    {label:"Just delete everything and pretend it never arrived", icon:"🗑️", feedback:"✗ No IOCs preserved, no vendor warned, no CERT report. The identical package hit a neighboring utility next week — and their engineer deployed it."}
+  ],
+  failText:"The staged package pushed at 23:00 as scheduled. Thirty protection relays now run attacker firmware with a dormant backdoor, and every one must be pulled and re-flashed under outage conditions.",
+  lesson:"Firmware is code with physical consequences: verify hash + signature out-of-band against the vendor portal before staging, never trust urgency, preserve IOCs, and report — supply-chain campaigns hit whole sectors, not just you.",
+  mitre:"ATT&CK for ICS: T0862 Supply Chain Compromise, T0857 System Firmware"
+}
+];
+
+/* ============================================================
+   ENGINE
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const DIFFS={rookie:{t:600,label:"ROOKIE — 10:00"},operator:{t:420,label:"OPERATOR — 7:00"},veteran:{t:300,label:"VETERAN — 5:00"}};
+const COST={step:8,order:25,intel:20,trap:45};
+const PTS={step:100,orderBonus:50,intel:25,trap:-100};
+
+/* ---------- audio ---------- */
+let AC=null,muted=false;
+function initAudio(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } if(AC&&AC.state==="suspended")AC.resume(); }
+function tone(f,dur,type="square",g=0.06,when=0){
+  if(!AC||muted)return;
+  const o=AC.createOscillator(),v=AC.createGain();
+  o.type=type;o.frequency.value=f;
+  v.gain.setValueAtTime(g,AC.currentTime+when);
+  v.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+when+dur);
+  o.connect(v);v.connect(AC.destination);
+  o.start(AC.currentTime+when);o.stop(AC.currentTime+when+dur+0.05);
+}
+const sfx={
+  klaxon(){ for(let i=0;i<3;i++){ tone(520,0.28,"sawtooth",0.07,i*0.6); tone(390,0.28,"sawtooth",0.07,i*0.6+0.3);} },
+  good(){ tone(660,0.09,"square",0.05); tone(880,0.12,"square",0.05,0.09); },
+  intel(){ tone(520,0.08,"sine",0.06); tone(700,0.1,"sine",0.06,0.08); },
+  bad(){ tone(160,0.3,"sawtooth",0.09); tone(110,0.35,"sawtooth",0.09,0.12); },
+  hint(){ tone(330,0.12,"triangle",0.07); },
+  tick(){ tone(1100,0.04,"square",0.04); },
+  win(){ [523,659,784,1047].forEach((f,i)=>tone(f,0.16,"square",0.05,i*0.13)); },
+  lose(){ [392,330,262,196].forEach((f,i)=>tone(f,0.22,"sawtooth",0.06,i*0.18)); }
+};
+$("#muteBtn").onclick=()=>{ muted=!muted; $("#muteBtn").textContent=muted?"🔇":"🔊"; };
+
+/* ---------- helpers ---------- */
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function fmt(t){ t=Math.max(0,t); return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"); }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function now(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0"); }
+function addFeed(src,cls,text){
+  const f=$("#feed"),m=document.createElement("div");
+  m.className="msg "+cls;
+  m.innerHTML=`<span class="src">[${now()}] ${esc(src)}</span>${esc(text)}`;
+  f.appendChild(m); f.scrollTop=f.scrollHeight;
+}
+function flashScreen(color){ const fl=$("#flash"); fl.style.background=color; setTimeout(()=>fl.style.background="rgba(255,40,60,0)",140); }
+function shake(){ $("#app").classList.remove("shake"); void $("#app").offsetWidth; $("#app").classList.add("shake"); }
+
+/* ---------- marker ---------- */
+let markerPos=null;
+function placeMarker(x,y,icon,label){
+  markerPos={x,y};
+  const svg=$("#plantsvg"),wrap=$("#plantwrap"),mk=$("#marker");
+  const pt=svg.createSVGPoint(); pt.x=x; pt.y=y;
+  const sp=pt.matrixTransform(svg.getScreenCTM());
+  const r=wrap.getBoundingClientRect();
+  mk.style.left=(sp.x-r.left)+"px"; mk.style.top=(sp.y-r.top)+"px";
+  mk.style.display="block";
+  if(icon)mk.querySelector(".micon").textContent=icon;
+  if(label)$("#markerLabel").textContent=label;
+}
+window.addEventListener("resize",()=>{ if(markerPos&&G&&G.cur&&!G.cur.over){ const m=G.cur.s.marker; placeMarker(m.x,m.y,m.icon,m.label);} });
+
+/* ---------- game state ---------- */
+let G=null,timerInt=null;
+
+function startGame(diff){
+  initAudio();
+  G={queue:shuffle(SCENARIOS),idx:0,total:0,results:[],diff};
+  nextScenario();
+}
+function nextScenario(){
+  if(G.idx>=G.queue.length){ return finalScreen(); }
+  const s=G.queue[G.idx];
+  G.cur={s,step:0,integrity:100,t:DIFFS[G.diff].t,score:0,intel:0,mistakes:0,traps:0,over:false,hits:[]};
+  showBriefing(s);
+}
+
+/* ---------- modals ---------- */
+function showModal(html){ $("#modal").innerHTML=html; $("#overlay").classList.add("show"); }
+function hideModal(){ $("#overlay").classList.remove("show"); }
+
+function startScreen(){
+  showModal(`
+    <h1>⬢ OT CYBERARENA — OT SOC WARRIOR</h1>
+    <h2>INCIDENT COMMANDER SIMULATOR · SECTOR 7 PROCESS PLANT · v1.1.0</h2>
+    <div class="body">You are the on-shift <b>OT security incident commander</b>.
+
+Ten cyber incidents will hit this plant in random order — infected USBs, rogue devices, ransomware at the gates, safety-system tampering and worse.
+
+For each incident:
+ ▸ The klaxon sounds and the countdown starts.
+ ▸ Work the response actions at the bottom of the screen. <b>Five are the correct moves — in one correct order.</b>
+ ▸ Intel actions (logs, CCTV, phone calls) are safe: they cost time but reveal what you're facing.
+ ▸ Some actions are plausible traps. They damage plant integrity and burn the clock.
+ ▸ Timer at zero or integrity at zero = incident lost.
+
+Score: correct step +100 · clean sequence +50 · useful intel +25 · trap −100 · time remaining = bonus.
+
+Select your shift difficulty:</div>
+    <div class="btnrow" id="diffRow">
+      <button class="btn diffbtn sel" data-d="rookie">${DIFFS.rookie.label}</button>
+      <button class="btn diffbtn" data-d="operator">${DIFFS.operator.label}</button>
+      <button class="btn diffbtn" data-d="veteran">${DIFFS.veteran.label}</button>
+    </div>
+    <div class="btnrow"><button class="btn" id="startBtn" style="font-size:17px;padding:14px 34px">▶ START SHIFT</button></div>`);
+  let diff="rookie";
+  document.querySelectorAll(".diffbtn").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".diffbtn").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); diff=b.dataset.d; });
+  $("#startBtn").onclick=()=>{ hideModal(); startGame(diff); };
+}
+
+function showBriefing(s){
+  showModal(`
+    <h1>📡 INCOMING TRANSMISSION</h1>
+    <h2>INCIDENT ${G.idx+1} OF ${G.queue.length} — PRIORITY FLASH</h2>
+    <div class="body typecursor" id="briefText"></div>
+    <div class="btnrow"><button class="btn danger" id="ackBtn" style="visibility:hidden">⏱ ACKNOWLEDGE — START RESPONSE</button></div>`);
+  const el=$("#briefText"),txt=s.brief; let i=0;
+  sfx.klaxon();
+  const iv=setInterval(()=>{
+    el.textContent=txt.slice(0,++i);
+    if(i%3===0)tone(900+Math.random()*300,0.015,"square",0.015);
+    if(i>=txt.length){ clearInterval(iv); el.classList.remove("typecursor"); $("#ackBtn").style.visibility="visible"; }
+  },14);
+  $("#ackBtn").onclick=()=>{ clearInterval(iv); el.textContent=txt; el.classList.remove("typecursor"); hideModal(); beginScenario(s); };
+  $("#briefText").onclick=()=>{ i=txt.length-1; };
+}
+
+/* ---------- scenario runtime ---------- */
+function beginScenario(s){
+  const c=G.cur;
+  $("#app").classList.add("alarm");
+  $("#liveTag").style.display="inline";
+  $("#scnTitle").textContent="⚠ "+s.title;
+  $("#scnCount").textContent=`INCIDENT ${G.idx+1} / ${G.queue.length} · ${s.mitre}`;
+  $("#feed").innerHTML="";
+  addFeed("SYSTEM","system","INCIDENT DECLARED — "+s.title);
+  addFeed("SYSTEM","system","Response clock running. Order of actions matters. Good luck, Commander.");
+  placeMarker(s.marker.x,s.marker.y,s.marker.icon,s.marker.label);
+  renderHud();
+
+  // build cards
+  const items=[
+    ...s.steps.map((a,i)=>({...a,kind:"step",seq:i})),
+    ...s.intel.map(a=>({...a,kind:"intel"})),
+    ...s.traps.map(a=>({...a,kind:"trap"}))
+  ];
+  const cards=$("#cards"); cards.innerHTML="";
+  shuffle(items).forEach(item=>{
+    const b=document.createElement("button");
+    b.className="card";
+    b.innerHTML=`<span class="cicon">${item.icon}</span>${esc(item.label)}<span class="stamp"></span>`;
+    b.onclick=()=>onCard(b,item);
+    cards.appendChild(b);
+  });
+
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    if(c.over)return;
+    c.t--;
+    if(c.t<=10&&c.t>0)sfx.tick();
+    renderHud();
+    if(c.t<=0)endScenario(false,"timeout");
+  },1000);
+}
+
+function renderHud(){
+  const c=G.cur;
+  const tm=$("#timer"); tm.textContent=fmt(c.t);
+  tm.className=c.t<=45?"crit":(c.t<=120?"warn":"");
+  const fill=$("#integrityFill"); fill.style.width=Math.max(0,c.integrity)+"%";
+  $("#integrityMeter").classList.toggle("low",c.integrity<=40);
+  $("#score").textContent=G.total+Math.max(0,c.score);
+  $("#abStatus").textContent=`CONTAINMENT STEPS ${c.step}/${c.s.steps.length} · INTEGRITY ${Math.max(0,c.integrity)}%`;
+}
+
+function onCard(btn,item){
+  const c=G.cur; if(c.over)return;
+  if(item.kind==="step"){
+    if(item.seq===c.step){
+      c.step++; c.t-=COST.step; c.score+=PTS.step; c.hits.push(item.seq);
+      btn.classList.add("done","locked"); btn.querySelector(".stamp").textContent="✔";
+      addFeed("OPS","good","✔ "+item.feedback);
+      sfx.good(); flashScreen("rgba(55,255,139,.08)");
+      if(c.step>=c.s.steps.length){ renderHud(); return endScenario(true); }
+    }else{
+      c.mistakes++; c.t-=COST.order;
+      btn.classList.add("oops"); setTimeout(()=>btn.classList.remove("oops"),450);
+      addFeed("OPS","hint",`▲ Hold on — "${item.label}" is a right move, but something is more urgent right now. (−${COST.order}s)`);
+      sfx.hint(); flashScreen("rgba(255,179,71,.08)");
+    }
+  }else if(item.kind==="intel"){
+    c.intel++; c.t-=COST.intel;
+    if(c.intel<=3)c.score+=PTS.intel;
+    btn.classList.add("intelDone","locked"); btn.querySelector(".stamp").textContent="◆";
+    addFeed("INTEL","intel","◆ "+item.feedback+` (−${COST.intel}s)`);
+    sfx.intel();
+  }else{ // trap
+    c.traps++; c.t-=COST.trap; c.integrity-=20; c.score+=PTS.trap;
+    btn.classList.add("trapped","locked"); btn.querySelector(".stamp").textContent="✘";
+    addFeed("SYSTEM","bad",item.feedback+` (−${COST.trap}s, −20% integrity)`);
+    sfx.bad(); shake(); flashScreen("rgba(255,40,60,.22)");
+    if(c.integrity<=0){ renderHud(); return endScenario(false,"integrity"); }
+  }
+  renderHud();
+  if(c.t<=0)endScenario(false,"timeout");
+}
+
+/* ---------- scenario end ---------- */
+function endScenario(win,reason){
+  const c=G.cur; if(c.over)return; c.over=true;
+  clearInterval(timerInt);
+  $("#app").classList.remove("alarm");
+  $("#liveTag").style.display="none";
+  $("#marker").style.display="none"; markerPos=null;
+  document.querySelectorAll(".card").forEach(b=>b.classList.add("locked"));
+
+  let timeBonus=0,scnScore;
+  if(win){
+    timeBonus=Math.floor(Math.max(0,c.t)/4);
+    scnScore=Math.max(0,c.score)+timeBonus+(c.mistakes===0?PTS.orderBonus:0);
+    sfx.win();
+    addFeed("SOC","good","INCIDENT CONTAINED. Well handled, Commander.");
+  }else{
+    scnScore=Math.max(0,Math.floor(c.score/2));
+    sfx.lose();
+    $("#glitch").style.display="block"; setTimeout(()=>$("#glitch").style.display="none",900);
+    addFeed("SYSTEM","bad",reason==="integrity"?"PLANT INTEGRITY LOST — incident out of control.":"TIME EXPIRED — the window to contain has closed.");
+  }
+  G.total+=scnScore;
+  G.results.push({title:c.s.title,win,score:scnScore,mistakes:c.mistakes,traps:c.traps,intel:c.intel,timeLeft:Math.max(0,c.t)});
+  renderHud(); $("#score").textContent=G.total;
+
+  const seq=c.s.steps.map((st,i)=>`<li class="${c.hits.includes(i)?"hit":"miss"}">${i+1}. ${st.icon} ${esc(st.label)}</li>`).join("");
+  setTimeout(()=>{
+    showModal(`
+      <h1 style="color:${win?"var(--green)":"var(--red)"}">${win?"✔ INCIDENT CONTAINED":"✘ INCIDENT LOST"}</h1>
+      <h2>${esc(c.s.title)} — DEBRIEF</h2>
+      <div class="body">${win
+        ? `Contained with <b>${fmt(c.t)}</b> on the clock.`
+        : esc(c.s.failText)}
+
+<span class="tag g">+${Math.max(0,c.score)} actions</span>${win?`<span class="tag g">+${timeBonus} time bonus</span>`:""}${win&&c.mistakes===0?`<span class="tag g">+${PTS.orderBonus} clean sequence</span>`:""}${c.traps?`<span class="tag r">${c.traps} trap${c.traps>1?"s":""} triggered</span>`:""}${c.mistakes?`<span class="tag r">${c.mistakes} out-of-order</span>`:""}
+<b>Scenario score: ${scnScore}</b>   ·   Running total: ${G.total}</div>
+      <div style="margin-top:14px;font-size:11px;letter-spacing:2px;color:var(--dim)">CORRECT RESPONSE SEQUENCE</div>
+      <ol class="seqlist">${seq}</ol>
+      <div class="lesson"><span class="lt">⚙ FIELD LESSON · ${esc(c.s.mitre)}</span>${esc(c.s.lesson)}</div>
+      <div class="btnrow"><button class="btn" id="nextBtn">${G.idx+1>=G.queue.length?"▶ FINAL DEBRIEF":"▶ NEXT INCIDENT"}</button></div>`);
+    $("#nextBtn").onclick=()=>{ hideModal(); G.idx++; nextScenario(); };
+  },900);
+}
+
+/* website integration — parent OT CyberArena page (ot-soc-warrior-play.html)
+   listens for this, same postMessage pattern already proven on CyberFlight.
+   Added when this game was renamed RED SHIFT -> OT SOC WARRIOR and wired
+   into the live site (2026-08-23). */
+function submitScore(){
+  try{
+    const payload={type:"redshift_score",game:"OT_SOC_WARRIOR",version:"1.1.0",
+      score:G.total,wins:G.results.filter(r=>r.win).length,total:G.queue.length,
+      mistakes:G.results.reduce((a,r)=>a+(r.mistakes||0),0),
+      traps:G.results.reduce((a,r)=>a+(r.traps||0),0)};
+    if(window.parent&&window.parent!==window)window.parent.postMessage(payload,"*");
+  }catch(e){}
+}
+
+/* ---------- final screen ---------- */
+function finalScreen(){
+  const wins=G.results.filter(r=>r.win).length;
+  const rank=G.total>=6200?"🏆 OT SENTINEL":G.total>=5000?"⭐ INCIDENT COMMANDER":G.total>=3600?"🛡 SHIFT DEFENDER":G.total>=2000?"🔧 CONTROL ROOM ROOKIE":"📚 TRAINEE — BACK TO THE SIMULATOR";
+  const rows=G.results.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.title)}</td><td class="${r.win?"win":"loss"}">${r.win?"CONTAINED":"LOST"}</td><td>${r.score}</td><td>${r.traps}</td><td>${fmt(r.timeLeft)}</td></tr>`).join("");
+  $("#scnTitle").textContent="— SHIFT COMPLETE —"; $("#scnCount").textContent="";
+  submitScore();
+  showModal(`
+    <h1>⬢ END OF SHIFT REPORT</h1>
+    <h2>SECTOR 7 PROCESS PLANT — ${wins}/${G.queue.length} INCIDENTS CONTAINED</h2>
+    <div class="bigrank">${rank}</div>
+    <div class="body"><b>TOTAL SCORE: ${G.total}</b></div>
+    <table class="results">
+      <tr><th>#</th><th>INCIDENT</th><th>RESULT</th><th>SCORE</th><th>TRAPS</th><th>CLOCK LEFT</th></tr>
+      ${rows}
+    </table>
+    <div class="btnrow"><button class="btn" id="againBtn">↻ RUN ANOTHER SHIFT</button></div>`);
+  $("#againBtn").onclick=()=>{ G=null; $("#feed").innerHTML=""; $("#timer").textContent="--:--"; $("#timer").className=""; $("#cards").innerHTML=""; $("#score").textContent="0"; $("#integrityFill").style.width="100%"; startScreen(); };
+}
+
+/* ---------- boot ---------- */
+startScreen();
+</script>
+</body>
+</html>

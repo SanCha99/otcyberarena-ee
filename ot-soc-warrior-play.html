@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="steel">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OT SOC Warrior — OT CyberArena</title>
+<meta name="description" content="Play OT SOC WARRIOR — a real-time OT incident-response simulator. Contain 10 live incidents against the clock as the on-shift incident commander, tracked separately from the OT CyberArena knowledge leaderboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+[data-theme="steel"] {
+  --bg: #050a05; --surface: #0a120a; --surface2: #0f1a0f; --border: #1a2e1a;
+  --accent: #22c55e; --accent-dim: rgba(34,197,94,0.12); --text: #e8f5e8; --muted: #5a7a5a;
+  --red: #ff4444; --mono: 'Share Tech Mono', monospace; --display: 'Barlow Condensed', sans-serif;
+  --body: 'Barlow', sans-serif; --radius: 2px;
+}
+* , *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; overflow-x:clip; }
+body { background:var(--bg); color:var(--text); font-family:var(--body); min-height:100dvh; padding-bottom:env(safe-area-inset-bottom); }
+.topbar {
+  position:sticky; top:0; z-index:200; height:52px; padding:0 clamp(12px,3vw,28px);
+  background:rgba(5,10,5,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-mark { width:30px; height:30px; border:2px solid var(--accent); border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; color:var(--accent); }
+.logo-text { font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:0.04em; color:var(--text); }
+.logo-text .cyber { color:var(--accent); }
+.back-link { font-family:var(--mono); font-size:11px; color:var(--accent); text-decoration:none; letter-spacing:.08em; text-transform:uppercase; font-weight:700; }
+/* Adapted directly from cyberflight-play.html's v2.1.2/v2.1.4 layout fixes
+   (built 2026-08-23, when RED SHIFT was renamed OT SOC WARRIOR and wired
+   into the live site) -- same reasoning applies: the game frame fills the
+   full viewport below the topbar so nothing is below-the-fold on phones,
+   and non-essential chrome (back button, footer) lives below the frame. */
+
+.frame-wrap {
+  position:relative; width:100%;
+  height:calc(100dvh - 52px - env(safe-area-inset-bottom));
+  min-height:280px;
+  background:#000; overflow:hidden;
+}
+.frame-wrap iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+/* "Sign in to save it" escalation -- shown only once a shift just ended
+   while signed out. Same pattern as cyberflight-play.html. */
+.sign-in-overlay {
+  position:fixed; left:0; right:0; top:0; z-index:260;
+  padding:0 clamp(10px,3vw,20px);
+  transform:translateY(-120vh); transition:transform .3s ease;
+  pointer-events:none;
+}
+.sign-in-overlay.show { transform:translateY(96px); pointer-events:auto; }
+.sign-in-overlay-inner {
+  position:relative; max-width:480px; margin:0 auto;
+  border:1px solid rgba(255,68,68,0.5); border-radius:var(--radius);
+  background:linear-gradient(180deg, rgba(255,68,68,0.16), var(--surface) 75%);
+  box-shadow:0 4px 24px rgba(0,0,0,0.5), 0 0 24px rgba(255,68,68,0.15);
+  padding:14px 38px 14px 14px;
+}
+.sign-in-overlay .warn-headline {
+  font-family:var(--display); font-weight:800; font-size:15px; letter-spacing:.02em;
+  color:var(--red); text-transform:uppercase; margin-bottom:4px;
+}
+.sign-in-overlay .warn-sub { color:var(--text); opacity:.85; font-size:11px; margin-bottom:10px; }
+.sign-in-overlay .status-cta {
+  display:block; text-align:center; font-size:12.5px; padding:11px 18px;
+  color:var(--bg); background:var(--accent); text-decoration:none;
+  border-radius:var(--radius); font-weight:700; letter-spacing:.04em;
+  animation: cfPulse 1.8s ease-in-out infinite;
+}
+.overlay-close {
+  position:absolute; top:8px; right:8px; width:26px; height:26px;
+  background:transparent; border:1px solid var(--border); color:var(--muted);
+  border-radius:var(--radius); cursor:pointer; font-size:14px; line-height:1;
+}
+.overlay-close:hover { border-color:var(--accent); color:var(--accent); }
+@keyframes cfPulse {
+  0%, 100% { box-shadow:0 0 10px rgba(34,197,94,0.35); }
+  50% { box-shadow:0 0 22px rgba(34,197,94,0.7); }
+}
+
+.wrap-below { max-width:900px; margin:0 auto; padding:14px clamp(12px,3vw,28px) 8px; }
+
+.back-arena-btn {
+  display:block; width:100%;
+  background:transparent; border:1px solid var(--border); color:var(--text);
+  font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  padding:13px; border-radius:var(--radius); cursor:pointer;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.back-arena-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+
+.toast {
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+  background:var(--surface); border:1px solid var(--accent); color:var(--text);
+  font-family:var(--mono); font-size:12px; padding:12px 20px; border-radius:var(--radius);
+  opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:500;
+  max-width:90vw; text-align:center; line-height:1.5;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+footer { text-align:center; font-family:var(--mono); font-size:10px; color:var(--muted); padding:24px; opacity:.7; }
+</style>
+</head>
+<body>
+
+<header class="topbar" role="banner">
+  <a href="index.html" class="logo" aria-label="OT CyberArena Home">
+    <div class="logo-mark" aria-hidden="true">OT</div>
+    <div class="logo-text">OT <span class="cyber">Cyber</span>Arena</div>
+  </a>
+  <a class="back-link" href="index.html">← Back to Arena</a>
+</header>
+
+<div class="sign-in-overlay" id="signInOverlay">
+  <div class="sign-in-overlay-inner">
+    <button class="overlay-close" id="overlayClose" aria-label="Dismiss">×</button>
+    <div class="warn-headline">🔒 Sign In To Save Your Score</div>
+    <div class="warn-sub" id="overlaySub">ARIA // Shift complete — sign in to keep this in your OT SOC Warrior history.</div>
+    <a class="status-cta" href="index.html#register">Sign In / Join Free →</a>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <iframe id="gameFrame" src="games/ot-soc-warrior.html" title="OT SOC Warrior" allow="autoplay"></iframe>
+</div>
+
+<div class="wrap-below">
+  <button class="back-arena-btn" onclick="location.href='index.html'">← Back to Arena</button>
+</div>
+
+<footer>OT CyberArena</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const IS_LOCAL = location.protocol === 'file:';
+const STORAGE_KEY   = 'ec_player';
+const PENDING_KEY    = 'ec_pending_redshift_score';
+const DAILY_CREDIT_CAP = 3;
+
+const SUPABASE_URL  = 'https://obqqbfvrnkwkgucqdqad.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9icXFiZnZybmt3a2d1Y3FkcWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MjU2NDUsImV4cCI6MjA5NjMwMTY0NX0.I5KjNSrEgF4fZ3jlYqgGj-TVIeQo5XKCQAcK8RHPnzs';
+const sb = IS_LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+function loadPlayer() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null; }
+  catch { return null; }
+}
+function savePlayer(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+
+let currentPlayer = loadPlayer();
+
+function showToast(msg, ms) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove('show'), ms || 4200);
+}
+
+function showSignInOverlay(score) {
+  const overlay = document.getElementById('signInOverlay');
+  const sub = document.getElementById('overlaySub');
+  sub.textContent = `ARIA // Shift complete — score ${score.toLocaleString()}. Sign in to keep this in your OT SOC Warrior history.`;
+  overlay.classList.add('show');
+  clearTimeout(showSignInOverlay._t);
+  showSignInOverlay._t = setTimeout(() => overlay.classList.remove('show'), 9000);
+}
+document.getElementById('overlayClose')?.addEventListener('click', () => {
+  document.getElementById('signInOverlay').classList.remove('show');
+});
+
+async function redshiftRunsToday(playerId) {
+  if (IS_LOCAL || !sb) return 0;
+  const start = new Date(); start.setHours(0,0,0,0);
+  const { count, error } = await sb.from('solves')
+    .select('id', { count: 'exact', head: true })
+    .eq('player_id', playerId)
+    .eq('game_type', 'redshift')
+    .gte('created_at', start.toISOString());
+  if (error) { console.warn('redshiftRunsToday error:', error.message); return 0; }
+  return count || 0;
+}
+
+// Same call as CyberFlight (v2.1.2 precedent, see that wrapper's comment):
+// this is a scored simulator, not a knowledge check -- a shift score
+// shouldn't outrank serious MCQ/Cywordle learners on the main leaderboard.
+// Logged to solves for stats/admin dashboard + daily-run cap only.
+// game_type stays 'redshift' (stable internal key) even though the
+// display name is now OT SOC Warrior -- matches how the admin dashboard's
+// "Bonus games" panel already expects this key.
+async function logRun(score) {
+  if (!currentPlayer || !currentPlayer.id) return;
+  const runsToday = await redshiftRunsToday(currentPlayer.id);
+  if (runsToday >= DAILY_CREDIT_CAP) {
+    showToast(`ARIA // Nice shift — daily OT SOC Warrior tracking cap (${DAILY_CREDIT_CAP}/day) already reached. Run not logged this time.`);
+    return;
+  }
+  if (!IS_LOCAL && !currentPlayer.id.startsWith('local_')) {
+    await sb.from('solves').insert({
+      player_id:         currentPlayer.id,
+      challenge_id:      'redshift_' + Date.now(),
+      challenge_id_text: 'redshift_' + Date.now(),
+      outcome:           null,
+      credits_earned:    score,
+      game_type:         'redshift'
+    });
+  }
+  showToast(`ARIA // Shift logged — score ${score.toLocaleString()}. OT SOC Warrior scores are tracked separately and don't affect your main leaderboard credits.`);
+}
+
+window.addEventListener('message', (e) => {
+  const data = e.data;
+  if (!data || data.type !== 'redshift_score' || data.game !== 'OT_SOC_WARRIOR') return;
+  const score = Math.max(0, Math.floor(Number(data.score) || 0));
+  if (!currentPlayer) {
+    try { localStorage.setItem(PENDING_KEY, JSON.stringify({ score, ts: Date.now() })); } catch {}
+    showSignInOverlay(score);
+    return;
+  }
+  logRun(score);
+});
+
+// Anonymous-visitor tracking, same pattern as CyberFlight's v2.1.14 addition
+// -- reuses the same localStorage session_id as index.html so an anonymous
+// visitor's activity across pages groups together in the admin dashboard.
+(async function () {
+  if (IS_LOCAL || currentPlayer) return;
+  try {
+    const SID_KEY = 'ec_visit_sid';
+    let sid = localStorage.getItem(SID_KEY);
+    if (!sid) {
+      sid = 'v_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(SID_KEY, sid);
+    }
+    await sb.from('events').insert({
+      event_type: 'anon_opened_redshift',
+      player_id:  null,
+      metadata:   { session_id: sid }
+    });
+  } catch {}
+})();
+</script>
+</body>
+</html>

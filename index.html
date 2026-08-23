@@ -930,13 +930,18 @@ html { overflow-x: clip; }
   border-top: 1px solid var(--border);
 }
 
-/* ─── CYBERFLIGHT PROMO CARD (v2.1.0) ─── */
+/* ─── GAME PROMO CARDS (v2.1.0 CyberFlight; v2.1.23 adds a 2nd card for
+   OT SOC Warrior, so the section now needs its own vertical stacking gap
+   -- previously implicit since there was only ever one card) ─── */
 .game-promo-section {
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
   padding-top: 32px;
   border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 @media (min-width: 900px) {
   .main .game-promo-section { max-width: 1200px; }
@@ -1690,7 +1695,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.22 · 2026-08-23 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.23 · 2026-08-23 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1791,6 +1796,17 @@ footer {
         <div class="game-promo-title">CYBERFLIGHT</div>
         <div class="game-promo-desc">Dodge live OT/ICS threats, collect real defenses, and climb the sectors in this arcade flyer — tracked on its own scoreboard, separate from your knowledge credits.</div>
         <div class="game-promo-cta">▶ Play CyberFlight</div>
+      </div>
+    </a>
+    <!-- OT SOC WARRIOR PROMO CARD (added 2026-08-23): renamed from RED SHIFT,
+         same iframe + postMessage integration pattern as CyberFlight above,
+         via ot-soc-warrior-play.html -> games/ot-soc-warrior.html. -->
+    <a class="game-promo-card" href="ot-soc-warrior-play.html">
+      <div class="game-promo-art" aria-hidden="true">🛡️</div>
+      <div class="game-promo-body">
+        <div class="game-promo-title">OT SOC WARRIOR</div>
+        <div class="game-promo-desc">Contain 10 real-time OT incidents against the clock as the on-shift incident commander — order matters, traps are plausible, every debrief maps to a real MITRE ATT&CK for ICS technique.</div>
+        <div class="game-promo-cta">▶ Start Your Shift</div>
       </div>
     </a>
   </section>
@@ -2145,7 +2161,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.22</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.23</span>
   </div>
 </footer>
 
@@ -2158,7 +2174,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.22';
+const EC_VERSION = '2.1.23';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -3725,6 +3741,40 @@ async function claimPendingCyberflightScore() {
   }
 }
 
+// ── OT SOC WARRIOR: claim a score stashed by ot-soc-warrior-play.html ──
+// before the player signed in. Same pattern as claimPendingCyberflightScore()
+// above (added 2026-08-23, when RED SHIFT was renamed OT SOC WARRIOR and
+// wired into the live site) -- kept as its own function rather than a
+// generic one so the working CyberFlight path is never touched.
+// Known gap vs CyberFlight: the game doesn't yet report elapsed seconds in
+// its postMessage payload, so there's no equivalent session/time logging
+// here -- score-only for now.
+const RS_PENDING_KEY = 'ec_pending_redshift_score';
+const RS_DAILY_CAP = 3;
+
+async function redshiftRunsToday(playerId) {
+  if (IS_LOCAL || !sb) return 0;
+  const start = new Date(); start.setHours(0,0,0,0);
+  const { count, error } = await sb.from('solves')
+    .select('id', { count: 'exact', head: true })
+    .eq('player_id', playerId)
+    .eq('game_type', 'redshift')
+    .gte('created_at', start.toISOString());
+  if (error) { console.warn('redshiftRunsToday error:', error.message); return 0; }
+  return count || 0;
+}
+
+async function claimPendingRedshiftScore() {
+  if (!currentPlayer) return;
+  let pending;
+  try { pending = JSON.parse(localStorage.getItem(RS_PENDING_KEY)); } catch { pending = null; }
+  if (!pending || typeof pending.score !== 'number') return;
+  localStorage.removeItem(RS_PENDING_KEY);
+  const runsToday = await redshiftRunsToday(currentPlayer.id);
+  if (runsToday >= RS_DAILY_CAP) return;
+  await recordSolve('redshift', 'redshift_' + Date.now(), null, pending.score);
+}
+
 async function logEvent(eventType, metadata) {
   if (!IS_LOCAL) {
     await sb.from('events').insert({
@@ -3998,6 +4048,7 @@ async function finaliseRegistration() {
         savePlayer(currentPlayer);
         updatePlayerUI();
         claimPendingCyberflightScore();
+        claimPendingRedshiftScore();
         loadLeaderboard();
         closeModal('register');
         return;
@@ -4021,6 +4072,7 @@ async function finaliseRegistration() {
   currentPlayer = newPlayer;
   updatePlayerUI();
   claimPendingCyberflightScore();
+  claimPendingRedshiftScore();
   loadLeaderboard();
   closeModal('register');
   logEvent('registration_complete', { track: newPlayer.track, country: newPlayer.country });
@@ -4107,6 +4159,7 @@ async function loginWithPIN() {
   currentPlayer = p;
   updatePlayerUI();
   claimPendingCyberflightScore();
+  claimPendingRedshiftScore();
   loadLeaderboard();
   closeModal('login');
   logEvent('login', { callsign: p.callsign });
@@ -4292,6 +4345,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHexBg();
   updatePlayerUI();
   claimPendingCyberflightScore();
+  claimPendingRedshiftScore();
   loadCywordleDictionary();
   loadWeeklyQueue();
   loadIntelFeed();
