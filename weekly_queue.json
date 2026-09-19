@@ -189,5 +189,15 @@
       "word": "BEACON",
       "clue": "A malware's periodic signal back to its command-and-control server, revealing a hidden compromise."
     }
+  },
+  {
+    "week_start": "2026-09-19",
+    "mcq_ids": [
+      "EC-00055"
+    ],
+    "cywordle": {
+      "word": "ROGUE",
+      "clue": "An unauthorized device connected to the OT network."
+    }
   }
 ]
