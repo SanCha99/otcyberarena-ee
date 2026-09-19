@@ -1652,6 +1652,13 @@ footer {
     <!-- Shown when logged out — v2.0.1: plain text links, decluttered nav -->
     <button class="nav-link" id="btnLogin"  onclick="openModal('login')"   aria-label="Sign in">Sign In</button>
     <button class="nav-link" id="btnJoin"   onclick="openModal('register')" aria-label="Sign up">Sign Up</button>
+    <!-- v2.1.25: always-visible utility link, same pattern as the theme
+         button below (shown regardless of login state). Duplicated in the
+         footer with no mobile-only-footer-item class -- same reachable-
+         everywhere treatment as Sign Up, since the topbar itself is hidden
+         below 760px (see .topbar max-width:760px rule) and most visitors
+         will be on mobile. -->
+    <button class="nav-link" id="btnFeedback" onclick="openModal('feedback')" aria-label="Give feedback">Feedback</button>
     <!-- Theme picker -->
     <button class="theme-btn theme-toggle-btn" id="themeToggle" onclick="toggleThemePanel()" aria-label="Change theme" title="Change theme">🎨</button>
   </div>
@@ -1695,7 +1702,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.24 · 2026-09-19 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.25 · 2026-09-19 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2135,6 +2142,34 @@ footer {
   </div>
 </div>
 
+<!-- v2.1.25: site feedback -- 5 quick star ratings, reachable via topbar
+     (desktop) and footer (always, since mobile has no topbar). Reuses the
+     existing events table + logEvent() helper, same public-RLS pattern as
+     mcq_feedback / anon tracking -- no migration needed. One submission
+     per browser via localStorage, same lightweight-pulse tradeoff already
+     accepted for mcq_feedback (not an audited ballot). -->
+<div class="modal-overlay" id="modalFeedback" role="dialog" aria-modal="true" aria-labelledby="feedbackModalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="feedbackModalTitle">Quick Feedback</div>
+        <div class="modal-subtitle">ARIA // Five taps. Tells me what to fix next.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('feedback')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="feedbackFormWrap">
+        <div id="feedbackRatingRows"></div>
+        <div class="form-error" id="feedbackError" style="display:none;margin-top:6px;"></div>
+        <button class="btn-primary" id="feedbackSubmitBtn" style="width:100%;margin-top:14px" onclick="submitSiteFeedback()">Submit Feedback</button>
+      </div>
+      <div id="feedbackThanks" class="hidden" style="text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);padding:10px 0">
+        Thanks — feedback recorded.
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ─── FOOTER ─── -->
 <footer role="contentinfo">
   <div class="footer-left">
@@ -2152,6 +2187,10 @@ footer {
          follows the same, already-fixed show/hide logic -- desktop keeps
          using its topbar Sign In only, no duplicate there. -->
     <a class="footer-link accent mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
+    <!-- v2.1.25: no mobile-only-footer-item class -- same "always visible in
+         footer" treatment as Sign Up above, so mobile visitors (who never
+         see the topbar) can still reach Feedback by scrolling down. -->
+    <a class="footer-link accent" onclick="openModal('feedback')">Feedback</a>
     <!-- v2.1.5: wires up the clearPlayer() helper that already existed but
          was never called from anywhere -- there was no way to sign out at
          all before this. Hidden by default, shown only when signed in, so
@@ -2159,7 +2198,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.24</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.25</span>
   </div>
 </footer>
 
@@ -2172,7 +2211,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.24';
+const EC_VERSION = '2.1.25';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2234,6 +2273,7 @@ document.addEventListener('click', e => {
 function openModal(which) {
   closeThemePanel();
   if (which === 'register' && !anonFlags.openedRegister) { anonFlags.openedRegister = true; logAnonEvent('anon_opened_register', {}); }
+  if (which === 'feedback') { renderFeedbackStars(); }
   document.getElementById('modal' + which.charAt(0).toUpperCase() + which.slice(1))
           .classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2968,6 +3008,69 @@ function mcqFeedbackDownPrompt(challengeId) {
                        font-size:10px;font-family:var(--mono);color:var(--muted)">Skip</button>
       </div>
     </div>`;
+}
+
+// ─── SITE FEEDBACK (v2.1.25) — 5-category star rating, one submission per
+// browser via localStorage (same lightweight-pulse tradeoff as mcq_feedback
+// above). Reuses events table + logEvent() -- no migration needed. ───
+const FEEDBACK_CATEGORIES = [
+  { key: 'look_feel',      label: 'Look & feel' },
+  { key: 'navigation',     label: 'Navigation' },
+  { key: 'signup',         label: 'Sign-up process' },
+  { key: 'content',        label: 'Content quality' },
+  { key: 'learning_tools', label: 'Learning tools (games)' }
+];
+const FEEDBACK_DONE_KEY = 'ec_site_feedback_done';
+let feedbackRatings = {};
+
+function renderFeedbackStars() {
+  const wrap = document.getElementById('feedbackRatingRows');
+  if (!wrap) return;
+  if (localStorage.getItem(FEEDBACK_DONE_KEY)) {
+    document.getElementById('feedbackFormWrap').classList.add('hidden');
+    document.getElementById('feedbackThanks').classList.remove('hidden');
+    return;
+  }
+  wrap.innerHTML = FEEDBACK_CATEGORIES.map(c => `
+    <div class="feedback-row" style="display:flex;align-items:center;justify-content:space-between;
+                gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px;color:var(--text)">${c.label}</span>
+      <span role="radiogroup" aria-label="${c.label} rating">
+        ${[1,2,3,4,5].map(n => `<button type="button" class="feedback-star" data-key="${c.key}" data-val="${n}"
+            onclick="setFeedbackStar('${c.key}',${n})" aria-label="${n} star${n>1?'s':''}"
+            style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1;
+                   padding:2px 1px;color:var(--muted)">★</button>`).join('')}
+      </span>
+    </div>`).join('');
+}
+
+function setFeedbackStar(key, val) {
+  feedbackRatings[key] = val;
+  document.querySelectorAll(`.feedback-star[data-key="${key}"]`).forEach(btn => {
+    btn.style.color = parseInt(btn.dataset.val, 10) <= val ? 'var(--accent)' : 'var(--muted)';
+  });
+  const err = document.getElementById('feedbackError');
+  if (err) err.style.display = 'none';
+}
+
+function submitSiteFeedback() {
+  const missing = FEEDBACK_CATEGORIES.filter(c => !feedbackRatings[c.key]);
+  const err = document.getElementById('feedbackError');
+  if (missing.length) {
+    if (err) { err.textContent = 'Please rate all 5 categories first.'; err.style.display = 'block'; }
+    return;
+  }
+  logEvent('site_feedback', {
+    look_feel:      feedbackRatings.look_feel,
+    navigation:     feedbackRatings.navigation,
+    signup:         feedbackRatings.signup,
+    content:        feedbackRatings.content,
+    learning_tools: feedbackRatings.learning_tools,
+    session_id:     pageVisitSessionId()
+  });
+  try { localStorage.setItem(FEEDBACK_DONE_KEY, '1'); } catch {}
+  document.getElementById('feedbackFormWrap').classList.add('hidden');
+  document.getElementById('feedbackThanks').classList.remove('hidden');
 }
 
 function useMCQHint() {
