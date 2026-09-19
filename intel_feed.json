@@ -1,5 +1,23 @@
 [
   {
+    "source": "CISA",
+    "headline": "CISA publishes 7 new ICS advisories Sept 17, including a Linux kernel privilege-escalation flaw (CVE-2026-31431) in ABB Ability Edgenius",
+    "date": "2026-09-17",
+    "url": "https://www.cisa.gov/news-events/ics-advisories/icsa-26-260-06"
+  },
+  {
+    "source": "SecurityWeek",
+    "headline": "ICS Patch Tuesday Sept 2026: critical CVSS 9.2 authentication flaw in Schneider Electric Modicon M580; Siemens, Aveva and Rockwell also patch",
+    "date": "2026-09-09",
+    "url": "https://www.securityweek.com/ics-patch-tuesday-schneider-electric-siemens-fix-critical-flaws/"
+  },
+  {
+    "source": "Help Net Security / Dragos",
+    "headline": "Dragos: ransomware hit 1,140 industrial organizations in Q2 2026 (+12% vs Q1) \u2014 mostly via enterprise IT, not direct ICS access",
+    "date": "2026-08-11",
+    "url": "https://www.helpnetsecurity.com/2026/08/11/industrial-ransomware-attacks-q2-2026/"
+  },
+  {
     "source": "SecurityWeek",
     "headline": "ICS Patch Tuesday July 2026: Siemens, Schneider Electric and Rockwell Automation patch dozens of vulnerabilities",
     "date": "2026-07-15",

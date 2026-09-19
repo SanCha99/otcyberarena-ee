@@ -1695,7 +1695,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.23 · 2026-08-23 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.24 · 2026-09-19 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -1798,17 +1798,11 @@ footer {
         <div class="game-promo-cta">▶ Play CyberFlight</div>
       </div>
     </a>
-    <!-- OT SOC WARRIOR PROMO CARD (added 2026-08-23): renamed from RED SHIFT,
-         same iframe + postMessage integration pattern as CyberFlight above,
-         via ot-soc-warrior-play.html -> games/ot-soc-warrior.html. -->
-    <a class="game-promo-card" href="ot-soc-warrior-play.html">
-      <div class="game-promo-art" aria-hidden="true">🛡️</div>
-      <div class="game-promo-body">
-        <div class="game-promo-title">OT SOC WARRIOR</div>
-        <div class="game-promo-desc">Contain 10 real-time OT incidents against the clock as the on-shift incident commander — order matters, traps are plausible, every debrief maps to a real MITRE ATT&CK for ICS technique.</div>
-        <div class="game-promo-cta">▶ Start Your Shift</div>
-      </div>
-    </a>
+    <!-- OT SOC WARRIOR PROMO CARD pulled 2026-08-23 -- broken/overlapping
+         layout on mobile (game has zero @media rules, always desktop-first).
+         Files still exist (games/ot-soc-warrior.html, ot-soc-warrior-play.html)
+         but are unlinked from the homepage until a mobile fix ships through
+         staging first and is confirmed by Sandip on his phone. -->
   </section>
 
   <!-- Register nudge (shown after either game attempt) -->
@@ -1861,6 +1855,10 @@ footer {
         <!-- Populated by leaderboard engine -->
       </div>
       <div class="lb-footer">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;
+                    margin-bottom:8px;line-height:1.5;">
+          Only your callsign shows here — never your name or email.
+        </div>
         <button class="btn-primary" style="font-size:11px;padding:8px 16px;width:100%;"
                 id="seeYourRankBtn" onclick="openModal('register')">See Your Rank</button>
       </div>
@@ -2161,7 +2159,7 @@ footer {
     <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.23</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.24</span>
   </div>
 </footer>
 
@@ -2174,7 +2172,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.23';
+const EC_VERSION = '2.1.24';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
