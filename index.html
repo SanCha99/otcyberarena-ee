@@ -1645,20 +1645,25 @@ footer {
 
   <div class="topbar-right">
     <!-- Shown when logged in -->
-    <div class="player-chip" id="playerChip" role="button" tabindex="0" aria-label="Player profile">
+    <div class="player-chip" id="playerChip" role="button" tabindex="0" aria-label="Account menu"
+         onclick="toggleAccountMenu(event)" style="position:relative">
       <span id="chipCallsign">—</span>
       <span class="rank-chip" id="chipRank">—</span>
+      <span aria-hidden="true" style="margin-left:4px">▾</span>
+      <div id="accountMenu" class="hidden" style="position:absolute;top:100%;right:0;margin-top:6px;
+           background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+           min-width:120px;padding:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.35)">
+        <button type="button" onclick="signOutPlayer()" style="display:block;width:100%;text-align:left;
+                background:none;border:none;color:var(--text);font-family:var(--mono);font-size:12px;
+                padding:8px 10px;cursor:pointer;border-radius:6px">Sign Out</button>
+      </div>
     </div>
     <!-- Shown when logged out — v2.0.1: plain text links, decluttered nav -->
-    <button class="nav-link" id="btnLogin"  onclick="openModal('login')"   aria-label="Sign in">Sign In</button>
-    <button class="nav-link" id="btnJoin"   onclick="openModal('register')" aria-label="Sign up">Sign Up</button>
-    <!-- v2.1.25: always-visible utility link, same pattern as the theme
-         button below (shown regardless of login state). Duplicated in the
-         footer with no mobile-only-footer-item class -- same reachable-
-         everywhere treatment as Sign Up, since the topbar itself is hidden
-         below 760px (see .topbar max-width:760px rule) and most visitors
-         will be on mobile. -->
-    <button class="nav-link" id="btnFeedback" onclick="openModal('feedback')" aria-label="Give feedback">Feedback</button>
+    <!-- v2.1.26: Sign In + Sign Up merged into one account button (the
+         email-first flow in openModal('register') already detects existing
+         accounts and routes to sign-in internally -- see sendOTP()). -->
+    <button class="nav-link" id="btnAccount" onclick="openModal('register')" aria-label="Sign in or join">Sign in / Join</button>
+    <span id="otca-feedback-slot"></span>
     <!-- Theme picker -->
     <button class="theme-btn theme-toggle-btn" id="themeToggle" onclick="toggleThemePanel()" aria-label="Change theme" title="Change theme">🎨</button>
   </div>
@@ -1702,7 +1707,7 @@ footer {
       <span class="ot">OT </span><span class="cyber">CYBER</span><span class="arena">ARENA</span>
     </h1>
 
-    <div class="hero-version" id="heroVersion">EC v2.1.25 · 2026-09-19 · Steel Green</div>
+    <div class="hero-version" id="heroVersion">EC v2.1.26 · 2026-09-27 · Steel Green</div>
 
     <p class="hero-tagline">The global community for OT security</p>
 
@@ -2142,34 +2147,6 @@ footer {
   </div>
 </div>
 
-<!-- v2.1.25: site feedback -- 5 quick star ratings, reachable via topbar
-     (desktop) and footer (always, since mobile has no topbar). Reuses the
-     existing events table + logEvent() helper, same public-RLS pattern as
-     mcq_feedback / anon tracking -- no migration needed. One submission
-     per browser via localStorage, same lightweight-pulse tradeoff already
-     accepted for mcq_feedback (not an audited ballot). -->
-<div class="modal-overlay" id="modalFeedback" role="dialog" aria-modal="true" aria-labelledby="feedbackModalTitle">
-  <div class="modal">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title" id="feedbackModalTitle">Quick Feedback</div>
-        <div class="modal-subtitle">ARIA // Five taps. Tells me what to fix next.</div>
-      </div>
-      <button class="modal-close" onclick="closeModal('feedback')" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="feedbackFormWrap">
-        <div id="feedbackRatingRows"></div>
-        <div class="form-error" id="feedbackError" style="display:none;margin-top:6px;"></div>
-        <button class="btn-primary" id="feedbackSubmitBtn" style="width:100%;margin-top:14px" onclick="submitSiteFeedback()">Submit Feedback</button>
-      </div>
-      <div id="feedbackThanks" class="hidden" style="text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);padding:10px 0">
-        Thanks — feedback recorded.
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ─── FOOTER ─── -->
 <footer role="contentinfo">
   <div class="footer-left">
@@ -2179,26 +2156,25 @@ footer {
   <div class="footer-right">
     <a class="footer-link accent mobile-only-footer-item theme-toggle-btn" onclick="toggleThemePanel()"
        aria-label="Change theme" title="Change theme">Skin</a>
-    <a class="footer-link accent" onclick="openModal('register')">Sign Up</a>
-    <!-- v2.0.9 follow-up (2026-07-22): mobile has no persistent nav, so the
-         topbar's Sign In link (desktop-only) isn't reachable there. Without
-         this, mobile visitors could sign up but never sign back in. Reuses
-         .mobile-only-footer-item's exact visibility rule (mobile-only) so it
-         follows the same, already-fixed show/hide logic -- desktop keeps
-         using its topbar Sign In only, no duplicate there. -->
-    <a class="footer-link accent mobile-only-footer-item" onclick="openModal('login')">Sign In</a>
-    <!-- v2.1.25: no mobile-only-footer-item class -- same "always visible in
-         footer" treatment as Sign Up above, so mobile visitors (who never
-         see the topbar) can still reach Feedback by scrolling down. -->
-    <a class="footer-link accent" onclick="openModal('feedback')">Feedback</a>
-    <!-- v2.1.5: wires up the clearPlayer() helper that already existed but
-         was never called from anywhere -- there was no way to sign out at
-         all before this. Hidden by default, shown only when signed in, so
-         testers can switch between accounts without clearing browser data. -->
-    <a class="footer-link accent hidden" id="footerSignOut" onclick="signOutPlayer()">Sign Out</a>
+    <!-- v2.1.26: Sign In + Sign Up merged into one account link/menu (same
+         merge as the topbar). Always visible in the footer (mobile has no
+         topbar). -->
+    <a class="footer-link accent" id="footerBtnAccount" onclick="openModal('register')">Sign in / Join</a>
+    <span class="footer-link accent hidden" id="footerAccountChip" style="position:relative;cursor:pointer"
+          onclick="toggleAccountMenu(event,'footerAccountMenu')">
+      <span id="footerChipCallsign">—</span> ▾
+      <div id="footerAccountMenu" class="hidden" style="position:absolute;bottom:100%;right:0;margin-bottom:6px;
+           background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+           min-width:120px;padding:4px;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.35);text-align:left">
+        <button type="button" onclick="signOutPlayer()" style="display:block;width:100%;text-align:left;
+                background:none;border:none;color:var(--text);font-family:var(--mono);font-size:12px;
+                padding:8px 10px;cursor:pointer;border-radius:6px">Sign Out</button>
+      </div>
+    </span>
+    <span id="otca-feedback-slot-footer"></span>
     <a class="footer-link accent" href="mailto:support@otcyberarena.com">Contact</a>
     <span class="footer-link" id="easterEgg" onclick="toggleEasterEgg()">Imagined by Human | Powered by AI</span>
-    <span class="footer-link" id="versionStamp">EC v2.1.25</span>
+    <span class="footer-link" id="versionStamp">EC v2.1.26</span>
   </div>
 </footer>
 
@@ -2211,7 +2187,7 @@ footer {
 'use strict';
 
 // ── VERSION ──────────────────────────────────────
-const EC_VERSION = '2.1.25';
+const EC_VERSION = '2.1.26';
 document.getElementById('versionStamp').textContent = 'EC v' + EC_VERSION;
 
 // ── PAST MCQ/CYWORDLE ARCHIVE GATING (2026-07-18) ──────────────────────
@@ -2273,7 +2249,6 @@ document.addEventListener('click', e => {
 function openModal(which) {
   closeThemePanel();
   if (which === 'register' && !anonFlags.openedRegister) { anonFlags.openedRegister = true; logAnonEvent('anon_opened_register', {}); }
-  if (which === 'feedback') { renderFeedbackStars(); }
   document.getElementById('modal' + which.charAt(0).toUpperCase() + which.slice(1))
           .classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -2522,20 +2497,40 @@ function signOutPlayer() {
   location.reload();
 }
 
+// v2.1.26: single account-menu toggle used by both the topbar playerChip
+// dropdown and the footer's equivalent chip (merged Sign In/Sign Up + Sign
+// Out into one control in each location).
+function toggleAccountMenu(e, menuId) {
+  if (e) e.stopPropagation();
+  const id = menuId || 'accountMenu';
+  const menu = document.getElementById(id);
+  if (!menu) return;
+  const willOpen = menu.classList.contains('hidden');
+  document.querySelectorAll('#accountMenu, #footerAccountMenu').forEach(m => m.classList.add('hidden'));
+  if (willOpen) menu.classList.remove('hidden');
+}
+function closeAccountMenu(menuId) {
+  const menu = document.getElementById(menuId || 'accountMenu');
+  if (menu) menu.classList.add('hidden');
+}
+document.addEventListener('click', () => { closeAccountMenu(); closeAccountMenu('footerAccountMenu'); });
+
 let currentPlayer = loadPlayer();
 
 function updatePlayerUI() {
   const loggedIn = !!currentPlayer;
-  document.getElementById('btnLogin').classList.toggle('hidden', loggedIn);
-  document.getElementById('btnJoin').classList.toggle('hidden', loggedIn);
+  document.getElementById('btnAccount').classList.toggle('hidden', loggedIn);
   document.getElementById('playerChip').classList.toggle('visible', loggedIn);
   document.getElementById('playerBar').classList.toggle('visible', loggedIn);
-  document.getElementById('footerSignOut').classList.toggle('hidden', !loggedIn);
+  document.getElementById('footerBtnAccount').classList.toggle('hidden', loggedIn);
+  document.getElementById('footerAccountChip').classList.toggle('hidden', !loggedIn);
+  if (!loggedIn) { closeAccountMenu(); closeAccountMenu('footerAccountMenu'); }
   document.getElementById('seeYourRankBtn')?.classList.toggle('hidden', loggedIn);
   if (loggedIn) {
     const p = currentPlayer;
     const rank = getRank(p.credits || 0);
     document.getElementById('chipCallsign').textContent = p.callsign || '—';
+    document.getElementById('footerChipCallsign').textContent = p.callsign || '—';
     document.getElementById('chipRank').textContent     = rank.name;
     document.getElementById('barCredits').textContent   = (p.credits||0).toLocaleString();
     document.getElementById('barStreak').textContent    = p.current_streak || 0;
@@ -2891,6 +2886,7 @@ function selectMCQ(btn, idx) {
     recordSolve('mcq_weekly', ch.id, mcqState.correct ? 'correct' : 'wrong',
                 mcqState.correct ? (mcqState.hintUsed ? CREDITS_MCQ.hint : CREDITS_MCQ.first) : CREDITS_MCQ.wrong);
     saveMCQProgress();
+    if (window.OTCAFeedback) window.OTCAFeedback.onGameComplete();
   }
 }
 
@@ -3010,69 +3006,6 @@ function mcqFeedbackDownPrompt(challengeId) {
     </div>`;
 }
 
-// ─── SITE FEEDBACK (v2.1.25) — 5-category star rating, one submission per
-// browser via localStorage (same lightweight-pulse tradeoff as mcq_feedback
-// above). Reuses events table + logEvent() -- no migration needed. ───
-const FEEDBACK_CATEGORIES = [
-  { key: 'look_feel',      label: 'Look & feel' },
-  { key: 'navigation',     label: 'Navigation' },
-  { key: 'signup',         label: 'Sign-up process' },
-  { key: 'content',        label: 'Content quality' },
-  { key: 'learning_tools', label: 'Learning tools (games)' }
-];
-const FEEDBACK_DONE_KEY = 'ec_site_feedback_done';
-let feedbackRatings = {};
-
-function renderFeedbackStars() {
-  const wrap = document.getElementById('feedbackRatingRows');
-  if (!wrap) return;
-  if (localStorage.getItem(FEEDBACK_DONE_KEY)) {
-    document.getElementById('feedbackFormWrap').classList.add('hidden');
-    document.getElementById('feedbackThanks').classList.remove('hidden');
-    return;
-  }
-  wrap.innerHTML = FEEDBACK_CATEGORIES.map(c => `
-    <div class="feedback-row" style="display:flex;align-items:center;justify-content:space-between;
-                gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px;color:var(--text)">${c.label}</span>
-      <span role="radiogroup" aria-label="${c.label} rating">
-        ${[1,2,3,4,5].map(n => `<button type="button" class="feedback-star" data-key="${c.key}" data-val="${n}"
-            onclick="setFeedbackStar('${c.key}',${n})" aria-label="${n} star${n>1?'s':''}"
-            style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1;
-                   padding:2px 1px;color:var(--muted)">★</button>`).join('')}
-      </span>
-    </div>`).join('');
-}
-
-function setFeedbackStar(key, val) {
-  feedbackRatings[key] = val;
-  document.querySelectorAll(`.feedback-star[data-key="${key}"]`).forEach(btn => {
-    btn.style.color = parseInt(btn.dataset.val, 10) <= val ? 'var(--accent)' : 'var(--muted)';
-  });
-  const err = document.getElementById('feedbackError');
-  if (err) err.style.display = 'none';
-}
-
-function submitSiteFeedback() {
-  const missing = FEEDBACK_CATEGORIES.filter(c => !feedbackRatings[c.key]);
-  const err = document.getElementById('feedbackError');
-  if (missing.length) {
-    if (err) { err.textContent = 'Please rate all 5 categories first.'; err.style.display = 'block'; }
-    return;
-  }
-  logEvent('site_feedback', {
-    look_feel:      feedbackRatings.look_feel,
-    navigation:     feedbackRatings.navigation,
-    signup:         feedbackRatings.signup,
-    content:        feedbackRatings.content,
-    learning_tools: feedbackRatings.learning_tools,
-    session_id:     pageVisitSessionId()
-  });
-  try { localStorage.setItem(FEEDBACK_DONE_KEY, '1'); } catch {}
-  document.getElementById('feedbackFormWrap').classList.add('hidden');
-  document.getElementById('feedbackThanks').classList.remove('hidden');
-}
-
 function useMCQHint() {
   if (mcqState.answered || mcqState.hintUsed) return;
   mcqState.hintUsed = true;
@@ -3112,6 +3045,7 @@ function giveUpMCQ() {
   showPostActions('mcqPostActions');
   recordSolve('mcq_weekly', ch.id, 'giveup', CREDITS_MCQ.wrong);
   saveMCQProgress();
+  if (window.OTCAFeedback) window.OTCAFeedback.onGameComplete();
   setTimeout(() => showNudge(false), 1600);
 }
 
@@ -3366,6 +3300,7 @@ function submitWordleGuess() {
     document.getElementById('wordleInput').style.display = 'none';
     setTimeout(()=>{ showPostActions('wordlePost'); showNudge(true); }, 1000);
     recordSolve('cywordle', `cyw_${target.toLowerCase()}`, 'correct', earned);
+    if (window.OTCAFeedback) window.OTCAFeedback.onGameComplete();
   } else if (failed) {
     wordleState.failed = true;
     const earned = CREDITS_WORDLE.fail;
@@ -3375,6 +3310,7 @@ function submitWordleGuess() {
     document.getElementById('wordleInput').style.display = 'none';
     setTimeout(()=>{ showPostActions('wordlePost'); showNudge(false); }, 1000);
     recordSolve('cywordle', `cyw_${target.toLowerCase()}`, 'wrong', earned);
+    if (window.OTCAFeedback) window.OTCAFeedback.onGameComplete();
   } else {
     const remaining = wordleState.maxGuesses - wordleState.guesses.length;
     setWordleMessage(`ARIA // ${remaining} attempt${remaining!==1?'s':''} remaining.`, 'var(--muted)');
@@ -4486,5 +4422,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>window.EC_VERSION = EC_VERSION;</script>
+<script src="feedback.js" defer></script>
 </body>
 </html>
