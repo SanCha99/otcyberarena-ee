@@ -123,7 +123,7 @@
     <div>
       <div class="logo-text">OT <span class="cy">Cyber</span>Arena</div>
       <div class="logo-sub">Admin Intelligence · EC</div>
-      <div class="logo-ver">Dashboard v1.10 · 19-Sep-2026</div>
+      <div class="logo-ver">Dashboard v1.11 · 01-Oct-2026</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -397,10 +397,12 @@ async function loadAll(){
     // event_type, own query so it's not mixed into the anon_% activity feed.
     const fbr=await sb.from('events').select('event_type,metadata,created_at').eq('event_type','mcq_feedback');
     const feedbackEvents=fbr.data||[];
-    // v1.10: site-wide 5-star feedback (look & feel / navigation / sign-up /
-    // content / learning tools) — own event_type, same events table, no
-    // migration. Shipped in EC v2.1.25 alongside the topbar/footer button.
-    const sfr=await sb.from('events').select('event_type,metadata,created_at').eq('event_type','site_feedback');
+    // v1.11: site-wide feedback widget rebuilt on its own public.feedback
+    // table (EC v2.1.26) — replaces the v1.10 events/event_type=site_feedback
+    // read. Own table means own columns (not nested in metadata), plus the
+    // fields the old events-table version never had: comment, device_type,
+    // trigger, source, campaign_id, app_version.
+    const sfr=await sb.from('feedback').select('id,created_at,look_feel,navigation,signup,content,learning_tools,comment,session_id,device_type,trigger,source,campaign_id,app_version');
     const siteFeedbackEvents=sfr.data||[];
     renderDashboard(players,solves,credits,sessions,visits,anonEvents,feedbackEvents,siteFeedbackEvents);
     document.getElementById('lastRefreshed').textContent='Refreshed '+new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
@@ -420,8 +422,8 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents,feedb
   // (session_id in metadata) — Sandip's own thumbs-up/down testing shouldn't
   // count as real player sentiment.
   feedbackEvents=(feedbackEvents||[]).filter(e=>!OWNER_SESSION_IDS.has(e.metadata&&e.metadata.session_id));
-  // v1.10: same owner-exclusion for the new 5-star site feedback.
-  siteFeedbackEvents=(siteFeedbackEvents||[]).filter(e=>!OWNER_SESSION_IDS.has(e.metadata&&e.metadata.session_id));
+  // v1.11: same owner-exclusion, now a direct column instead of metadata.session_id.
+  siteFeedbackEvents=(siteFeedbackEvents||[]).filter(f=>!OWNER_SESSION_IDS.has(f.session_id));
   const now=new Date();
   const rangeMs=currentDays>0?currentDays*24*60*60*1000:null;
   const rangeStart=rangeMs?new Date(now-rangeMs):null;
@@ -676,19 +678,31 @@ function renderDashboard(players,solves,credits,sessions,visits,anonEvents,feedb
   // {look_feel,navigation,signup,content,learning_tools,session_id}, all 1-5.
   h+=`<div class="section-label">Site feedback</div><div class="panel-full">`;
   h+=`<div class="panel-title" style="margin-bottom:4px">5-star ratings</div>`;
-  h+=`<div class="panel-sub">From the Feedback button (topbar + footer), shipped in EC v2.1.25. One submission per browser.</div>`;
+  h+=`<div class="panel-sub">From the Feedback button (topbar + footer, dedicated public.feedback table, EC v2.1.26). One submission per browser.</div>`;
   const SF_CATS=[['look_feel','Look & feel'],['navigation','Navigation'],['signup','Sign-up'],['content','Content'],['learning_tools','Learning tools']];
   h+=`<div class="kpi-grid">`;
   h+=kpi('Total submissions',fmt(siteFeedbackEvents.length),'unique browsers','#4d9fff');
   SF_CATS.forEach(([key,label])=>{
-    const vals=siteFeedbackEvents.map(e=>e.metadata&&e.metadata[key]).filter(v=>typeof v==='number');
+    const vals=siteFeedbackEvents.map(f=>f[key]).filter(v=>typeof v==='number');
     const avg=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length):0;
     const color=avg===0?'#7a8099':avg>=4?'#3ecf8e':avg>=3?'#4d9fff':'#e05c5c';
     h+=kpi(label,vals.length?avg.toFixed(1)+' ★':'—',vals.length?`${vals.length} rated`:'no data yet',color);
   });
   h+=`</div>`;
   if(!siteFeedbackEvents.length){
-    h+=`<div class="empty" style="padding:20px 0">No submissions yet — the Feedback button shipped in EC v2.1.25 (2026-09-19), so this fills in as real players use it.</div>`;
+    h+=`<div class="empty" style="padding:20px 0">No submissions yet — the Feedback button writes straight to public.feedback now, so this fills in as real players use it.</div>`;
+  } else {
+    const withComments=siteFeedbackEvents.filter(f=>f.comment&&f.comment.trim()).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    if(withComments.length){
+      h+=`<div class="panel-title" style="margin:16px 0 4px">Comments (${withComments.length})</div>`;
+      h+=`<div class="table-scroll"><table class="ctable"><thead><tr><th>When</th><th>Comment</th><th>Device</th><th>Trigger</th></tr></thead><tbody>`;
+      withComments.forEach(f=>{
+        const when=new Date(f.created_at).toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'2-digit'});
+        const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        h+=`<tr><td>${when}</td><td>${esc(f.comment)}</td><td>${esc(f.device_type||'—')}</td><td>${esc(f.trigger||'—')}</td></tr>`;
+      });
+      h+=`</tbody></table></div>`;
+    }
   }
   h+=`</div>`;
 
